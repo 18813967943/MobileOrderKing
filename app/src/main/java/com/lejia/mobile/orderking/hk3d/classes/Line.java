@@ -71,8 +71,7 @@ public class Line implements Parcelable {
      */
     public void setThickess(double thickess) {
         this.thickess = thickess;
-        // TODO 计算自身两端线段
-
+        loadAuxiliaryArray();
     }
 
     /**
