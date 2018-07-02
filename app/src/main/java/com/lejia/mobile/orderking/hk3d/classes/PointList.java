@@ -79,6 +79,15 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 内容长度大小
+     */
+    public int size() {
+        if (invalid())
+            return 0;
+        return pointsList.size();
+    }
+
+    /**
      * 转化为gpc点列表
      */
     public ArrayList<Point2D> toPoint2DList() {
@@ -256,6 +265,27 @@ public class PointList implements Parcelable {
             list.add(array[i]);
         }
         return list;
+    }
+
+    /**
+     * 转化为线段组合
+     */
+    public ArrayList<Line> toLineList() {
+        if (invalid())
+            return null;
+        ArrayList<Line> linesList = new ArrayList<>();
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            Point now = pointsList.get(i);
+            Point next = null;
+            if (i == size - 1) {
+                next = pointsList.get(0);
+            } else {
+                next = pointsList.get(i + 1);
+            }
+            linesList.add(new Line(now, next));
+        }
+        return linesList;
     }
 
     /**
@@ -471,8 +501,8 @@ public class PointList implements Parcelable {
         ArrayList<Point> result = new ArrayList<>();
         try {
             // 一半宽与半墙厚、角度
-            double halfDoorWidth = xlong * 0.5f;
-            double halfThickness = thickness * 0.5f;
+            double halfDoorWidth = xlong * 0.5d;
+            double halfThickness = thickness * 0.5d;
             // 根据与水平线形成的夹角，计算在同线上的两个线上点
             double x = Math.cos(Math.toRadians(adsorbAngle)) * halfDoorWidth;
             double y = Math.sin(Math.toRadians(adsorbAngle)) * halfDoorWidth;

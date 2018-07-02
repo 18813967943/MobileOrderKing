@@ -1,5 +1,8 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
@@ -8,11 +11,13 @@ import java.util.ArrayList;
  * @time 2018/6/23 12:12
  * TODO: 线段对象
  */
-public class Line {
+public class Line implements Parcelable {
 
     public Point down; // 按下点(起始点)
     public Point up; // 弹起点(结尾点)
     public double thickess; // 厚度
+
+    private ArrayList<AuxiliaryLine> auxiliaryLineList; // 带厚度的边线集合
 
     public Line(Point down, Point up) {
         this.down = down;
@@ -20,11 +25,36 @@ public class Line {
         this.thickess = 24.0d;
     }
 
+    protected Line(Parcel in) {
+        down = in.readParcelable(Point.class.getClassLoader());
+        up = in.readParcelable(Point.class.getClassLoader());
+        thickess = in.readDouble();
+    }
+
     /**
      * 判断是否无效线段
      */
     public boolean invalid() {
         return down == null || up == null || down.equals(up);
+    }
+
+    /**
+     * TODO 手动加载边线，用于墙体边线处理
+     */
+    public void loadAuxiliaryArray() {
+        if (auxiliaryLineList == null) {
+            auxiliaryLineList = new ArrayList<>();
+        }
+        auxiliaryLineList.clear();
+        ArrayList<Point> rotateList = PointList.getRotateVertexs(getAngle(), getThickess(), getLength(), getCenter());
+        PointList pointList = new PointList(rotateList);
+        ArrayList<Line> linesList = pointList.toLineList();
+        for (Line line : linesList) {
+            double length = line.getLength();
+            if (length > thickess) {
+                auxiliaryLineList.add(new AuxiliaryLine(line.down.copy(), line.up.copy()));
+            }
+        }
     }
 
     /**
@@ -79,6 +109,13 @@ public class Line {
         if (invalid())
             return null;
         return new Point((down.x + up.x) / 2, (down.y + up.y) / 2);
+    }
+
+    /**
+     * 获取边线列表
+     */
+    public ArrayList<AuxiliaryLine> getAuxiliaryLineList() {
+        return auxiliaryLineList;
     }
 
     /**
@@ -204,6 +241,30 @@ public class Line {
     }
 
     @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(down, flags);
+        dest.writeParcelable(up, flags);
+        dest.writeDouble(thickess);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Line> CREATOR = new Creator<Line>() {
+        @Override
+        public Line createFromParcel(Parcel in) {
+            return new Line(in);
+        }
+
+        @Override
+        public Line[] newArray(int size) {
+            return new Line[size];
+        }
+    };
+
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Line)) {
             return false;
@@ -219,7 +280,7 @@ public class Line {
 
     @Override
     public String toString() {
-        return thickess + "," + down + "," + up;
+        return thickess + "," + down + "," + up + "," + auxiliaryLineList;
     }
 
 }
