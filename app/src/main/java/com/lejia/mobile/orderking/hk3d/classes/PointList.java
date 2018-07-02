@@ -388,12 +388,17 @@ public class PointList implements Parcelable {
      * 判断点是否在不规则多边形内(不支持自身多条线相交的情况)
      *
      * @param points
-     * @param rect
      * @param point
      * @return -1外部，0边界，1内部
      */
-    public static int pointRelationToPolygon(ArrayList<Point> points, RectD rect, Point point) {
+    public static int pointRelationToPolygon(ArrayList<Point> points, Point point) {
         try {
+            // 无效点列表
+            PointList pointList = new PointList(points);
+            if (pointList.invalid()) {
+                return -1;
+            }
+            RectD rect = pointList.getRectBox();
             // 判断点是否在外部
             if (point.x < rect.left || point.x > rect.right || point.y < rect.top || point.y > rect.bottom) {
                 return -1;
