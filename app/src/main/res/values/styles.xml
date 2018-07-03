@@ -1,8 +1,22 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@android:color/white</item>
+        <item name="colorAccent">@color/gainsboro</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
+
+
+
+
+
+    <declare-styleable name="TitleBar">
+        <attr name="buttonNum" format="integer" />
+        <attr name="backgroundColor" format="reference|color" />
+        <attr name="buttonTitles" format="string" />
+        <attr name="buttonSplitor" format="boolean" />
+    </declare-styleable>
 
 </resources>
