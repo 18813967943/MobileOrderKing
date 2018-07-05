@@ -8,11 +8,8 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 
-/**
- * Created by Administrator on 2016/10/18.
- */
-
 public class DensityUtil {
+
     /**
      * 根据手机的分辨率从 dip 的单位 转成为 px(像素)
      */
@@ -32,8 +29,7 @@ public class DensityUtil {
     /**
      * 将sp值转换为px值，保证文字大小不变
      *
-     * @param spValue
-     *            （DisplayMetrics类中属性scaledDensity）
+     * @param spValue （DisplayMetrics类中属性scaledDensity）
      * @return
      */
     public static int sp2px(Context context, float spValue) {
@@ -48,8 +44,7 @@ public class DensityUtil {
      * @param context
      * @return
      */
-    public static int getScreenWidth(Context context)
-    {
+    public static int getScreenWidth(Context context) {
         WindowManager wm = (WindowManager) context
                 .getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -58,14 +53,12 @@ public class DensityUtil {
     }
 
     /**
-     *
      * 获得屏幕高度
      *
      * @param context
      * @return
      */
-    public static int getScreenHeight(Context context)
-    {
+    public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context
                 .getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -79,19 +72,15 @@ public class DensityUtil {
      * @param context
      * @return
      */
-    public static int getStatusHeight(Context context)
-    {
-
+    public static int getStatusHeight(Context context) {
         int statusHeight = -1;
-        try
-        {
+        try {
             Class<?> clazz = Class.forName("com.android.internal.R$dimen");
             Object object = clazz.newInstance();
             int height = Integer.parseInt(clazz.getField("status_bar_height")
                     .get(object).toString());
             statusHeight = context.getResources().getDimensionPixelSize(height);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return statusHeight;
@@ -103,8 +92,7 @@ public class DensityUtil {
      * @param activity
      * @return
      */
-    public static Bitmap snapShotWithStatusBar(Activity activity)
-    {
+    public static Bitmap snapShotWithStatusBar(Activity activity) {
         View view = activity.getWindow().getDecorView();
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
@@ -115,7 +103,6 @@ public class DensityUtil {
         bp = Bitmap.createBitmap(bmp, 0, 0, width, height);
         view.destroyDrawingCache();
         return bp;
-
     }
 
     /**
@@ -124,8 +111,7 @@ public class DensityUtil {
      * @param activity
      * @return
      */
-    public static Bitmap snapShotWithoutStatusBar(Activity activity)
-    {
+    public static Bitmap snapShotWithoutStatusBar(Activity activity) {
         View view = activity.getWindow().getDecorView();
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
@@ -141,11 +127,6 @@ public class DensityUtil {
                 - statusBarHeight);
         view.destroyDrawingCache();
         return bp;
-
     }
-
-
-
-
 
 }

@@ -1,73 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.MainActivity">
+    android:layout_height="match_parent">
+
     <RelativeLayout
-        android:background="@color/white"
-        android:gravity="center_vertical"
-        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/d50dp">
+        android:layout_height="@dimen/d50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:gravity="center_vertical">
+
         <LinearLayout
-            android:gravity="center_vertical"
-            android:layout_alignParentLeft="true"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical">
+
             <ImageButton
                 android:id="@+id/getback"
-                android:clickable="true"
-                android:paddingRight="@dimen/d8dp"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"
                 android:background="@drawable/huitui_selector"
-                android:layout_width="@dimen/d40dp"
-                android:layout_height="@dimen/d40dp" />
+                android:clickable="true"
+                android:paddingRight="@dimen/d8dp" />
+
             <ImageButton
-                android:layout_marginLeft="@dimen/d8dp"
                 android:id="@+id/forward"
-                android:background="@drawable/qianjin_selector"
                 android:layout_width="@dimen/d40dp"
-                android:layout_height="@dimen/d40dp"/>
-            <ImageButton
+                android:layout_height="@dimen/d40dp"
                 android:layout_marginLeft="@dimen/d8dp"
+                android:background="@drawable/qianjin_selector" />
+
+            <ImageButton
                 android:id="@+id/jingzhun"
-                android:background="@drawable/jingzhun_selector"
                 android:layout_width="@dimen/d40dp"
-                android:layout_height="@dimen/d40dp" />
+                android:layout_height="@dimen/d40dp"
+                android:layout_marginLeft="@dimen/d8dp"
+                android:background="@drawable/jingzhun_selector" />
         </LinearLayout>
 
-<com.lejia.mobile.orderking.view.TitlesView
-    android:layout_centerInParent="true"
-    android:id="@+id/title"
-    android:layout_width="@dimen/d200dp"
-    android:layout_height="match_parent"
-    />
-<LinearLayout
-    android:gravity="center_vertical"
-    android:layout_alignParentRight="true"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent">
-    <ImageButton
-        android:layout_marginRight="@dimen/d8dp"
-        android:id="@+id/zhouce"
-        android:background="@drawable/zhouce_selector"
-        android:layout_width="@dimen/d40dp"
-        android:layout_height="@dimen/d40dp" />
-    <ImageButton
-        android:layout_marginRight="@dimen/d8dp"
-        android:id="@+id/threed"
-        android:background="@drawable/d3_selector"
-        android:layout_width="@dimen/d40dp"
-        android:layout_height="@dimen/d40dp" />
-    <ImageButton
-        android:id="@+id/more"
-        android:layout_marginRight="@dimen/d8dp"
-        android:background="@drawable/more_selector"
-        android:layout_width="@dimen/d40dp"
-        android:layout_height="@dimen/d40dp"/>
-</LinearLayout>
+        <com.lejia.mobile.orderking.widgets.TitlesView
+            android:id="@+id/title"
+            android:layout_width="@dimen/d200dp"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/zhouce"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"
+                android:layout_marginRight="@dimen/d8dp"
+                android:background="@drawable/zhouce_selector" />
+
+            <ImageButton
+                android:id="@+id/threed"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"
+                android:layout_marginRight="@dimen/d8dp"
+                android:background="@drawable/d3_selector" />
+
+            <ImageButton
+                android:id="@+id/more"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"
+                android:layout_marginRight="@dimen/d8dp"
+                android:background="@drawable/more_selector" />
+        </LinearLayout>
 
     </RelativeLayout>
 
