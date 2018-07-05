@@ -25,6 +25,8 @@ public class HK3DDesignerActivity extends Activity {
         super.setContentView(R.layout.activity_main);
         // 打开权限申请
         startActivityForResult(new Intent(this, PermissionsActivity.class), -1);
+        // 对接界面
+
     }
 
 }
