@@ -12,6 +12,7 @@
         android:theme="@style/AppTheme">
         <!-- 第一个界面，可设计任意内容 -->
         <activity android:name=".ui.MainActivity"
+            android:hardwareAccelerated="true"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

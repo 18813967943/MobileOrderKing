@@ -13,7 +13,7 @@
         android:gravity="center_vertical"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="@dimen/d50dp">
         <LinearLayout
             android:gravity="center_vertical"
             android:layout_alignParentLeft="true"
@@ -22,35 +22,33 @@
             <ImageButton
                 android:background="@null"
                 android:id="@+id/getback"
-                android:layout_marginLeft="8dp"
-                android:padding="5dp"
+                android:paddingLeft="@dimen/d8dp"
                 android:clickable="true"
+                android:paddingRight="@dimen/d8dp"
                 android:src="@drawable/huitui_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent" />
             <ImageButton
                 android:id="@+id/forward"
-                android:layout_marginLeft="8dp"
+                android:padding="@dimen/d8dp"
                 android:background="@null"
-                android:padding="5dp"
                 android:src="@drawable/qianjin_selector"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <ImageButton
                 android:id="@+id/jingzhun"
-                android:layout_marginLeft="8dp"
                 android:background="@null"
-                android:padding="5dp"
+                android:padding="@dimen/d8dp"
                 android:src="@drawable/jingzhun_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent" />
         </LinearLayout>
 
 
 <com.lejia.mobile.orderking.view.TitlesView
     android:layout_centerInParent="true"
     android:id="@+id/title"
-    android:layout_width="200dp"
+    android:layout_width="@dimen/d300dp"
     android:layout_height="match_parent" />
 <LinearLayout
     android:gravity="center_vertical"
@@ -59,26 +57,23 @@
     android:layout_height="match_parent">
     <ImageButton
         android:id="@+id/zhouce"
-        android:layout_marginLeft="8dp"
+        android:padding="@dimen/d8dp"
         android:background="@null"
-        android:padding="5dp"
         android:src="@drawable/zhouce_selector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <ImageButton
         android:id="@+id/threed"
-        android:layout_marginLeft="8dp"
         android:background="@null"
-        android:padding="5dp"
+        android:padding="@dimen/d8dp"
         android:src="@drawable/d3_selector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <ImageButton
         android:id="@+id/more"
         android:layout_marginRight="5dp"
-        android:layout_marginLeft="8dp"
+        android:padding="@dimen/d8dp"
         android:background="@null"
-        android:padding="5dp"
         android:src="@drawable/more_selector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

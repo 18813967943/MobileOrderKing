@@ -10,6 +10,7 @@ import com.lejia.mobile.orderking.hk3d.classes.AuxiliaryLine;
 import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.utils.LogUtil;
+import com.lejia.mobile.orderking.view.MenuBar;
 import com.lejia.mobile.orderking.view.TitlesView;
 
 import java.util.ArrayList;
@@ -34,27 +35,30 @@ public class MainActivity extends BaseActivity {
     ImageButton threed;
     @BindView(R.id.more)
     ImageButton more;
-    private final int FJ = 0;
-    private final int MC = 1;
-    private final int PZ = 2;
-    private final int BZ = 3;
+    private final int ROOM = 0;
+    private final int DOORWINDOW = 1;
+    private final int TILES = 2;
+    private final int DECORATE = 3;
+    private MenuBar menuBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         test();
     }
 
+    /**
+     * 在获得焦点后自动全屏
+     * @param hasFocus
+     */
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+//            setFullScreen();
         }
     }
 
@@ -66,13 +70,14 @@ public class MainActivity extends BaseActivity {
             public void onItemTitleClick(int position, String title, boolean isfromUser) {
                 Toast(title);
                 switch (position) {
-                    case FJ:   //房间
+                    case ROOM:   //房间
                         break;
-                    case MC:   //门窗
+                    case DOORWINDOW :   //门窗
+
                         break;
-                    case PZ:   //铺砖
+                    case TILES:   //铺砖
                         break;
-                    case BZ:   //布置
+                    case DECORATE:   //布置
                         break;
 
                 }
@@ -95,6 +100,11 @@ public class MainActivity extends BaseActivity {
             case R.id.threed:
                 break;
             case R.id.more:
+                String[] titles = new String[]{"新建", "打开", "保存", "另存", "量尺"};
+                menuBar = new MenuBar(MainActivity.this, titles, (int) getResources().getDimension(R.dimen.menu_width)
+                        , -1, MenuBar.HALF_ALPHA);
+//                menuBar.setOnMenuBarChangedListener(onMenuBarChangedListener);
+                menuBar.show();
                 break;
         }
 
