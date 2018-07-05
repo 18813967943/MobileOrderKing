@@ -5,9 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false"
     tools:context=".ui.MainActivity">
-    <!--android:fitsSystemWindows="true"-->
     <RelativeLayout
         android:background="@color/white"
         android:gravity="center_vertical"
@@ -20,66 +18,56 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
             <ImageButton
-                android:background="@null"
                 android:id="@+id/getback"
-                android:paddingLeft="@dimen/d8dp"
                 android:clickable="true"
                 android:paddingRight="@dimen/d8dp"
-                android:src="@drawable/huitui_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:background="@drawable/huitui_selector"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp" />
             <ImageButton
+                android:layout_marginLeft="@dimen/d8dp"
                 android:id="@+id/forward"
-                android:padding="@dimen/d8dp"
-                android:background="@null"
-                android:src="@drawable/qianjin_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:background="@drawable/qianjin_selector"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"/>
             <ImageButton
+                android:layout_marginLeft="@dimen/d8dp"
                 android:id="@+id/jingzhun"
-                android:background="@null"
-                android:padding="@dimen/d8dp"
-                android:src="@drawable/jingzhun_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:background="@drawable/jingzhun_selector"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp" />
         </LinearLayout>
-
 
 <com.lejia.mobile.orderking.view.TitlesView
     android:layout_centerInParent="true"
     android:id="@+id/title"
-    android:layout_width="@dimen/d300dp"
-    android:layout_height="match_parent" />
+    android:layout_width="@dimen/d200dp"
+    android:layout_height="match_parent"
+    />
 <LinearLayout
     android:gravity="center_vertical"
     android:layout_alignParentRight="true"
     android:layout_width="wrap_content"
     android:layout_height="match_parent">
     <ImageButton
+        android:layout_marginRight="@dimen/d8dp"
         android:id="@+id/zhouce"
-        android:padding="@dimen/d8dp"
-        android:background="@null"
-        android:src="@drawable/zhouce_selector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:background="@drawable/zhouce_selector"
+        android:layout_width="@dimen/d40dp"
+        android:layout_height="@dimen/d40dp" />
     <ImageButton
+        android:layout_marginRight="@dimen/d8dp"
         android:id="@+id/threed"
-        android:background="@null"
-        android:padding="@dimen/d8dp"
-        android:src="@drawable/d3_selector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:background="@drawable/d3_selector"
+        android:layout_width="@dimen/d40dp"
+        android:layout_height="@dimen/d40dp" />
     <ImageButton
         android:id="@+id/more"
-        android:layout_marginRight="5dp"
-        android:padding="@dimen/d8dp"
-        android:background="@null"
-        android:src="@drawable/more_selector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_marginRight="@dimen/d8dp"
+        android:background="@drawable/more_selector"
+        android:layout_width="@dimen/d40dp"
+        android:layout_height="@dimen/d40dp"/>
 </LinearLayout>
-
-
 
     </RelativeLayout>
 
