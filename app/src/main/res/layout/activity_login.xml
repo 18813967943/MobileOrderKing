@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/login_bg"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <include
+        layout="@layout/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_height" />
+
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="#45000000"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/middle"
+        android:paddingLeft="@dimen/largest"
+        android:paddingRight="@dimen/largest"
+        android:paddingTop="@dimen/middle">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/account"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/account"
+                android:layout_width="@dimen/d180dp"
+                android:layout_height="@dimen/d35dp"
+                android:layout_marginLeft="8dp"
+                android:imeOptions="actionNext"
+                android:inputType="text"
+                android:textColor="#fff"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/middle"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/password"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="@dimen/d180dp"
+                android:layout_height="@dimen/d35dp"
+                android:layout_marginLeft="8dp"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:textColor="#fff"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/forgetPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="@dimen/small"
+            android:text="@string/forget_password"
+            android:textColor="@color/deepskyblue"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/large"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/login"
+                android:layout_width="@dimen/d70dp"
+                android:layout_height="@dimen/d30dp"
+                android:background="@drawable/common_transparent_btn"
+                android:text="@string/login"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/register"
+                android:layout_width="@dimen/d70dp"
+                android:layout_height="@dimen/d30dp"
+                android:layout_marginLeft="@dimen/middle"
+                android:background="@drawable/common_transparent_btn"
+                android:text="@string/register"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

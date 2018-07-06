@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">MobileOrderKing</string>
+    <string name="app_name">易3D</string>
+    <string name="account">账号:</string>
+    <string name="password">密码:</string>
+    <string name="register">注册</string>
+    <string name="login">登入</string>
+    <string name="forget_password">忘记密码?</string>
+    <string name="pass_code">验证码:</string>
+    <string name="repeat_password">重复密码:</string>
+    <string name="back">返回</string>
 </resources>
