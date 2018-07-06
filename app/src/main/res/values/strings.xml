@@ -6,6 +6,6 @@
     <string name="login">登入</string>
     <string name="forget_password">忘记密码?</string>
     <string name="pass_code">验证码:</string>
-    <string name="repeat_password">重复密码:</string>
+    <string name="repeat_password">确认密码:</string>
     <string name="back">返回</string>
 </resources>
