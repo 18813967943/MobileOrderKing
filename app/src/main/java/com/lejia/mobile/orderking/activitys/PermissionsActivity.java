@@ -40,6 +40,9 @@ public class PermissionsActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, rwPermissions[0]) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, rwPermissions, 1);
+            } else {
+                // TODO 可执行下一权限
+                finish();
             }
         }
     }

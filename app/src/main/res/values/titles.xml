@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="TitleBar">
+        <attr name="buttonNum" format="integer" />
+        <attr name="backgroundColor" format="reference|color" />
+        <attr name="buttonTitles" format="string" />
+        <attr name="buttonSplitor" format="boolean" />
+    </declare-styleable>
+
+</resources>

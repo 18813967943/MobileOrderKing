@@ -9,7 +9,4 @@ import android.app.Application;
  * TODO: 自定义程序对象
  */
 public class OrderKingApplication extends Application {
-
-
-
 }

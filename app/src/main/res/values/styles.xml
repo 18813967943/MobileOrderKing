@@ -8,13 +8,6 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
 
-    <declare-styleable name="TitleBar">
-        <attr name="buttonNum" format="integer" />
-        <attr name="backgroundColor" format="reference|color" />
-        <attr name="buttonTitles" format="string" />
-        <attr name="buttonSplitor" format="boolean" />
-    </declare-styleable>
-
     <!-- grade and speed dialog style -->
     <style name="transparentDiag" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item>
