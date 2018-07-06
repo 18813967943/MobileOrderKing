@@ -12,8 +12,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.lejia.mobile.orderking.R;
-import com.lejia.mobile.orderking.adapter.MenuBarAdapter;
-
+import com.lejia.mobile.orderking.adapters.MenuBarAdapter;
 
 /**
  * @author HEKE 菜单栏

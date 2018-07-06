@@ -1,4 +1,4 @@
-package com.lejia.mobile.orderking.adapter;
+package com.lejia.mobile.orderking.adapters;
 
 import android.content.Context;
 import android.view.View;
