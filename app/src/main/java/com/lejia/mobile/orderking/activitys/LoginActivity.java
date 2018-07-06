@@ -8,9 +8,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.classes.SignIn;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -42,7 +42,6 @@ public class LoginActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_login);
-        ButterKnife.bind(this);
     }
 
     @OnClick({R.id.forgetPassword, R.id.login, R.id.register})
@@ -51,6 +50,7 @@ public class LoginActivity extends BaseActivity {
             case R.id.forgetPassword:
                 break;
             case R.id.login:
+                new SignIn(LoginActivity.this, account.getText().toString(), password.getText().toString());
                 break;
             case R.id.register:
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));

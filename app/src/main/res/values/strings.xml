@@ -8,4 +8,8 @@
     <string name="pass_code">验证码:</string>
     <string name="repeat_password">确认密码:</string>
     <string name="back">返回</string>
+    <string name="getValidateCode_failed">获取验证码失败!</string>
+    <string name="please_input_hole_datas">请填写完整数据!</string>
+    <string name="input_twice_error">两次输入密码不一致!</string>
+    <string name="sign_up_error">注册失败!</string>
 </resources>

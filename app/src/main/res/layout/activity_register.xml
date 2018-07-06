@@ -48,13 +48,14 @@
                     <EditText
                         android:id="@+id/account"
                         android:layout_width="@dimen/d180dp"
-                        android:layout_height="@dimen/d35dp"
+                        android:layout_height="@dimen/d45dp"
                         android:layout_marginLeft="8dp"
                         android:imeOptions="actionNext"
-                        android:inputType="text"
+                        android:inputType="number"
                         android:textColor="#000"
                         android:textSize="14sp"
-                        android:theme="@style/MyEditText" />
+                        android:theme="@style/MyEditText"
+                        />
 
                 </LinearLayout>
 
@@ -74,7 +75,7 @@
                     <EditText
                         android:id="@+id/password"
                         android:layout_width="@dimen/d180dp"
-                        android:layout_height="@dimen/d35dp"
+                        android:layout_height="@dimen/d45dp"
                         android:layout_marginLeft="8dp"
                         android:imeOptions="actionNext"
                         android:inputType="textPassword"
@@ -100,7 +101,7 @@
                     <EditText
                         android:id="@+id/repeat_password"
                         android:layout_width="@dimen/d150dp"
-                        android:layout_height="@dimen/d35dp"
+                        android:layout_height="@dimen/d45dp"
                         android:layout_marginLeft="8dp"
                         android:imeOptions="actionNext"
                         android:inputType="textPassword"
@@ -126,7 +127,7 @@
                     <EditText
                         android:id="@+id/passcode"
                         android:layout_width="@dimen/d100dp"
-                        android:layout_height="@dimen/d35dp"
+                        android:layout_height="@dimen/d45dp"
                         android:layout_marginLeft="8dp"
                         android:imeOptions="actionDone"
                         android:inputType="number"
@@ -134,11 +135,11 @@
                         android:textSize="14sp"
                         android:theme="@style/MyEditText" />
 
-                    <com.lejia.mobile.orderking.widgets.AuthcodeView
+                    <com.lejia.mobile.orderking.widgets.AuthCodeImageView
                         android:id="@+id/authCode"
-                        android:layout_width="@dimen/d100dp"
-                        android:layout_height="@dimen/d30dp"
-                        android:layout_marginLeft="@dimen/middle" />
+                        android:layout_width="@dimen/d70dp"
+                        android:layout_height="@dimen/d35dp"
+                        android:layout_marginLeft="@dimen/small" />
 
                 </LinearLayout>
 
@@ -153,7 +154,7 @@
                     <Button
                         android:id="@+id/register"
                         android:layout_width="@dimen/d100dp"
-                        android:layout_height="@dimen/d35dp"
+                        android:layout_height="@dimen/d40dp"
                         android:layout_marginLeft="@dimen/middle"
                         android:background="@drawable/common_transparent_white_btn"
                         android:text="@string/register"

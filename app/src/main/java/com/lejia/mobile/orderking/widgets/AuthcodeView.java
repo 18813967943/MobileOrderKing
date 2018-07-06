@@ -7,7 +7,12 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.lejia.mobile.orderking.bases.HttpsConfig;
+import com.lejia.mobile.orderking.https.OkHttpRequest;
+import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.utils.TextUtils;
+
+import java.util.HashMap;
 
 /**
  * Author by HEKE
@@ -15,12 +20,13 @@ import com.lejia.mobile.orderking.utils.TextUtils;
  * @time 2018/7/6 14:50
  * TODO: 验证码控件
  */
+@Deprecated
 public class AuthcodeView extends View {
 
     // 使用数字验证码
     private static final char[] CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     // 使用字符颜色
-    private static final int[] COLORS = {0xFFFFDEAD,0xFF97FFFF, 0xFFFFDAB9, 0xFF54FF9F, 0xFF00FF7F,
+    private static final int[] COLORS = {0xFFFFDEAD, 0xFF97FFFF, 0xFFFFDAB9, 0xFF54FF9F, 0xFF00FF7F,
             0xFF6495ED, 0xFF000080, 0xFF00CD66, 0xFF00BFFF, 0xFFC0FF3E, 0xFFFFF68F, 0xFFADFF2F, 0xFFFF6A6A,
             0xFFD2691E, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFF00FF, 0xFF00FFFF, 0xFF9932CC,
             0xFFEE2C2C, 0xFFA020F0};
@@ -32,6 +38,9 @@ public class AuthcodeView extends View {
     private int[] codes;
     // 画笔
     private Paint paint;
+
+    // 正在刷新验证码
+    private boolean isRefreshing;
 
     private void initAttrs() {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -96,6 +105,26 @@ public class AuthcodeView extends View {
             codes[i] = Integer.parseInt("" + CHARS[p]);
         }
         invalidate();
+    }
+
+    /**
+     * 服务器请求验证码
+     */
+    public void networkCodes() {
+        // 参数
+        HashMap<String, String> params = new HashMap<>();
+        params.put("appsecret", "LeJiatbBLpR64lkz3EYPQPj3qObRiG8WZPxvW");
+        // 请求处理数据
+        OkHttpRequest request = OkHttpRequest.getInstance(getContext());
+        request.requestAsyn(HttpsConfig.GetValidateCode, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+            @Override
+            public void onReqSuccess(Object result) {
+            }
+
+            @Override
+            public void onReqFailed(String errorMsg) {
+            }
+        });
     }
 
     @Override

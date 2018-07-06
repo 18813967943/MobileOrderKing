@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import com.lejia.mobile.orderking.R;
 
+import butterknife.ButterKnife;
+
 /**
  * @author HEKE 基类界面
  * @version 2016年9月12日
@@ -68,6 +70,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (rootLayout == null) return;
         rootLayout.addView(view, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         initToolbar();
+        ButterKnife.bind(this);
         initViews();
     }
 

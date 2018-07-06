@@ -6,10 +6,10 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.lejia.mobile.orderking.R;
-import com.lejia.mobile.orderking.widgets.AuthcodeView;
+import com.lejia.mobile.orderking.classes.SignUp;
+import com.lejia.mobile.orderking.widgets.AuthCodeImageView;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -29,39 +29,30 @@ public class RegisterActivity extends BaseActivity {
     @BindView(R.id.passcode)
     EditText passcode;
     @BindView(R.id.authCode)
-    AuthcodeView authCode;
+    AuthCodeImageView authCode;
     @BindView(R.id.register)
     Button register;
 
     @Override
     protected void initViews() {
-        System.out.println("###### authCode : " + (authCode == null));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_register);
-        ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.account, R.id.password, R.id.repeat_password, R.id.passcode, R.id.authCode, R.id.register})
+    @OnClick({R.id.register})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.account:
-                break;
-            case R.id.password:
-                break;
-            case R.id.repeat_password:
-                break;
-            case R.id.passcode:
-                break;
-            case R.id.authCode:
-                authCode.loadCodes();
-                break;
             case R.id.register:
+                new SignUp(RegisterActivity.this, account.getText().toString()
+                        , password.getText().toString(), repeatPassword.getText().toString()
+                        , passcode.getText().toString(), authCode.getValidateCode());
                 break;
         }
     }
+
 
 }
