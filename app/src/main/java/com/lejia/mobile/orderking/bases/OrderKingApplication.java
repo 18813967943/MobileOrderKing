@@ -2,6 +2,8 @@ package com.lejia.mobile.orderking.bases;
 
 import android.app.Application;
 
+import com.lejia.mobile.orderking.httpsResult.classes.User;
+
 /**
  * Author by HEKE
  *
@@ -9,4 +11,15 @@ import android.app.Application;
  * TODO: 自定义程序对象
  */
 public class OrderKingApplication extends Application {
+
+    /**
+     * 当前登入用户
+     */
+    public User mUser;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
 }

@@ -4,13 +4,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.HK3DDesignerActivity;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.httpsResult.ResponseEntity;
+import com.lejia.mobile.orderking.httpsResult.classes.User;
 import com.lejia.mobile.orderking.utils.TextUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 
@@ -51,17 +57,32 @@ public class SignIn {
         params.put("userName", account);
         params.put("password", password);
         OkHttpRequest request = OkHttpRequest.getInstance(mContext);
-        request.requestAsyn(HttpsConfig.SIGN_UP, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+        request.requestAsyn(HttpsConfig.SIGN_IN, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
             @Override
             public void onReqSuccess(Object result) {
                 if (result != null) {
                     ResponseEntity responseEntity = new ResponseEntity(result);
-                    Toast.makeText(mContext, responseEntity.msg, Toast.LENGTH_SHORT).show();
                     // 登入成功
-                    //if (responseEntity.state == 1) {
+                    if (responseEntity.state == 1) {
+                        // 存储用户信息
+                        try {
+                            String dataJsonStr = responseEntity.getData();
+                            JSONObject object = new JSONObject(dataJsonStr);
+                            String enterpriseInfo = object.getString("enterpriseInfo"); // 企业信息
+                            String token = object.getString("token"); // 唯一验证编码
+                            JSONObject userObject = object.getJSONObject("userInfo");
+                            User user = new Gson().fromJson(userObject.toString(), User.class);
+                            user.setEnterpriseInfo(enterpriseInfo);
+                            user.setToken(token);
+                            ((OrderKingApplication) mContext.getApplicationContext()).mUser = user;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         // 进入首页
                         mContext.startActivity(new Intent(mContext, HK3DDesignerActivity.class));
-                   // }
+                    } else {
+                        Toast.makeText(mContext, responseEntity.msg, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
