@@ -12,4 +12,5 @@
     <string name="please_input_hole_datas">请填写完整数据!</string>
     <string name="input_twice_error">两次输入密码不一致!</string>
     <string name="sign_up_error">注册失败!</string>
+    <string name="sign_in_error">登入失败!</string>
 </resources>

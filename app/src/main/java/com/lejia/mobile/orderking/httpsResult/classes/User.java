@@ -3,6 +3,8 @@ package com.lejia.mobile.orderking.httpsResult.classes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lejia.mobile.orderking.utils.TextUtils;
+
 /**
  * Author by HEKE
  *
@@ -37,8 +39,45 @@ public class User implements Parcelable {
     public String enterpriseInfo; // 企业信息
     public String token; // 有效唯一编码
 
+    // 主体信息
+    private String account;
+    private String passowrd;
+
     public User() {
         super();
+    }
+
+    public User(String user) {
+        if (!TextUtils.isTextEmpity(user)) {
+            String[] vs = user.split("[|]");
+            if (vs.length >= 25) {
+                id = Long.parseLong(vs[0]);
+                accountID = vs[1];
+                fullName = vs[2];
+                gender = Integer.parseInt(vs[3]);
+                cellPhone = vs[4];
+                email = vs[5];
+                userName = vs[6];
+                provinceID = Integer.parseInt(vs[7]);
+                provinceName = vs[8];
+                cityID = Integer.parseInt(vs[9]);
+                cityName = vs[10];
+                address = vs[11];
+                remark = vs[12];
+                leJiaProjectID = vs[13];
+                leJiaProjectName = vs[14];
+                isAdministrators = Integer.parseInt(vs[15]);
+                isLeJiaAccount = Integer.parseInt(vs[16]);
+                createrID = vs[17];
+                createrName = vs[18];
+                isEnabled = "true".equals(vs[19]);
+                createTime = vs[20];
+                enterpriseInfo = vs[21];
+                token = vs[22];
+                account = vs[23];
+                passowrd = vs[24];
+            }
+        }
     }
 
     protected User(Parcel in) {
@@ -65,6 +104,8 @@ public class User implements Parcelable {
         createTime = in.readString();
         enterpriseInfo = in.readString();
         token = in.readString();
+        account = in.readString();
+        passowrd = in.readString();
     }
 
     public long getId() {
@@ -251,6 +292,22 @@ public class User implements Parcelable {
         this.token = token;
     }
 
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getPassowrd() {
+        return passowrd;
+    }
+
+    public void setPassowrd(String passowrd) {
+        this.passowrd = passowrd;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(id);
@@ -276,6 +333,8 @@ public class User implements Parcelable {
         dest.writeString(createTime);
         dest.writeString(enterpriseInfo);
         dest.writeString(token);
+        dest.writeString(account);
+        dest.writeString(passowrd);
     }
 
     @Override
@@ -294,5 +353,13 @@ public class User implements Parcelable {
             return new User[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return id + "|" + accountID + "|" + fullName + "|" + gender + "|" + cellPhone + "|" + email + "|" + userName +
+                "|" + provinceID + "|" + provinceName + "|" + cityID + "|" + cityName + "|" + address + "|" + remark + "|" + leJiaProjectID
+                + "|" + leJiaProjectName + "|" + isAdministrators + "|" + isLeJiaAccount + "|" + createrID + "|" + createrName + "|"
+                + isEnabled + "|" + createTime + "|" + enterpriseInfo + "|" + token + "|" + account + "|" + passowrd;
+    }
 
 }

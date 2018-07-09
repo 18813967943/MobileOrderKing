@@ -32,6 +32,8 @@ public class SignIn {
     private String account;
     private String password;
 
+    private OnSignInMsgListener onSignInMsgListener;
+
     public SignIn(Context context, String account, String password) {
         mContext = context;
         this.account = account;
@@ -39,10 +41,20 @@ public class SignIn {
         checkDatas();
     }
 
+    public SignIn(Context context, String account, String password, OnSignInMsgListener onSignInMsgListener) {
+        mContext = context;
+        this.account = account;
+        this.password = password;
+        this.onSignInMsgListener = onSignInMsgListener;
+        checkDatas();
+    }
+
     // 数据检测
     private void checkDatas() {
         // 数据为空提示填写完整信息
         if (TextUtils.isTextEmpity(account) || TextUtils.isTextEmpity(password)) {
+            if (errorMsg())
+                return;
             Toast.makeText(mContext, R.string.please_input_hole_datas, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -74,7 +86,9 @@ public class SignIn {
                             User user = new Gson().fromJson(userObject.toString(), User.class);
                             user.setEnterpriseInfo(enterpriseInfo);
                             user.setToken(token);
-                            ((OrderKingApplication) mContext.getApplicationContext()).mUser = user;
+                            user.setAccount(account);
+                            user.setPassowrd(password);
+                            ((OrderKingApplication) mContext.getApplicationContext()).setUser(user);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -82,15 +96,34 @@ public class SignIn {
                         mContext.startActivity(new Intent(mContext, HK3DDesignerActivity.class));
                     } else {
                         Toast.makeText(mContext, responseEntity.msg, Toast.LENGTH_SHORT).show();
+                        errorMsg();
                     }
                 }
             }
 
             @Override
             public void onReqFailed(String errorMsg) {
-                Toast.makeText(mContext, R.string.sign_up_error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, R.string.sign_in_error, Toast.LENGTH_SHORT).show();
+                errorMsg();
             }
         });
+    }
+
+    // 错误提示
+    private boolean errorMsg() {
+        if (onSignInMsgListener != null)
+            onSignInMsgListener.error();
+        return onSignInMsgListener != null;
+    }
+
+    /**
+     * Author by HEKE
+     *
+     * @time 2018/7/9 15:13
+     * TODO: 登录信息监听接口
+     */
+    public interface OnSignInMsgListener {
+        void error();
     }
 
 }
