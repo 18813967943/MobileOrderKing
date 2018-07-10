@@ -69,7 +69,6 @@ public class Designer3DSurfaceView extends GLSurfaceView {
             application.setDesigner3DSurfaceView(null);
         }
         // 数据释放
-
     }
 
 }

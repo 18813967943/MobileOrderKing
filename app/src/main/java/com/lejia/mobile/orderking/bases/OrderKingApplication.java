@@ -28,15 +28,37 @@ public class OrderKingApplication extends Application {
      */
     private Designer3DSurfaceView designer3DSurfaceView;
 
+    /**
+     * 单例程序上下文内容
+     */
+    private static Context context;
+
+    /**
+     * 获取程序上下文
+     */
+    public static Context getInstant() {
+        return context;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        // 设置单例程序上下文
+        context = getApplicationContext();
         // 自动读取用户登入缓存信息
         sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
         String vs = sp.getString("USER", null);
         if (vs != null) {
             mUser = new User(vs);
         }
+    }
+
+    /**
+     * 释放单例程序上下文
+     */
+    public void releaseSingleContext() {
+        if (context != null)
+            context = null;
     }
 
     /**

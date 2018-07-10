@@ -81,11 +81,13 @@
 
     </RelativeLayout>
 
-    <com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView
-        android:id="@+id/designer3d"
+    <LinearLayout
+        android:id="@+id/designer3dLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomLayout" />
+        android:layout_above="@id/bottomLayout"
+        android:background="#FFFFFFFF"
+        android:orientation="horizontal"></LinearLayout>
 
     <ImageView
         android:id="@+id/drawStates"
@@ -102,8 +104,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/bottomLayout"
         android:layout_alignParentRight="true"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
     </LinearLayout>
 
