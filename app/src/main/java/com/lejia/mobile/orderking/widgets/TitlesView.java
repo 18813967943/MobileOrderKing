@@ -17,8 +17,8 @@ import com.lejia.mobile.orderking.utils.TextUtils;
 public class TitlesView extends View {
 
 	private static final int DEFAULT_NUMBER = 5; // 默认主题数量
-	private static final int DEFAULT_TEXT_SIZE = 16; // 默认字体大小
-	private static final int DEFAULT_SPLIT_PADDING = 8; // 分割线内边距
+	private static final int DEFAULT_TEXT_SIZE = 20; // 默认字体大小
+	private static final int DEFAULT_SPLIT_PADDING = 16; // 分割线内边距
 
 	private int titlesWidth; // 宽度
 	private int titlesHeight; // 高度

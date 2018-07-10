@@ -13,4 +13,10 @@
     <string name="input_twice_error">两次输入密码不一致!</string>
     <string name="sign_up_error">注册失败!</string>
     <string name="sign_in_error">登入失败!</string>
+    <string-array name="main2d_bottom_titles">
+        <item>房间</item>
+        <item>门窗</item>
+        <item>铺砖</item>
+        <item>布置</item>
+    </string-array>
 </resources>

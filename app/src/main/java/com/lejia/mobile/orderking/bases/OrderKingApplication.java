@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
 
 /**
@@ -21,6 +22,11 @@ public class OrderKingApplication extends Application {
 
     // 应用存储信息
     private SharedPreferences sp;
+
+    /**
+     * 三维渲染控件
+     */
+    private Designer3DSurfaceView designer3DSurfaceView;
 
     @Override
     public void onCreate() {
@@ -43,6 +49,24 @@ public class OrderKingApplication extends Application {
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("USER", mUser.toString());
         editor.commit();
+    }
+
+    /**
+     * 绑定三维渲染控件
+     *
+     * @param designer3DSurfaceView
+     */
+    public void setDesigner3DSurfaceView(Designer3DSurfaceView designer3DSurfaceView) {
+        this.designer3DSurfaceView = designer3DSurfaceView;
+    }
+
+    /**
+     * 渲染刷新渲染控件
+     */
+    public void render() {
+        if (designer3DSurfaceView == null)
+            return;
+        designer3DSurfaceView.requestRender();
     }
 
 }

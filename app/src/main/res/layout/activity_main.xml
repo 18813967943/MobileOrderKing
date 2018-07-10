@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:titles="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <RelativeLayout
+        android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/d50dp"
         android:layout_alignParentBottom="true"
@@ -41,9 +43,13 @@
 
         <com.lejia.mobile.orderking.widgets.TitlesView
             android:id="@+id/title"
-            android:layout_width="@dimen/d200dp"
+            android:layout_width="@dimen/d250dp"
             android:layout_height="match_parent"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"
+            titles:backgroundColor="#00ffffff"
+            titles:buttonNum="4"
+            titles:buttonSplitor="false"
+            titles:buttonTitles="@array/main2d_bottom_titles" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -74,5 +80,31 @@
         </LinearLayout>
 
     </RelativeLayout>
+
+    <com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView
+        android:id="@+id/designer3d"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomLayout" />
+
+    <ImageView
+        android:id="@+id/drawStates"
+        android:layout_width="@dimen/d40dp"
+        android:layout_height="@dimen/d40dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="3dp"
+        android:background="@mipmap/juxinghuafangjian"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/rightLayout"
+        android:layout_width="@dimen/d250dp"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomLayout"
+        android:layout_alignParentRight="true"
+        android:orientation="horizontal"
+        >
+
+    </LinearLayout>
 
 </RelativeLayout>
