@@ -3,7 +3,11 @@ package com.lejia.mobile.orderking.httpsResult.classes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.Gson;
 import com.lejia.mobile.orderking.utils.TextUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Author by HEKE
@@ -43,6 +47,11 @@ public class User implements Parcelable {
     private String account;
     private String passowrd;
 
+    /**
+     * 所在企业信息
+     */
+    public Enterprise enterprise;
+
     public User() {
         super();
     }
@@ -72,7 +81,7 @@ public class User implements Parcelable {
                 createrName = vs[18];
                 isEnabled = "true".equals(vs[19]);
                 createTime = vs[20];
-                enterpriseInfo = vs[21];
+                setEnterpriseInfo(vs[21]);
                 token = vs[22];
                 account = vs[23];
                 passowrd = vs[24];
@@ -106,6 +115,7 @@ public class User implements Parcelable {
         token = in.readString();
         account = in.readString();
         passowrd = in.readString();
+        enterprise = in.readParcelable(Enterprise.class.getClassLoader());
     }
 
     public long getId() {
@@ -282,6 +292,15 @@ public class User implements Parcelable {
 
     public void setEnterpriseInfo(String enterpriseInfo) {
         this.enterpriseInfo = enterpriseInfo;
+        // 解析对应的企业信息
+        try {
+            if (!TextUtils.isTextEmpity(enterpriseInfo)) {
+                JSONObject object = new JSONObject(enterpriseInfo);
+                enterprise = new Gson().fromJson(object.toString(), Enterprise.class);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getToken() {
@@ -306,6 +325,14 @@ public class User implements Parcelable {
 
     public void setPassowrd(String passowrd) {
         this.passowrd = passowrd;
+    }
+
+    public Enterprise getEnterprise() {
+        return enterprise;
+    }
+
+    public void setEnterprise(Enterprise enterprise) {
+        this.enterprise = enterprise;
     }
 
     @Override
@@ -335,6 +362,7 @@ public class User implements Parcelable {
         dest.writeString(token);
         dest.writeString(account);
         dest.writeString(passowrd);
+        dest.writeParcelable(enterprise, flags);
     }
 
     @Override

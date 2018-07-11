@@ -1,6 +1,8 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -9,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.utils.BitmapUtils;
 
 /**
  * Author by HEKE
@@ -176,12 +179,25 @@ public class Tile implements Parcelable {
             onTileBitmapListener.onTileBitmapThenDoSomething(bitmap);
         else {
             Glide.with(OrderKingApplication.getInstant()).asBitmap().load(imageUrl).into(new SimpleTarget<Bitmap>() {
+                @SuppressLint("StaticFieldLeak")
                 @Override
                 public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
-                    // 赋值位图
-                    Tile.this.bitmap = bitmap;
-                    // 回调位图结果
-                    onTileBitmapListener.onTileBitmapThenDoSomething(bitmap);
+                    // 异步线程执行
+                    new AsyncTask<Bitmap, Integer, Bitmap>() {
+                        @Override
+                        protected Bitmap doInBackground(Bitmap... bitmaps) {
+                            return BitmapUtils.toSize(bitmaps[0], materialWidth / 10, materialHeight / 10);
+                        }
+
+                        @Override
+                        protected void onPostExecute(Bitmap bitmap) {
+                            super.onPostExecute(bitmap);
+                            // 赋值位图
+                            Tile.this.bitmap = bitmap;
+                            // 回调位图结果
+                            onTileBitmapListener.onTileBitmapThenDoSomething(Tile.this.bitmap);
+                        }
+                    }.execute(bitmap);
                 }
             });
         }
