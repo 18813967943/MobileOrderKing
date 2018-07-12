@@ -100,10 +100,11 @@
 
     <LinearLayout
         android:id="@+id/rightLayout"
-        android:layout_width="@dimen/d250dp"
+        android:layout_width="@dimen/d180dp"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomLayout"
         android:layout_alignParentRight="true"
+        android:background="#FFFFFF00"
         android:orientation="horizontal">
 
     </LinearLayout>

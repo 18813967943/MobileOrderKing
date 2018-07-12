@@ -89,6 +89,8 @@ public class SignIn {
                             user.setAccount(account);
                             user.setPassowrd(password);
                             ((OrderKingApplication) mContext.getApplicationContext()).setUser(user);
+                            // 拉取企业信息对应的数据列表
+                            new EnterPriseNodesList(mContext, user);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

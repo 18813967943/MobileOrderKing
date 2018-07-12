@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.lejia.mobile.orderking.utils.TextUtils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,6 +25,18 @@ public class ResponseEntity implements Parcelable {
         JSONObject object = null;
         try {
             object = new JSONObject(result.toString());
+            msg = object.getString("msg");
+            state = object.getInt("state");
+            data = object.getString("data");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ResponseEntity(String result) {
+        JSONObject object = null;
+        try {
+            object = new JSONObject(result);
             msg = object.getString("msg");
             state = object.getInt("state");
             data = object.getString("data");
@@ -61,6 +74,40 @@ public class ResponseEntity implements Parcelable {
         String json = null;
         try {
             json = new JSONObject(data).getJSONObject(key).toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    /**
+     * 获取数据集合内容
+     *
+     * @param key
+     */
+    public JSONArray getJSonArray(String key) {
+        if (TextUtils.isTextEmpity(data))
+            return null;
+        JSONArray array = null;
+        try {
+            array = new JSONObject(data).getJSONArray(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return array;
+    }
+
+    /**
+     * 获取数据集合内容
+     *
+     * @param position
+     */
+    public String getJSonArray(int position) {
+        if (TextUtils.isTextEmpity(data))
+            return null;
+        String json = null;
+        try {
+            json = new JSONArray(data).getJSONObject(position).toString();
         } catch (JSONException e) {
             e.printStackTrace();
         }

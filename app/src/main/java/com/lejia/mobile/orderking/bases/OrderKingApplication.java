@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
+import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
 
 /**
@@ -19,6 +20,11 @@ public class OrderKingApplication extends Application {
      * 当前登入用户
      */
     public User mUser;
+
+    /**
+     * 当前用户企业信息数据节点列表
+     */
+    public MaterialTypeList materialTypeList;
 
     // 应用存储信息
     private SharedPreferences sp;
@@ -51,6 +57,10 @@ public class OrderKingApplication extends Application {
         if (vs != null) {
             mUser = new User(vs);
         }
+        String mtl = sp.getString("MATERIAL_TYPE_LIST", null);
+        if (mtl != null) {
+            materialTypeList = new MaterialTypeList(mtl);
+        }
     }
 
     /**
@@ -70,6 +80,18 @@ public class OrderKingApplication extends Application {
         sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("USER", mUser.toString());
+        editor.commit();
+    }
+
+    /**
+     * 设置企业对应节点数据列表对象
+     */
+    public void setMaterialTypeList(MaterialTypeList materialTypeList, String json) {
+        this.materialTypeList = materialTypeList;
+        // 缓存字典信息
+        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("MATERIAL_TYPE_LIST", json);
         editor.commit();
     }
 

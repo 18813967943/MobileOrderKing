@@ -14,6 +14,11 @@ public class HttpsConfig {
     private static final String HTTPS_SERVICE_URL = "http://192.168.1.100:8020/";
 
     /**
+     * 文件材质请求服务器根目录
+     */
+    private static final String FILES_SERVICE_URL = "http://192.168.1.100:8070/";
+
+    /**
      * 获取验证码,6位随机数
      */
     public static final String GetValidateCode = HTTPS_SERVICE_URL + "api/User/GetValidateCode";
@@ -28,5 +33,10 @@ public class HttpsConfig {
      */
     public static final String SIGN_IN = HTTPS_SERVICE_URL + "api/User/UserLogin";
 
-    
+    /**
+     * 拉起企业数据列表
+     */
+    public static final String GET_ENTERPRISE_NODESLIST = FILES_SERVICE_URL + "api/Material/GetMaterialTypeList";
+
+
 }
