@@ -51,7 +51,7 @@ public class LoginActivity extends BaseActivity {
                 break;
             case R.id.login:
                 new SignIn(LoginActivity.this, account.getText().toString(), password.getText().toString());
-                break;
+                break; 
             case R.id.register:
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
                 break;
