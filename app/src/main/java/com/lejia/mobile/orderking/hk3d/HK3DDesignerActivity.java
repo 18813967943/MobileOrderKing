@@ -9,9 +9,13 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
+import com.lejia.mobile.orderking.widgets.ScrollerGridView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
 
 import butterknife.BindView;
@@ -44,8 +48,23 @@ public class HK3DDesignerActivity extends Activity {
     LinearLayout designer3dLayout;
     @BindView(R.id.drawStates)
     ImageView drawStates;
+    @BindView(R.id.detialsList)
+    ListView detialsList;
+    @BindView(R.id.nodesList)
+    ListView nodesList;
+    @BindView(R.id.resGrid)
+    ScrollerGridView resGrid;
     @BindView(R.id.rightLayout)
-    LinearLayout rightLayout;
+    RelativeLayout rightLayout;
+
+    /**
+     * 材质管理对象
+     */
+    private TilesManager tilesManager;
+
+    private void initViews() {
+        tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +73,7 @@ public class HK3DDesignerActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        initViews();
         // 打开权限申请
         startActivityForResult(new Intent(this, PermissionsActivity.class), -1);
     }

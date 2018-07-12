@@ -22,15 +22,15 @@ import com.lejia.mobile.orderking.utils.BitmapUtils;
 public class Tile implements Parcelable {
 
     public int id; // 数据库编号
-    public int materialTypeId; // 材质类型
+    public int materialTypeID; // 材质类型
     public String materialCode; // 材质编码
     public String materialName; // 材质名称
     public int materialWidth; // 材质宽度
     public int materialHeight; // 材质高度
-    public String imageUrl; // 对应图片链接
+    public String imageURL; // 对应图片链接
     public String renderingPath; // 材质对应渲染路径
-    public String creatorId; // 创建者编号
-    public String enterpriseId; // 企业编号
+    public String creatorID; // 创建者编号
+    public String enterpriseID; // 企业编号
     public boolean isPublic; // 公开的
     public boolean isEnable; // 是否开放的，可使用的
     public String createTime; // 创建时间
@@ -46,15 +46,15 @@ public class Tile implements Parcelable {
 
     protected Tile(Parcel in) {
         id = in.readInt();
-        materialTypeId = in.readInt();
+        materialTypeID = in.readInt();
         materialCode = in.readString();
         materialName = in.readString();
         materialWidth = in.readInt();
         materialHeight = in.readInt();
-        imageUrl = in.readString();
+        imageURL = in.readString();
         renderingPath = in.readString();
-        creatorId = in.readString();
-        enterpriseId = in.readString();
+        creatorID = in.readString();
+        enterpriseID = in.readString();
         isPublic = in.readByte() != 0;
         isEnable = in.readByte() != 0;
         createTime = in.readString();
@@ -71,12 +71,12 @@ public class Tile implements Parcelable {
         this.id = id;
     }
 
-    public int getMaterialTypeId() {
-        return materialTypeId;
+    public int getMaterialTypeID() {
+        return materialTypeID;
     }
 
-    public void setMaterialTypeId(int materialTypeId) {
-        this.materialTypeId = materialTypeId;
+    public void setMaterialTypeID(int materialTypeID) {
+        this.materialTypeID = materialTypeID;
     }
 
     public String getMaterialCode() {
@@ -111,12 +111,12 @@ public class Tile implements Parcelable {
         this.materialHeight = materialHeight;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
     public String getRenderingPath() {
@@ -127,20 +127,20 @@ public class Tile implements Parcelable {
         this.renderingPath = renderingPath;
     }
 
-    public String getCreatorId() {
-        return creatorId;
+    public String getCreatorID() {
+        return creatorID;
     }
 
-    public void setCreatorId(String creatorId) {
-        this.creatorId = creatorId;
+    public void setCreatorID(String creatorID) {
+        this.creatorID = creatorID;
     }
 
-    public String getEnterpriseId() {
-        return enterpriseId;
+    public String getEnterpriseID() {
+        return enterpriseID;
     }
 
-    public void setEnterpriseId(String enterpriseId) {
-        this.enterpriseId = enterpriseId;
+    public void setEnterpriseID(String enterpriseID) {
+        this.enterpriseID = enterpriseID;
     }
 
     public boolean isPublic() {
@@ -178,7 +178,7 @@ public class Tile implements Parcelable {
         if (bitmap != null)
             onTileBitmapListener.onTileBitmapThenDoSomething(bitmap);
         else {
-            Glide.with(OrderKingApplication.getInstant()).asBitmap().load(imageUrl).into(new SimpleTarget<Bitmap>() {
+            Glide.with(OrderKingApplication.getInstant()).asBitmap().load(imageURL).into(new SimpleTarget<Bitmap>() {
                 @SuppressLint("StaticFieldLeak")
                 @Override
                 public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
@@ -206,15 +206,15 @@ public class Tile implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(id);
-        dest.writeInt(materialTypeId);
+        dest.writeInt(materialTypeID);
         dest.writeString(materialCode);
         dest.writeString(materialName);
         dest.writeInt(materialWidth);
         dest.writeInt(materialHeight);
-        dest.writeString(imageUrl);
+        dest.writeString(imageURL);
         dest.writeString(renderingPath);
-        dest.writeString(creatorId);
-        dest.writeString(enterpriseId);
+        dest.writeString(creatorID);
+        dest.writeString(enterpriseID);
         dest.writeByte((byte) (isPublic ? 1 : 0));
         dest.writeByte((byte) (isEnable ? 1 : 0));
         dest.writeString(createTime);

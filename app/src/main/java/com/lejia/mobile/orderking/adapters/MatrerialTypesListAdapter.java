@@ -7,40 +7,44 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.httpsResult.classes.LJNodes;
 
+import java.util.ArrayList;
 
 /**
- * @author HEKE 菜单适配器
+ * Author by HEKE
+ *
+ * @time 2018/7/12 15:10
+ * TODO: 铺砖材质列表资源标题适配器
  */
-public class MenuBarAdapter extends BaseAdapter {
+public class MatrerialTypesListAdapter extends BaseAdapter {
 
     private Context mContext;
-    private String[] items;
+    private ArrayList<LJNodes> nodesList;
 
-    public MenuBarAdapter(Context context, String[] items) {
-        this.mContext = context;
-        this.items = items;
+    public MatrerialTypesListAdapter(Context context, ArrayList<LJNodes> nodesList) {
+        mContext = context;
+        this.nodesList = nodesList;
     }
 
-    public void refreshTitles(String[] items) {
-        this.items = items;
+    /**
+     * 修改数据
+     *
+     * @param nodesList
+     */
+    public void changeList(ArrayList<LJNodes> nodesList) {
+        this.nodesList = nodesList;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        if (items == null) {
-            return 0;
-        }
-        return items.length;
+        return nodesList == null ? 0 : nodesList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        if (items == null) {
-            return null;
-        }
-        return items[position];
+        return nodesList == null ? null : nodesList.get(position);
     }
 
     @Override
@@ -53,14 +57,14 @@ public class MenuBarAdapter extends BaseAdapter {
         ViewHolder holder = null;
         try {
             if (v == null) {
+                v = View.inflate(mContext, R.layout.material_item, null);
                 holder = new ViewHolder();
-                v = View.inflate(mContext, R.layout.menu_item, null);
-                holder.title = v.findViewById(R.id.menuItem);
+                holder.title = v.findViewById(R.id.materialItem);
                 v.setTag(holder);
             } else {
                 holder = (ViewHolder) v.getTag();
             }
-            holder.title.setText(items[position]);
+            holder.title.setText(nodesList.get(position).getName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,4 +74,5 @@ public class MenuBarAdapter extends BaseAdapter {
     private class ViewHolder {
         public TextView title;
     }
+
 }

@@ -76,6 +76,20 @@ public class MaterialTypeList implements Parcelable {
         materialTypeList.clear();
     }
 
+    /**
+     * 获取指定位置的节点详细节点数据
+     *
+     * @param position
+     * @return 返回指定节点的详细节点数据列表
+     */
+    public ArrayList<LJNodes> getChildDetailsList(int position) {
+        if (materialTypeList == null || materialTypeList.size() == 0)
+            return null;
+        if (position < 0 || position >= materialTypeList.size())
+            return null;
+        return materialTypeList.get(position).getChildrenList();
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(materialTypeList);

@@ -34,9 +34,13 @@ public class HttpsConfig {
     public static final String SIGN_IN = HTTPS_SERVICE_URL + "api/User/UserLogin";
 
     /**
-     * 拉起企业数据列表
+     * 拉取企业数据列表
      */
     public static final String GET_ENTERPRISE_NODESLIST = FILES_SERVICE_URL + "api/Material/GetMaterialTypeList";
 
+    /**
+     * 拉取指定节点数据列表
+     */
+    public static final String GET_DETAILE_NODE_DATAS = FILES_SERVICE_URL + "api/Material/GetMaterialList";
 
 }

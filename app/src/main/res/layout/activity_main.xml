@@ -12,10 +12,16 @@
         android:background="@color/white"
         android:gravity="center_vertical">
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#666" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
+            android:layout_marginTop="1px"
             android:gravity="center_vertical">
 
             <ImageButton
@@ -46,6 +52,7 @@
             android:layout_width="@dimen/d250dp"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
+            android:layout_marginTop="1dp"
             titles:backgroundColor="#00ffffff"
             titles:buttonNum="4"
             titles:buttonSplitor="false"
@@ -55,6 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
+            android:layout_marginTop="1px"
             android:gravity="center_vertical">
 
             <ImageButton
@@ -98,15 +106,72 @@
         android:background="@mipmap/juxinghuafangjian"
         android:visibility="gone" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/rightLayout"
-        android:layout_width="@dimen/d180dp"
+        android:layout_width="@dimen/d200dp"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomLayout"
         android:layout_alignParentRight="true"
-        android:background="#FFFFFF00"
-        android:orientation="horizontal">
+        android:background="#FFFFFFFA"
+        android:orientation="horizontal"
+        android:visibility="gone">
 
-    </LinearLayout>
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#666" />
+
+        <LinearLayout
+            android:id="@+id/menuRightLayout"
+            android:layout_width="@dimen/d60dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:orientation="vertical"
+            android:weightSum="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.5">
+
+                <ListView
+                    android:id="@+id/detialsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="3dp"
+                    android:scrollbars="none" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.5"
+                android:gravity="bottom|center_horizontal">
+
+                <ListView
+                    android:id="@+id/nodesList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="3dp"
+                    android:scrollbars="none" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/menuRightLayout"
+            android:background="#666" />
+
+        <com.lejia.mobile.orderking.widgets.ScrollerGridView
+            android:id="@+id/resGrid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="1dp"
+            android:layout_marginRight="1dp"
+            android:layout_toLeftOf="@id/menuRightLayout"
+            android:numColumns="2"
+            android:scrollbars="none" />
+    </RelativeLayout>
 
 </RelativeLayout>
