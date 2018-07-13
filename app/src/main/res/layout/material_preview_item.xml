@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/materialPreview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="@dimen/d70dp"
+        android:layout_height="@dimen/d70dp"
         android:background="@mipmap/place_img_white"
         android:scaleType="center" />
 

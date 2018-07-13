@@ -90,12 +90,16 @@ public class SignIn {
                             user.setPassowrd(password);
                             ((OrderKingApplication) mContext.getApplicationContext()).setUser(user);
                             // 拉取企业信息对应的数据列表
-                            new EnterPriseNodesList(mContext, user);
+                            new EnterPriseNodesList(mContext, user, new EnterPriseNodesList.OnEnterpriseNodesListCompeletedListener() {
+                                @Override
+                                public void done() {
+                                    // 进入首页
+                                    mContext.startActivity(new Intent(mContext, HK3DDesignerActivity.class));
+                                }
+                            });
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        // 进入首页
-                        mContext.startActivity(new Intent(mContext, HK3DDesignerActivity.class));
                     } else {
                         Toast.makeText(mContext, responseEntity.msg, Toast.LENGTH_SHORT).show();
                         errorMsg();

@@ -3,6 +3,8 @@ package com.lejia.mobile.orderking.bases;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
@@ -113,4 +115,19 @@ public class OrderKingApplication extends Application {
         designer3DSurfaceView.requestRender();
     }
 
+    /**
+     * 根据设备尺寸分辨手机或平板
+     *
+     * @return
+     */
+    public boolean isPad() {
+        DisplayMetrics dm = new DisplayMetrics();
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+        double screenInches = Math.sqrt(x + y);
+        return screenInches >= 7.0d;
+    }
+    
 }

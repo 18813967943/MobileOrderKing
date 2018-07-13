@@ -27,10 +27,12 @@ public class EnterPriseNodesList {
 
     private Context mContext;
     private User user;
+    private OnEnterpriseNodesListCompeletedListener onEnterpriseNodesListCompeletedListener;
 
-    public EnterPriseNodesList(Context context, User user) {
+    public EnterPriseNodesList(Context context, User user, OnEnterpriseNodesListCompeletedListener onEnterpriseNodesListCompeletedListener) {
         this.mContext = context;
         this.user = user;
+        this.onEnterpriseNodesListCompeletedListener = onEnterpriseNodesListCompeletedListener;
         nodesList();
     }
 
@@ -57,6 +59,8 @@ public class EnterPriseNodesList {
                                 materialTypeList.add(nodes);
                             }
                             ((OrderKingApplication) mContext.getApplicationContext()).setMaterialTypeList(materialTypeList, result.toString());
+                            if (onEnterpriseNodesListCompeletedListener != null)
+                                onEnterpriseNodesListCompeletedListener.done();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -68,6 +72,16 @@ public class EnterPriseNodesList {
             public void onReqFailed(String errorMsg) {
             }
         });
+    }
+
+    /**
+     * Author by HEKE
+     *
+     * @time 2018/7/13 9:22
+     * TODO: 回调节点完成状态接口
+     */
+    public interface OnEnterpriseNodesListCompeletedListener {
+        void done();
     }
 
 }

@@ -81,6 +81,7 @@ public class TilesManager {
      * 当前请求页
      */
     private int page = 1;
+    private int pageSize;
 
     /**
      * 当前总资源预览图列表
@@ -94,8 +95,11 @@ public class TilesManager {
         // 主界面底部菜单栏、绘制墙体方式
         titlesView.setOnTitlesStatusListener(onTitlesStatusListener);
         drawStates.setOnClickListener(onClickListener);
-        // 菜单有边框文本标题
         Context context = mActivity.getApplicationContext();
+        // 区分手机与平板
+        boolean isPad = ((OrderKingApplication) context).isPad();
+        pageSize = isPad ? 20 : 10;
+        // 菜单有边框文本标题
         materialTypeList = ((OrderKingApplication) context).materialTypeList;
         materialNodesList = materialTypeList.getMaterialTypeList();
         nodesAdapter = new MatrerialTypesListAdapter(context, materialNodesList);
@@ -110,12 +114,14 @@ public class TilesManager {
         tilesPreviewAdapter = new TilesPreviewAdapter(context, tilesList);
         tilesGrid.setAdapter(tilesPreviewAdapter);
         tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
+        tilesGrid.setOnItemClickListener(onItemClickListener);
         // 加载默认节点材质数据展示
         showPage(0, 1, true);
     }
 
     public TilesManager(Activity activity, TitlesView titlesView, RelativeLayout menuLayout
-            , ListView nodesList, ListView detaileList, ScrollerGridView tilesGrid, ImageView drawStates) {
+            , ListView nodesList, ListView detaileList, ScrollerGridView tilesGrid
+            , ImageView drawStates) {
         this.mActivity = activity;
         this.titlesView = titlesView;
         this.menuLayout = menuLayout;
@@ -217,6 +223,9 @@ public class TilesManager {
             else {
                 detailesNodesList = materialNodesList.get(position).getChildrenList();
                 detailesAdapter.changeList(detailesNodesList);
+                // 加载详细节点第一个数据
+                currentNodeIndex = 0;
+                showPage(currentNodeIndex, 1, true);
             }
         }
     };
@@ -257,7 +266,7 @@ public class TilesManager {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", user.getToken());
         params.put("pageIndex", "" + page);
-        params.put("pageSize", "10");
+        params.put("pageSize", "" + pageSize);
         params.put("materialTypeID", "" + currentLoadNode.getId());
         OkHttpRequest request = OkHttpRequest.getInstance(mActivity.getApplicationContext());
         request.requestAsyn(HttpsConfig.GET_DETAILE_NODE_DATAS, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
@@ -302,6 +311,16 @@ public class TilesManager {
             // 加载下一页数据
             page++;
             showPage(currentNodeIndex, page, false);
+        }
+    };
+
+    /**
+     * 具体材质资源点击
+     */
+    private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
         }
     };
 
