@@ -10,6 +10,7 @@ uniform float l_flags; // 光照使用标志
 in vec3 vPosition; // 顶点
 in vec4 vColor; // 颜色
 in vec3 vNormal; // 法线
+in vec4 vShadowCoord; // 阴影纹理
 
 int vec2 fmap; // 模型或铺砖面材质纹理
 int vec2 smap; // 模型法线贴图材质纹理
