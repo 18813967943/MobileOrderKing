@@ -54,6 +54,11 @@ public class TilesManager {
     private ImageView drawStates;
 
     /**
+     * 三维管理对象
+     */
+    private Designer3DManager designer3DManager;
+
+    /**
      * 绘制状态标记
      */
     private int drawState = DRAW_RECT;
@@ -121,7 +126,7 @@ public class TilesManager {
 
     public TilesManager(Activity activity, TitlesView titlesView, RelativeLayout menuLayout
             , ListView nodesList, ListView detaileList, ScrollerGridView tilesGrid
-            , ImageView drawStates) {
+            , ImageView drawStates, Designer3DManager designer3DManager) {
         this.mActivity = activity;
         this.titlesView = titlesView;
         this.menuLayout = menuLayout;
@@ -129,6 +134,7 @@ public class TilesManager {
         this.detaileList = detaileList;
         this.tilesGrid = tilesGrid;
         this.drawStates = drawStates;
+        this.designer3DManager = designer3DManager;
         init();
     }
 

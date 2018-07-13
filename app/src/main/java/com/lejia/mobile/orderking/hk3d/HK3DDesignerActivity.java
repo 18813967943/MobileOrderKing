@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
@@ -58,12 +59,18 @@ public class HK3DDesignerActivity extends Activity {
     RelativeLayout rightLayout;
 
     /**
+     * 三维管理对象
+     */
+    private Designer3DManager designer3DManager;
+
+    /**
      * 材质管理对象
      */
     private TilesManager tilesManager;
 
     private void initViews() {
-        tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates);
+        designer3DManager = new Designer3DManager(this, designer3dLayout);
+        tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
     }
 
     @Override
@@ -76,6 +83,11 @@ public class HK3DDesignerActivity extends Activity {
         initViews();
         // 打开权限申请
         startActivityForResult(new Intent(this, PermissionsActivity.class), -1);
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     @OnClick({R.id.getback, R.id.forward, R.id.jingzhun, R.id.zhouce, R.id.threed, R.id.more, R.id.drawStates})

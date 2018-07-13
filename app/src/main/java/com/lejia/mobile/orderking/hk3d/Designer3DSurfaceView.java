@@ -32,15 +32,14 @@ public class Designer3DSurfaceView extends GLSurfaceView {
             }
             setEGLConfigChooser(8, 8, 8, 8, 16, 0);
             setZOrderMediaOverlay(true);
-            getHolder().setFormat(PixelFormat.TRANSPARENT);
+            getHolder().setFormat(PixelFormat.TRANSLUCENT);
             designer3DRender = new Designer3DRender(getContext(), onRenderStatesListener);
             setRenderer(designer3DRender);
             setRenderMode(RENDERMODE_WHEN_DIRTY);
             // 绑定刷新机制
             OrderKingApplication application = (OrderKingApplication) getContext().getApplicationContext();
-            if (application != null) {
+            if (application != null)
                 application.setDesigner3DSurfaceView(this);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

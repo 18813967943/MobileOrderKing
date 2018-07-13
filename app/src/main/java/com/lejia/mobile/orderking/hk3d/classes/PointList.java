@@ -383,6 +383,20 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 逆时针围点列表
+     */
+    public ArrayList<Point> antiClockwise() {
+        if (invalid())
+            return null;
+        ArrayList<Point> antiClockwiseList = new ArrayList<>();
+        ArrayList<Point> clockwiseList = fixToLeftTopPointsList();
+        for (Point point : clockwiseList) {
+            antiClockwiseList.add(point.copy());
+        }
+        return antiClockwiseList;
+    }
+
+    /**
      * 盒子转列表
      *
      * @param box
