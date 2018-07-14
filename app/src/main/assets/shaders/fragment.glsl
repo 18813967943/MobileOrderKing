@@ -1,72 +1,51 @@
+#version 300 es
 precision mediump float;
-uniform vec3 uLightPos; // 灯光位置
-uniform sampler2D uShadowTexture; // 阴影纹理材质
-
-uniform sampler2D s_baseMap; // 贴图编号
-uniform float s_flags; // 颜色使用标志
-uniform float n_flags; // 法线贴图标志
-uniform float l_flags; // 光照使用标志
-
 in vec3 vPosition; // 顶点
 in vec4 vColor; // 颜色
 in vec3 vNormal; // 法线
 in vec4 vShadowCoord; // 阴影纹理
-
-int vec2 fmap; // 模型或铺砖面材质纹理
-int vec2 smap; // 模型法线贴图材质纹理
-
-out vec4 outColor; // 总输出效果结果
-
-// 基础阴影
-float shadowSimple()
+in vec2 uv0;
+in vec2 uv1;
+in vec3 uLightPos; // 灯光位置
+uniform sampler2D uShadowTexture; // 阴影纹理通道编号
+uniform sampler2D s_baseMap; // 正常模型或面的材质纹理通道编号
+uniform float s_flags; // 颜色使用标志
+uniform float n_flags; // 法线贴图标志
+uniform float l_flags; // 光照使用标志
+out vec4 outColor;
+void main()
 {
-	vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
-	float distanceFromLight = texture2D(uShadowTexture, shadowMapPosition.st).z;
-	//add bias to reduce shadow acne (error margin)
-	float bias = 0.0005;
-	//1.0 = not in shadow (fragmant is closer to light than the value stored in shadow map)
-	//0.0 = in shadow
-	return float(distanceFromLight > shadowMapPosition.z - bias);
-}
-
-void main(){
-     // 仅使用颜色着色
-     bool needColor = (s_flags==1.0);
-     bool hasLight = (l_flags==1.0);
+     bool needColor = (s_flags==1.0); // 是否只需要颜色填充
+     bool hasLight = (l_flags==1.0); // 是否开启即时光影
+     bool hasNormalMap = (n_flags==1.0); // 是否包含法线贴图
      if(needColor){
-        outColor = vColor;
+         outColor = vColor;
+     }else{
+         outColor = texture(s_baseMap, uv0);
+         if(hasNormalMap){
+            vec4 normalMap = texture(s_baseMap, uv1);
+            outColor = outColor*normalMap + outColor*0.2;
+         }
+         if(hasLight){
+            // 灯光至点的单位向量
+            vec3 lightVec = uLightPos - vPosition;
+            lightVec = normalize(lightVec);
+            // 镜面光环境光
+            float diffuseComponent = max(0.0,dot(lightVec, vNormal) );
+            float ambientComponent = 0.3;
+            // 阴影处理
+            float shadow = 1.0;
+            if(vShadowCoord.w > 0.0){
+               vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
+               float distanceFromLight = texture(uShadowTexture, shadowMapPosition.st).z;
+               float bias = 0.0005;
+               //1.0 = not in shadow (fragmant is closer to light than the value stored in shadow map)
+               //0.0 = in shadow
+               shadow = float(distanceFromLight > shadowMapPosition.z - bias);
+               shadow = (shadow * 0.8) + 0.2;
+            }
+            // 返回即时光影效果
+            outColor = (outColor * (diffuseComponent + ambientComponent) * shadow);
+         }
      }
-     // 使用贴图着色
-     else{
-        // 计算贴图材质
-        vec4 tempOutColor = texture(s_baseMap, fmap);
-        bool needUV1 = (n_flags==1.0);
-        if(needUV1){
-          	vec4 normalMap = texture(s_baseMap, smap);
-          	tempOutColor = tempOutColor*normalMap + tempOutColor*0.2;
-        }
-        // 使用光线着色
-        if(hasLight){
-           // 光线单位向量
-           vec3 lightVec = uLightPos - vPosition;
-           lightVec = normalize(lightVec);
-           // 镜面光、环境光着色
-           float diffuseComponent = max(0.0,dot(lightVec, vNormal) );
-           float ambientComponent = 0.3;
-           // 阴影数值控制标志
-           float shadow = 1.0;
-           if (vShadowCoord.w > 0.0) {
-                shadow = shadowSimple();
-                //scale 0.0-1.0 to 0.2-1.0
-                //otherways everything in shadow would be black
-                shadow = (shadow * 0.8) + 0.2;
-           }
-           // 输出光栅化结果
-           outColor = (tempOutColor * (diffuseComponent + ambientComponent) * shadow);
-        }
-        // 不使用光线着色，返回正常贴图
-        else{
-           outColor = tempOutColor;
-        }
-    }
 }
