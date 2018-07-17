@@ -16,6 +16,9 @@ public abstract class House {
 
     private Context mContext;
 
+    // 房间是否闭合
+    public boolean isWallClosed;
+
     /**
      * 墙中点列表
      */
@@ -49,5 +52,15 @@ public abstract class House {
     public Context getContext() {
         return mContext;
     }
+
+    /**
+     * 渲染数据
+     *
+     * @param positionAttribute
+     * @param normalAttribute
+     * @param colorAttribute
+     * @param onlyPosition
+     */
+    public abstract void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition);
 
 }

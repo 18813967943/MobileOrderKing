@@ -10,6 +10,7 @@ import android.util.Log;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
+import com.lejia.mobile.orderking.hk3d.datas.House;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
 
@@ -218,9 +219,15 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         System.arraycopy(tempResultMatrix, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0, 16);
         // Pass in the combined matrix.
         GLES30.glUniformMatrix4fv(ViewingShader.shadow_mvpMatrixUniform, 1, false, LightMatrixs.mLightMvpMatrix_staticShapes, 0);
+
         // Render all stationary shapes on scene
         if (houseDatasManager != null) {
-
+            ArrayList<House> housesList = houseDatasManager.getHousesList();
+            if (housesList != null && housesList.size() > 0) {
+                for (House house : housesList) {
+                    house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+                }
+            }
         }
     }
 
@@ -283,7 +290,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
         // draw all views
         if (houseDatasManager != null) {
-
+            ArrayList<House> housesList = houseDatasManager.getHousesList();
+            if (housesList != null && housesList.size() > 0) {
+                for (House house : housesList) {
+                    house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute, ViewingShader.scene_colorAttribute, false);
+                }
+            }
         }
     }
 

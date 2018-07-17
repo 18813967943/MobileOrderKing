@@ -19,31 +19,6 @@ public class RectDHouse extends House {
     private Point down; // 按下点
     private Point up; // 弹起点
 
-    /**
-     * 墙中点列表
-     */
-    private PointList centerPointList;
-
-    /**
-     * 墙内点列表
-     */
-    private PointList innerPointList;
-
-    /**
-     * 墙外点列表
-     */
-    private PointList outerPointList;
-
-    /**
-     * 渲染墙体对象
-     */
-    private ArrayList<Wall> wallsList;
-
-    /**
-     * 渲染地面对象
-     */
-    private Ground ground;
-
     public RectDHouse(Context context) {
         super(context);
     }
@@ -136,6 +111,15 @@ public class RectDHouse extends House {
             Wall wall = new Wall(pointsList);
             wallsList.add(wall);
         }
+        ground = new Ground(innerPointList);
+    }
+
+    @Override
+    public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        for (Wall wall : wallsList) {
+            wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+        }
+        // ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
     }
 
 }

@@ -43,7 +43,7 @@ public class ViewingShader {
         scene_schadowProjMatrixUniform = GLES30.glGetUniformLocation(mProgram, "uShadowProjMatrix");
         scene_textureUniform = GLES30.glGetUniformLocation(mProgram, "uShadowTexture");
         scene_s_baseMap = GLES30.glGetUniformLocation(mProgram, "s_baseMap");
-        scene_lightPosUniform = GLES30.glGetAttribLocation(mProgram, "a_LightPos");
+        scene_lightPosUniform = GLES30.glGetUniformLocation(mProgram, "uLightPos");
         scene_positionAttribute = GLES30.glGetAttribLocation(mProgram, "aPosition");
         scene_normalAttribute = GLES30.glGetAttribLocation(mProgram, "aNormal");
         scene_colorAttribute = GLES30.glGetAttribLocation(mProgram, "aColor");

@@ -6,7 +6,7 @@ in vec3 vNormal; // 法线
 in vec4 vShadowCoord; // 阴影纹理
 in vec2 uv0;
 in vec2 uv1;
-in vec3 uLightPos; // 灯光位置
+uniform vec3 uLightPos; // 灯光位置
 uniform sampler2D uShadowTexture; // 阴影纹理通道编号
 uniform sampler2D s_baseMap; // 正常模型或面的材质纹理通道编号
 uniform float s_flags; // 颜色使用标志

@@ -312,6 +312,37 @@ public class LJ3DPoint implements Parcelable {
         return Math.sqrt(Math.abs(sub.dotProduct(sub)));
     }
 
+    /**
+     * 获取三角面法向量
+     */
+    public static LJ3DPoint spaceNormal(double p1x, double p1y, double p1z, double p2x, double p2y
+            , double p2z, double p3x, double p3y, double p3z) {
+        return spaceNormal(new LJ3DPoint(p1x, p1y, p1z), new LJ3DPoint(p2x, p2y, p2z), new LJ3DPoint(p3x, p3y, p3z));
+    }
+
+    /**
+     * 获取三角面法向量
+     *
+     * @param p1
+     * @param p2
+     * @param p3
+     * @return
+     */
+    public static LJ3DPoint spaceNormal(LJ3DPoint p1, LJ3DPoint p2, LJ3DPoint p3) {
+        if (p1 == null || p2 == null || p3 == null)
+            return null;
+        LJ3DPoint normal = null;
+        try {
+            double x = (p2.y - p1.y) * (p3.z - p1.z) - (p2.z - p1.z) * (p3.y - p1.y);
+            double y = ((p2.z - p1.z) * (p3.x - p1.x) - (p2.x - p1.x) * (p3.z - p1.z));
+            double z = ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x));
+            normal = LJ3DPoint.normalize(new LJ3DPoint(x, y, z));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return normal;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof LJ3DPoint))

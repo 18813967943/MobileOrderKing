@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  */
 public class Point implements Parcelable {
 
-    public static final int defaultDecimalPlaces = 5;
+    public static final int defaultDecimalPlaces = 4;
 
     public double x;
     public double y;
@@ -83,6 +83,11 @@ public class Point implements Parcelable {
         double poorY = Math.abs(target.y - y);
         double result = Math.sqrt(poorX * poorX + poorY * poorY);
         return percision(result, 8);
+    }
+
+    // 转三维点
+    public LJ3DPoint toLJ3DPoint() {
+        return new LJ3DPoint(x, y, 0.0d);
     }
 
     @Override
