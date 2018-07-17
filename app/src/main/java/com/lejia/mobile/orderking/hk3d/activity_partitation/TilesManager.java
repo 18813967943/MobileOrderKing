@@ -120,6 +120,7 @@ public class TilesManager {
         tilesGrid.setAdapter(tilesPreviewAdapter);
         tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
         tilesGrid.setOnItemClickListener(onItemClickListener);
+        tilesGrid.setSelector(R.drawable.grid_selector);
         // 加载默认节点材质数据展示
         showPage(0, 1, true);
     }
@@ -326,7 +327,7 @@ public class TilesManager {
     private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+            System.out.println("##### position : " + position + "  code : " + tilesList.get(position).getMaterialCode());
         }
     };
 

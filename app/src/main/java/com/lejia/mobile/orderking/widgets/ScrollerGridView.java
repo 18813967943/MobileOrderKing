@@ -67,7 +67,7 @@ public class ScrollerGridView extends GridView {
                     tDown.x = dx;
                     tDown.y = dy;
                 }
-                return true;
+                break;
             case MotionEvent.ACTION_UP:
                 float ux = event.getX();
                 float uy = event.getY();

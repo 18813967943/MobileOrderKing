@@ -9,9 +9,9 @@
     <ImageView
         android:id="@+id/materialPreview"
         android:layout_width="@dimen/d70dp"
-        android:layout_height="@dimen/d70dp"
+        android:layout_height="@dimen/d60dp"
         android:background="@mipmap/place_img_white"
-        android:scaleType="center" />
+        android:scaleType="matrix" />
 
     <TextView
         android:id="@+id/materialName"

@@ -8,7 +8,7 @@ import com.lejia.mobile.orderking.hk3d.Designer3DRender;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
-import com.lejia.mobile.orderking.hk3d.datas.RectDHouse;
+import com.lejia.mobile.orderking.hk3d.datas.RectHouse;
 
 /**
  * Author by HEKE
@@ -68,12 +68,12 @@ public class TouchManager {
      * ***********************************************/
 
     private Point rectDown; // 按下点
-    private RectDHouse rectDHouse; // 矩形房间
+    private RectHouse rectDHouse; // 矩形房间
 
     private void drawRectHouse(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                rectDHouse = new RectDHouse(mContext);
+                rectDHouse = new RectHouse(mContext);
                 rectDown = new Point(event.getX(), event.getY());
                 LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY());
                 rectDHouse.setDown(new Point(touchDown.x, touchDown.y));

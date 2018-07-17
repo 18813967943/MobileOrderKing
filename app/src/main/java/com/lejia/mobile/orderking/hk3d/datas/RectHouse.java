@@ -14,12 +14,12 @@ import java.util.ArrayList;
  * @time 2018/7/16 12:05
  * TODO:  矩形画房间
  */
-public class RectDHouse extends House {
+public class RectHouse extends House {
 
     private Point down; // 按下点
     private Point up; // 弹起点
 
-    public RectDHouse(Context context) {
+    public RectHouse(Context context) {
         super(context);
     }
 
@@ -116,8 +116,12 @@ public class RectDHouse extends House {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        for (Wall wall : wallsList) {
-            wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+        try {
+            for (Wall wall : wallsList) {
+                wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         // ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
     }

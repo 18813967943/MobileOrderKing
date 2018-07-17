@@ -119,9 +119,19 @@ public class HK3DDesignerActivity extends Activity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (touchManager == null)
-            touchManager = new TouchManager(this, tilesManager, designer3DManager);
-        return touchManager.onTouchEvent(event);
+        // 底部栏触摸照旧
+        float y = event.getY();
+        float bottomBarHeight = getResources().getDimension(R.dimen.main_bottom_height);
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        if (y >= (screenHeight - bottomBarHeight)) {
+            return super.onTouchEvent(event);
+        }
+        // 三维控件触摸处理
+        else {
+            if (touchManager == null)
+                touchManager = new TouchManager(this, tilesManager, designer3DManager);
+            return touchManager.onTouchEvent(event);
+        }
     }
 
 }
