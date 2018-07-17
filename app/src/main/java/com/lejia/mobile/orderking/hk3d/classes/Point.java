@@ -61,6 +61,20 @@ public class Point implements Parcelable {
         return copy;
     }
 
+    // 设置原始坐标数值
+    public void setXY(double x, double y) {
+        this.x = percision(x, defaultDecimalPlaces);
+        this.y = percision(y, defaultDecimalPlaces);
+    }
+
+    // 获取两点之间的距离
+    public double dist(double x, double y) {
+        double poorX = Math.abs(this.x - x);
+        double poorY = Math.abs(this.y - y);
+        double result = Math.sqrt(poorX * poorX + poorY * poorY);
+        return percision(result, 8);
+    }
+
     // 获取两点之间的距离
     public double dist(Point target) {
         if (target == null)

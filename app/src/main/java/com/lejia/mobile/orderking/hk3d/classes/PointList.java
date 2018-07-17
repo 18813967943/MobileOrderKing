@@ -88,6 +88,17 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 获取指定下标的点
+     */
+    public Point getIndexAt(int index) {
+        if (invalid())
+            return null;
+        if (index < 0 || index >= size())
+            return null;
+        return pointsList.get(index);
+    }
+
+    /**
      * 转化为gpc点列表
      */
     public ArrayList<Point2D> toPoint2DList() {
@@ -390,7 +401,8 @@ public class PointList implements Parcelable {
             return null;
         ArrayList<Point> antiClockwiseList = new ArrayList<>();
         ArrayList<Point> clockwiseList = fixToLeftTopPointsList();
-        for (Point point : clockwiseList) {
+        for (int i = clockwiseList.size() - 1; i > -1; i--) {
+            Point point = clockwiseList.get(i);
             antiClockwiseList.add(point.copy());
         }
         return antiClockwiseList;
@@ -564,6 +576,107 @@ public class PointList implements Parcelable {
                 result = null;
         }
         return result;
+    }
+
+    /**
+     * 内外点偏置
+     *
+     * @param outer      内外偏置标志
+     * @param offset     偏置距离
+     * @param pointsList
+     * @return 返回内外偏置结果集合列表
+     */
+    public static ArrayList<Point> offsetList(boolean outer, double offset, ArrayList<Point> pointsList) {
+        PointList pointList = new PointList(pointsList);
+        if (pointList.invalid())
+            return null;
+        return pointList.offsetList(outer, offset);
+    }
+
+    /**
+     * 内外点偏置
+     *
+     * @param outer  内外偏置标志
+     * @param offset 偏置距离
+     * @return 返回内外偏置结果集合列表
+     */
+    public ArrayList<Point> offsetList(boolean outer, double offset) {
+        if (invalid())
+            return null;
+        ArrayList<Point> offsetPointsList = new ArrayList<>();
+        try {
+            // 组成线段
+            ArrayList<Line> linesList = toLineList();
+            if (linesList == null)
+                return null;
+            // 遍历获取线段垂直线段偏置距离两点
+            double xlong = 2 * offset;
+            ArrayList<ArrayList<Point>> linesElpsList = new ArrayList<>();
+            for (int i = 0; i < linesList.size(); i++) {
+                Line line = linesList.get(i);
+                double angle = line.getAngle() + 90d;
+                Point center = line.getCenter();
+                ArrayList<Point> elpsList = PointList.getRotateLEPS(angle, xlong, center);
+                linesElpsList.add(elpsList);
+            }
+            // 根据里外获取点
+            ArrayList<Point> usePointsList = new ArrayList<>();
+            for (int i = 0; i < linesElpsList.size(); i++) {
+                ArrayList<Point> elpsList = linesElpsList.get(i);
+                Point p0 = elpsList.get(0);
+                Point p1 = elpsList.get(1);
+                boolean p0Inner = pointRelationToPolygon(pointsList, p0) == 1;
+                if (outer) {
+                    if (p0Inner) {
+                        usePointsList.add(p1);
+                    } else {
+                        usePointsList.add(p0);
+                    }
+                } else {
+                    if (p0Inner) {
+                        usePointsList.add(p0);
+                    } else {
+                        usePointsList.add(p1);
+                    }
+                }
+            }
+            // 根据点做线段
+            ArrayList<Line> useLinesList = new ArrayList<>();
+            for (int i = 0; i < usePointsList.size(); i++) {
+                Point p = usePointsList.get(i);
+                Line line = linesList.get(i);
+                ArrayList<Point> elpsList = PointList.getRotateLEPS(line.getAngle(), (6 * line.getLength()), p);
+                useLinesList.add(new Line(elpsList.get(0), elpsList.get(1)));
+            }
+            // 依次计算相交点
+            Point lasterIntersectedPoint = null;
+            ArrayList<Point> newPointsList = new ArrayList<>();
+            for (int i = 0; i < useLinesList.size(); i++) {
+                Line now = useLinesList.get(i);
+                Line next = null;
+                if (i == useLinesList.size() - 1) {
+                    next = useLinesList.get(0);
+                    lasterIntersectedPoint = now.getLineIntersectedPoint(next);
+                } else {
+                    next = useLinesList.get(i + 1);
+                    Point intersected = now.getLineIntersectedPoint(next);
+                    newPointsList.add(intersected);
+                }
+            }
+            // 组合围点
+            offsetPointsList.add(lasterIntersectedPoint.copy());
+            for (int i = 0; i < newPointsList.size(); i++) {
+                offsetPointsList.add(newPointsList.get(i).copy());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 无效
+            if (offsetPointsList.size() == 0) {
+                offsetPointsList = null;
+            }
+        }
+        return offsetPointsList;
     }
 
     @Override

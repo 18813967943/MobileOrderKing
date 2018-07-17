@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -16,6 +17,7 @@ import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
 
@@ -68,6 +70,11 @@ public class HK3DDesignerActivity extends Activity {
      */
     private TilesManager tilesManager;
 
+    /**
+     * 触摸管理对象
+     */
+    private TouchManager touchManager;
+
     private void initViews() {
         designer3DManager = new Designer3DManager(this, designer3dLayout);
         tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
@@ -108,6 +115,13 @@ public class HK3DDesignerActivity extends Activity {
             case R.id.drawStates:
                 break;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (touchManager == null)
+            touchManager = new TouchManager(this, tilesManager, designer3DManager);
+        return touchManager.onTouchEvent(event);
     }
 
 }

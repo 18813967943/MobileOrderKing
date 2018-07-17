@@ -56,6 +56,16 @@ public class ViewingShader {
 
     /**
      * FBO 深度着色器
-     * */
+     */
+    public static int shadowProgram; // 阴影着色器编号
+    public static int shadow_mvpMatrixUniform; // 阴影总矩阵
+    public static int shadow_positionAttribute; // 阴影顶点
+
+    public static void loadShadowShader(Context context) {
+        shadowProgram = ESShader.loadProgramFromAsset(context, "shaders/shadow_vertex.glsl",
+                "shaders/shadow_frag.glsl");
+        shadow_mvpMatrixUniform = GLES30.glGetUniformLocation(shadowProgram, "uMVPMatrix");
+        shadow_positionAttribute = GLES30.glGetAttribLocation(shadowProgram, "aShadowPosition");
+    }
 
 }

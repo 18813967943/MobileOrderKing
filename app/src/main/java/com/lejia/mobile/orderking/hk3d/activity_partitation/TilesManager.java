@@ -39,11 +39,11 @@ import java.util.HashMap;
 public class TilesManager {
 
     // 矩形画墙
-    private static final int DRAW_RECT = 0;
+    public static final int DRAW_RECT = 0;
     // 普通画墙
-    private static final int DRAW_NORMAL = 1;
+    public static final int DRAW_NORMAL = 1;
     // 线建墙
-    private static final int DRAW_LINE_BUILD = 2;
+    public static final int DRAW_LINE_BUILD = 2;
 
     private Activity mActivity;
     private TitlesView titlesView;
