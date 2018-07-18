@@ -9,7 +9,6 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 

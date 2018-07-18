@@ -23,8 +23,12 @@ public class Wall extends RendererObject {
     private float[] colors; // 墙体颜色
     private FloatBuffer colorsBuffer; // 颜色字节缓存
     private ArrayList<Point> pointsList; // 围点
+    private boolean invalid; // 无效的
 
     public void initDatas() {
+        invalid = (pointsList == null || pointsList.size() == 0);
+        if (invalid)
+            return;
         indices = new int[]{0, 1, 2, 0, 2, 3};
         vertexs = new float[3 * indices.length];
         colors = new float[4 * indices.length];
@@ -61,6 +65,9 @@ public class Wall extends RendererObject {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        // invalid
+        if (invalid)
+            return;
         // Pass in the position information
         vertexsBuffer.position(0);
         GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 0, vertexsBuffer);

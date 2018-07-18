@@ -93,6 +93,7 @@ public class MenuBar implements BarInterface {
             }
         });
         this.mAdapter = new MenuBarAdapter(mContext.getApplicationContext(), items);
+        this.bar.setSelector(R.drawable.grid_selector);
         this.bar.setAdapter(mAdapter);
     }
 

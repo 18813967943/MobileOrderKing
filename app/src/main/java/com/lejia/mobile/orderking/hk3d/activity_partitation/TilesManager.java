@@ -197,6 +197,15 @@ public class TilesManager {
         }
     };
 
+    // 设置资源菜单栏是否显示
+    public void setTilesMenuLayoutShowFromNewCreate(boolean visiable) {
+        menuLayout.setVisibility(visiable ? View.VISIBLE : View.GONE);
+        if (!visiable) {
+            titlesView.setPosition(-1);
+            drawState = DRAW_RECT;
+        }
+    }
+
     // 画墙状态切换监听接口
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override

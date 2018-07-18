@@ -68,30 +68,32 @@ public class TouchManager {
      * ***********************************************/
 
     private Point rectDown; // 按下点
-    private RectHouse rectDHouse; // 矩形房间
+    private RectHouse rectHouse; // 矩形房间
 
     private void drawRectHouse(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                rectDHouse = new RectHouse(mContext);
+                rectHouse = new RectHouse(mContext);
                 rectDown = new Point(event.getX(), event.getY());
                 LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY());
-                rectDHouse.setDown(new Point(touchDown.x, touchDown.y));
-                houseDatasManager.checkThenAdd(rectDHouse);
+                rectHouse.setDown(new Point(touchDown.x, touchDown.y));
+                houseDatasManager.add(rectHouse);
                 break;
             case MotionEvent.ACTION_MOVE:
-                float mx = event.getX();
-                float my = event.getY();
-                double dist = rectDown.dist(mx, my);
-                if (dist >= 24) {
-                    LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(mx, my);
-                    rectDHouse.setUp(touchMove.x, touchMove.y);
-                    rectDown.x = mx;
-                    rectDown.y = my;
+                if (rectDown != null) {
+                    float mx = event.getX();
+                    float my = event.getY();
+                    double dist = rectDown.dist(mx, my);
+                    if (dist >= 24) {
+                        LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(mx, my);
+                        rectHouse.setUp(touchMove.x, touchMove.y);
+                        rectDown.x = mx;
+                        rectDown.y = my;
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-
+                houseDatasManager.gpcClosedCheck(rectHouse);
                 break;
         }
     }

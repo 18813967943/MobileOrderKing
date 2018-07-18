@@ -140,11 +140,13 @@ public class TitlesView extends View {
      * @param position
      */
     public void setPosition(int position) {
+        int beforePosition = this.position;
         this.position = position;
-        if (this.position == -1)
-            return;
         if (onTitlesStatusListener != null) {
-            onTitlesStatusListener.onItemTitleClick(position, titles[position], false);
+            if (beforePosition != -1)
+                onTitlesStatusListener.onSelectedCancle(beforePosition, titles[beforePosition]);
+            if (this.position != -1)
+                onTitlesStatusListener.onItemTitleClick(this.position, titles[position], false);
         }
         invalidate();
     }

@@ -13,10 +13,18 @@
     <string name="input_twice_error">两次输入密码不一致!</string>
     <string name="sign_up_error">注册失败!</string>
     <string name="sign_in_error">登入失败!</string>
+    <string name="house_overlap">房间重合，操作无效!</string>
     <string-array name="main2d_bottom_titles">
         <item>房间</item>
         <item>门窗</item>
         <item>铺砖</item>
         <item>布置</item>
+    </string-array>
+    <string-array name="menu_titles">
+        <item>新建</item>
+        <item>打开</item>
+        <item>保存</item>
+        <item>另存</item>
+        <item>量尺</item>
     </string-array>
 </resources>

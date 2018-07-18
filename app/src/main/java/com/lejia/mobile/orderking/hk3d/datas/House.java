@@ -2,7 +2,12 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.content.Context;
 
+import com.lejia.mobile.orderking.hk3d.classes.HouseIntersectedResult;
+import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
+import com.lejia.mobile.orderking.hk3d.classes.PolyE;
+import com.seisw.util.geom.Poly;
+import com.seisw.util.geom.PolyDefault;
 
 import java.util.ArrayList;
 
@@ -18,6 +23,9 @@ public abstract class House {
 
     // 房间是否闭合
     public boolean isWallClosed;
+
+    // 房间是否与其他房间重叠
+    public boolean isOverlap;
 
     /**
      * 墙中点列表
@@ -49,18 +57,130 @@ public abstract class House {
         this.wallsList = new ArrayList<>();
     }
 
+    /**
+     * 根据已知的区域组合生成房间的构造函数
+     *
+     * @param context
+     * @param center_pointList 墙中点列表
+     * @param thickness        所有墙体通用厚度
+     */
+    public House(Context context, PointList center_pointList, int thickness) {
+        this.mContext = context;
+        this.wallsList = new ArrayList<>();
+        this.isWallClosed = true;
+        loadDatas(center_pointList, thickness);
+    }
+
+    /**
+     * 指定房间围点加载
+     *
+     * @param center_pointList
+     * @param thickness
+     */
+    private void loadDatas(PointList center_pointList, int thickness) {
+        if (center_pointList == null || center_pointList.invalid())
+            return;
+        int halfThickness = thickness / 2;
+        centerPointList = new PointList(center_pointList.copy());
+        innerPointList = new PointList(centerPointList.offsetList(false, halfThickness));
+        outerPointList = new PointList(centerPointList.offsetList(true, halfThickness));
+        createRenderer();
+    }
+
     public Context getContext() {
         return mContext;
     }
 
     /**
-     * 渲染数据
+     * TODO 渲染数据
      *
      * @param positionAttribute
      * @param normalAttribute
      * @param colorAttribute
      * @param onlyPosition
      */
-    public abstract void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition);
+    public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        try {
+            for (Wall wall : wallsList) {
+                wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
+            if (ground != null) {
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * TODO 创建绘制对象
+     */
+    public void createRenderer() {
+        wallsList.clear();
+        int size = innerPointList.size();
+        for (int i = 0; i < size; i++) {
+            Point inow = innerPointList.getIndexAt(i);
+            Point onow = outerPointList.getIndexAt(i);
+            Point inext = null;
+            Point onext = null;
+            if (i == size - 1) {
+                inext = innerPointList.getIndexAt(0);
+                onext = outerPointList.getIndexAt(0);
+            } else {
+                inext = innerPointList.getIndexAt(i + 1);
+                onext = outerPointList.getIndexAt(i + 1);
+            }
+            ArrayList<Point> pointsList = new ArrayList<>();
+            pointsList.add(onow);
+            pointsList.add(onext);
+            pointsList.add(inext);
+            pointsList.add(inow);
+            PointList pointList = new PointList(pointsList);
+            pointsList = pointList.antiClockwise();
+            if (pointsList != null && pointsList.size() > 0) {
+                Wall wall = new Wall(pointsList);
+                wallsList.add(wall);
+            }
+        }
+        ground = new Ground(innerPointList);
+    }
+
+    /**
+     * 判断是否相交
+     *
+     * @param house
+     * @return 相交结果对象
+     */
+    public HouseIntersectedResult getHouseIntersetedResult(House house) {
+        if (house == null || house.equals(this))
+            return null;
+        if (house.centerPointList == null || centerPointList == null)
+            return null;
+        try {
+            // 重叠
+            if (house.centerPointList.equals(centerPointList)) {
+                isOverlap = true;
+                return new HouseIntersectedResult(0, null, null);
+            }
+            // 自身区域
+            PolyDefault selfPoly = PolyE.toPolyDefault(centerPointList);
+            // 被检测房间区域
+            PolyDefault checkPoly = PolyE.toPolyDefault(house.centerPointList);
+            // 获取相交情况
+            Poly poly = selfPoly.intersection(checkPoly);
+            if (poly != null && !poly.isEmpty()) {
+                ArrayList<PointList> pointListsList = new ArrayList<>();
+                for (int i = 0; i < poly.getNumInnerPoly(); i++) {
+                    Poly item = poly.getInnerPoly(i);
+                    PointList pointList = PolyE.toPointList(item);
+                    pointListsList.add(pointList);
+                }
+                return new HouseIntersectedResult(1, pointListsList, house);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

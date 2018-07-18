@@ -16,6 +16,7 @@ import android.widget.RelativeLayout;
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.MoreManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
@@ -75,6 +76,11 @@ public class HK3DDesignerActivity extends Activity {
      */
     private TouchManager touchManager;
 
+    /**
+     * 更多菜单栏操作
+     */
+    private MoreManager moreManager;
+
     private void initViews() {
         designer3DManager = new Designer3DManager(this, designer3dLayout);
         tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
@@ -111,6 +117,9 @@ public class HK3DDesignerActivity extends Activity {
             case R.id.threed:
                 break;
             case R.id.more:
+                if (moreManager == null)
+                    moreManager = new MoreManager(HK3DDesignerActivity.this, tilesManager, designer3DManager);
+                moreManager.autoShowOrHide();
                 break;
             case R.id.drawStates:
                 break;
