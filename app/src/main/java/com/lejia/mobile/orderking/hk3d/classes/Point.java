@@ -36,6 +36,14 @@ public class Point implements Parcelable {
     }
 
     /**
+     * 使用默认保留小数位长度的构造函数，默认小数位数为5
+     */
+    public Point(double x, double y, boolean copy) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
      * 指定小数位长度的构造函数
      */
     public Point(double x, double y, int decimalPlaces) {
@@ -123,7 +131,7 @@ public class Point implements Parcelable {
             return true;
         } else {
             double dist = dist(other);
-            if (dist <= 0.1d)
+            if (dist <= 0.5d)
                 return true;
         }
         return super.equals(obj);

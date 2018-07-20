@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.classes;
 import com.lejia.mobile.orderking.hk3d.datas.House;
 import com.seisw.util.geom.Poly;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,6 +22,13 @@ public class PolyM {
      * 当前所有组合区域结果列表
      */
     private static HashMap<Integer, Poly> poliesMap = new HashMap<>();
+
+    /**
+     * 数量大小
+     */
+    public static int size() {
+        return poliesMap.size();
+    }
 
     /**
      * 判断两个组合区域是否相同
@@ -71,9 +79,56 @@ public class PolyM {
      * @return 返回该组合区域的下标位置
      */
     public static void put(int index, Poly poly) {
-        if (poly == null)
+        if (poly == null || poly.isEmpty())
             return;
-        poliesMap.put(index, poly);
+        if (poliesMap.size() > 0) {
+            // 检测所有合并
+            boolean unioned = false;
+            ArrayList<PolyUnionResult> polyUnionResultList = new ArrayList<>();
+            Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Poly> entry = iterator.next();
+                Poly poly1 = entry.getValue();
+                Poly unionPoly = poly.union(poly1);
+                if (unionPoly != null && !unionPoly.isEmpty() && unionPoly.getNumInnerPoly() == 1) {
+                    unioned = true;
+                    polyUnionResultList.add(new PolyUnionResult(entry, unionPoly));
+                }
+            }
+            // 非联合，加入
+            if (!unioned) {
+                poliesMap.put(index, poly);
+            } else {
+                // 组合区域处理
+                reduceIndex();
+                // 遍历重新组合
+                Poly resultPoly = null;
+                int[] removeIndexs = new int[polyUnionResultList.size()];
+                int count = 0;
+                for (PolyUnionResult result : polyUnionResultList) {
+                    removeIndexs[count] = result.entry.getKey();
+                    if (resultPoly == null) {
+                        resultPoly = PolyE.filtrationPoly(poly.union(result.entry.getValue()));
+                    } else {
+                        resultPoly = PolyE.filtrationPoly(resultPoly.union(result.entry.getValue()));
+                    }
+                    count++;
+                    result.release();
+                }
+                removePolies(removeIndexs);
+                poliesMap.put(removeIndexs[0], PolyE.filtrationPoly(resultPoly));
+            }
+        } else {
+            poliesMap.put(index, poly);
+        }
+        // 打印测试结果
+        if (poliesMap.size() > 0) {
+            Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Poly> entry = iterator.next();
+                System.out.println("#### Poly : " + entry.getKey() + "  V : " + PolyE.toPointList(entry.getValue()));
+            }
+        }
     }
 
     /**
@@ -107,6 +162,13 @@ public class PolyM {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取当前全部组合区域数据
+     */
+    public static HashMap<Integer, Poly> getPoliesMap() {
+        return poliesMap;
     }
 
     /**
@@ -151,6 +213,46 @@ public class PolyM {
     public static int newCreateIndex() {
         index++;
         return index;
+    }
+
+    // 编号回减
+    private static void reduceIndex() {
+        index--;
+    }
+
+    /**
+     * 吸附操作
+     *
+     * @param touchDown 触摸按下时矫正
+     * @return 吸附点
+     */
+    public static Point doAdsorb(LJ3DPoint touchDown) {
+        if (touchDown == null || poliesMap.size() == 0)
+            return null;
+        Point adsorb = null;
+        Point checkPoint = touchDown.off();
+        Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Poly> entry = iterator.next();
+            // 端点吸附处理
+            PointList pointList = PolyE.toPointList(entry.getValue());
+            adsorb = pointList.correctAdsorbPoint(checkPoint, 50);
+            if (adsorb != null) {
+                return adsorb;
+            }
+        }
+        // 线段吸附处理
+        Iterator<Map.Entry<Integer, Poly>> iterator1 = poliesMap.entrySet().iterator();
+        while (iterator1.hasNext()) {
+            Map.Entry<Integer, Poly> entry = iterator1.next();
+            PointList pointList = PolyE.toPointList(entry.getValue());
+            LineList lineList = new LineList(pointList.toLineList());
+            adsorb = lineList.correctNearlyPoint(touchDown);
+            if (adsorb != null) {
+                return adsorb;
+            }
+        }
+        return null;
     }
 
     /**

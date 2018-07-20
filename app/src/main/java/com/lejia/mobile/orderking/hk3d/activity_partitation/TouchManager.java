@@ -75,7 +75,7 @@ public class TouchManager {
             case MotionEvent.ACTION_DOWN:
                 rectHouse = new RectHouse(mContext);
                 rectDown = new Point(event.getX(), event.getY());
-                LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY());
+                LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY(), true);
                 rectHouse.setDown(new Point(touchDown.x, touchDown.y));
                 houseDatasManager.add(rectHouse);
                 break;
@@ -85,7 +85,7 @@ public class TouchManager {
                     float my = event.getY();
                     double dist = rectDown.dist(mx, my);
                     if (dist >= 24) {
-                        LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(mx, my);
+                        LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(mx, my, false);
                         rectHouse.setUp(touchMove.x, touchMove.y);
                         rectDown.x = mx;
                         rectDown.y = my;

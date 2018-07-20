@@ -13,7 +13,7 @@ public class Ground extends RendererObject {
     private PointList pointList; // 地面围点列表
 
     private void initDatas() {
-
+        
     }
 
     public Ground(PointList pointList) {

@@ -132,6 +132,24 @@ public class LineList implements Parcelable {
         return copyList;
     }
 
+    /**
+     * 点吸附矫正
+     *
+     * @param point
+     * @return
+     */
+    public Point correctNearlyPoint(LJ3DPoint point) {
+        if (point == null || invalid())
+            return null;
+        Point checkPoint = point.off();
+        Point ret = null;
+        for (Line line : linesList) {
+            ret = line.getAdsorbPoint(checkPoint.x, checkPoint.y, 50);
+            if (ret != null)
+                break;
+        }
+        return ret;
+    }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {

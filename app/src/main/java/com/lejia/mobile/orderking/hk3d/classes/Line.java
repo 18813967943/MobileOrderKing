@@ -190,7 +190,7 @@ public class Line implements Parcelable {
         if (invalid())
             return false;
         Point point = new Point(x, y);
-        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), getThickess(), getLength(), point);
+        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), getThickess(), getLength(), getCenter());
         return PointList.pointRelationToPolygon(pointsList, point) != -1;
     }
 
@@ -212,6 +212,35 @@ public class Line implements Parcelable {
         Point map = null;
         try {
             ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 5d * getThickess(), point);
+            Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
+            map = lepsLine.getLineIntersectedPoint(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    /**
+     * 获取某个点与此线段是否是吸附关系，并返回吸附点
+     *
+     * @param x
+     * @param y
+     * @param dist 相近的最大距离
+     * @return
+     */
+    public Point getAdsorbPoint(double x, double y, double dist) {
+        if (invalid())
+            return null;
+        Point point = new Point();
+        point.x = x;
+        point.y = y;
+        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), 2d * dist, getLength(), point);
+        boolean invalid = PointList.pointRelationToPolygon(pointsList, point) == -1;
+        if (invalid)
+            return null;
+        Point map = null;
+        try {
+            ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 5d * dist, point);
             Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
             map = lepsLine.getLineIntersectedPoint(this);
         } catch (Exception e) {

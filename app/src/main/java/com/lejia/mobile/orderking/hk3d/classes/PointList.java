@@ -294,7 +294,7 @@ public class PointList implements Parcelable {
             } else {
                 next = pointsList.get(i + 1);
             }
-            linesList.add(new Line(now, next));
+            linesList.add(new Line(now.copy(), next.copy()));
         }
         return linesList;
     }
@@ -677,6 +677,123 @@ public class PointList implements Parcelable {
             }
         }
         return offsetPointsList;
+    }
+
+    /**
+     * 围点进行重复点、相近点、共线点去除、浮点型数据偏差等处理
+     *
+     * @param pointsList
+     * @return
+     */
+    public static ArrayList<Point> filtrationList(ArrayList<Point> pointsList) {
+        if (pointsList == null || pointsList.size() == 0)
+            return null;
+        ArrayList<Point> filtrationList = new ArrayList<>();
+        try {
+            // 去除近点、重复点、浮点精度修复
+            ArrayList<Point> wipeRepeatAndNearlyList = new ArrayList<>();
+            Point valid = pointsList.get(0);
+            wipeRepeatAndNearlyList.add(valid.copy());
+            for (int i = 1; i < pointsList.size(); i++) {
+                Point point = pointsList.get(i);
+                if (!point.equals(valid)) { // 近点、重复点
+                    // 浮点精度修复
+                    Point deviation = deviation(valid, point);
+                    valid = (deviation != null) ? deviation : point;
+                    wipeRepeatAndNearlyList.add(valid.copy());
+                }
+            }
+            ArrayList<Point> tempWRANList = new ArrayList<>();
+            for (int i = 0; i < wipeRepeatAndNearlyList.size() - 1; i++) {
+                tempWRANList.add(wipeRepeatAndNearlyList.get(i));
+            }
+            Point deviationLast = deviation(wipeRepeatAndNearlyList.get(0), wipeRepeatAndNearlyList.get(wipeRepeatAndNearlyList.size() - 1));
+            tempWRANList.add(deviationLast);
+            // 去除共线点
+            filtrationList.add(tempWRANList.get(0).copy());
+            for (int i = 1; i < tempWRANList.size(); i++) {
+                Point now = tempWRANList.get(i);
+                Point before = tempWRANList.get(i - 1);
+                Point next = null;
+                if (i == tempWRANList.size() - 1) {
+                    next = tempWRANList.get(0);
+                } else {
+                    next = tempWRANList.get(i + 1);
+                }
+                double nb = now.dist(before); // now、before
+                double nn = now.dist(next); // now、next
+                double bn = before.dist(next); // before、next
+                if (!(Math.abs(bn - (nb + nn)) <= 1.0d)) {
+                    filtrationList.add(now.copy());
+                }
+            }
+            // 去除共线特殊情况
+            ArrayList<Line> linesList = new PointList(filtrationList).toLineList();
+            ArrayList<Point> specialList = new ArrayList<>();
+            if (linesList != null && linesList.size() > 0) {
+                for (Point point : filtrationList) {
+                    boolean specialPoint = false;
+                    for (Line line : linesList) {
+                        if (!point.equals(line.down) && !point.equals(line.up) && line.isTouchOnLine(point.x, point.y)) {
+                            specialPoint = true;
+                            break;
+                        }
+                    }
+                    if (!specialPoint) {
+                        specialList.add(point);
+                    }
+                }
+            }
+            if (specialList.size() > 0) {
+                filtrationList = specialList;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return filtrationList;
+    }
+
+    /**
+     * 修复两点之间的浮点偏差
+     *
+     * @param target 对应目标点
+     * @param check  被检测的点
+     * @return 返回矫正后的点
+     */
+    public static Point deviation(Point target, Point check) {
+        if (target == null || check == null)
+            return null;
+        Point ret = check.copy();
+        double poorX = Math.abs(check.x - target.x);
+        double poorY = Math.abs(check.y - target.y);
+        if (poorX <= 0.0002d) {
+            ret.x = target.x;
+        }
+        if (poorY <= 0.0002d) {
+            ret.y = target.y;
+        }
+        return ret;
+    }
+
+    /**
+     * 判断端点吸附，矫正位置
+     *
+     * @param check
+     * @param distV 吸附最大距离
+     * @return
+     */
+    public Point correctAdsorbPoint(Point check, double distV) {
+        if (check == null || invalid())
+            return null;
+        Point point = null;
+        for (Point point1 : pointsList) {
+            double dist = check.dist(point1);
+            if (dist <= distV) {
+                point = point1.copy();
+                break;
+            }
+        }
+        return point;
     }
 
     @Override

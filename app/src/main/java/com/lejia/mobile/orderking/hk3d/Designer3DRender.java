@@ -8,6 +8,8 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
+import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
 import com.lejia.mobile.orderking.hk3d.datas.House;
@@ -302,10 +304,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     /**
      * 平面拖动转三维点
      *
-     * @param x 平面x坐标
-     * @param y 平面y坐标
+     * @param x          平面x坐标
+     * @param y          平面y坐标
+     * @param needAdsorb
+     * @return 返回触摸点
      */
-    public LJ3DPoint touchPlanTo3D(float x, float y) {
+    public LJ3DPoint touchPlanTo3D(float x, float y, boolean needAdsorb) {
         int[] view = new int[]{0, 0, mDisplayWidth, mDisplayHeight};
         y = view[3] - y - 1;
         float[] r1 = new float[4];
@@ -331,6 +335,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             rendererObjectsList.add(dummyGround);
             LJ3DPoint intersectedPoint = LJ3DPoint.checkRayIntersectedPoint(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
             if (intersectedPoint != null) {
+                if (needAdsorb) {
+                    Point adsorb = PolyM.doAdsorb(intersectedPoint);
+                    if (adsorb != null) {
+                        intersectedPoint = adsorb.toLJ3DPoint();
+                    }
+                }
                 return intersectedPoint;
             }
         }

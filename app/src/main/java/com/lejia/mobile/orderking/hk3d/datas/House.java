@@ -2,7 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.content.Context;
 
-import com.lejia.mobile.orderking.hk3d.classes.HouseIntersectedResult;
+import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
@@ -151,7 +151,7 @@ public abstract class House {
      * @param house
      * @return 相交结果对象
      */
-    public HouseIntersectedResult getHouseIntersetedResult(House house) {
+    public PolyIntersectedResult getHouseIntersetedResult(House house) {
         if (house == null || house.equals(this))
             return null;
         if (house.centerPointList == null || centerPointList == null)
@@ -160,7 +160,7 @@ public abstract class House {
             // 重叠
             if (house.centerPointList.equals(centerPointList)) {
                 isOverlap = true;
-                return new HouseIntersectedResult(0, null, null);
+                return new PolyIntersectedResult(0, null, null);
             }
             // 自身区域
             PolyDefault selfPoly = PolyE.toPolyDefault(centerPointList);
@@ -169,13 +169,17 @@ public abstract class House {
             // 获取相交情况
             Poly poly = selfPoly.intersection(checkPoly);
             if (poly != null && !poly.isEmpty()) {
+                // 创建数据并返回
                 ArrayList<PointList> pointListsList = new ArrayList<>();
                 for (int i = 0; i < poly.getNumInnerPoly(); i++) {
                     Poly item = poly.getInnerPoly(i);
                     PointList pointList = PolyE.toPointList(item);
-                    pointListsList.add(pointList);
+                    if (pointList.area() > 0.1d)
+                        pointListsList.add(pointList);
                 }
-                return new HouseIntersectedResult(1, pointListsList, house);
+                if (pointListsList.size() == 0)
+                    return null;
+                return new PolyIntersectedResult(1, pointListsList, house);
             }
         } catch (Exception e) {
             e.printStackTrace();

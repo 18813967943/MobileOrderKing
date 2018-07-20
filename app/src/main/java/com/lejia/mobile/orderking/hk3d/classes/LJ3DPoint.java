@@ -141,11 +141,18 @@ public class LJ3DPoint implements Parcelable {
      * @return
      */
     public Point off() {
-        return new Point(x, y);
+        Point point = new Point();
+        point.x = x;
+        point.y = y;
+        return point;
     }
 
     public LJ3DPoint copy() {
-        return new LJ3DPoint(x, y, z);
+        LJ3DPoint lj3DPoint = new LJ3DPoint();
+        lj3DPoint.x = x;
+        lj3DPoint.y = y;
+        lj3DPoint.z = z;
+        return lj3DPoint;
     }
 
     /**

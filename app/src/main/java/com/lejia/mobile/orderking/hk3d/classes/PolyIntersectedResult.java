@@ -15,7 +15,7 @@ import java.util.Map;
  * @time 2018/7/17 17:18
  * TODO: 房间相交结果
  */
-public class HouseIntersectedResult implements Parcelable {
+public class PolyIntersectedResult implements Parcelable {
 
     public int type; // 两区域类型 : -1为没有相交，0为重合,1为相交
     public ArrayList<PointList> pointListsList; // 两区域相交结果集合列表
@@ -31,18 +31,18 @@ public class HouseIntersectedResult implements Parcelable {
      */
     public Map.Entry<Integer, Poly> atPolyEntry;
 
-    public HouseIntersectedResult() {
+    public PolyIntersectedResult() {
         super();
     }
 
-    public HouseIntersectedResult(int type, ArrayList<PointList> pointListsList, House house) {
+    public PolyIntersectedResult(int type, ArrayList<PointList> pointListsList, House house) {
         this.type = type;
         this.pointListsList = pointListsList;
         this.house = house;
         initIntersectedHouse();
     }
 
-    protected HouseIntersectedResult(Parcel in) {
+    protected PolyIntersectedResult(Parcel in) {
         type = in.readInt();
         differencePointList = in.readParcelable(PointList.class.getClassLoader());
         pointListsList = in.createTypedArrayList(PointList.CREATOR);
@@ -57,13 +57,22 @@ public class HouseIntersectedResult implements Parcelable {
         Poly poly = PolyE.toPolyDefault(house.centerPointList);
         Poly difference = null;
         for (PointList pointList : pointListsList) {
-            if (difference == null) {
-                difference = poly.difference(PolyE.toPolyDefault(pointList));
-            } else {
-                difference = difference.difference(PolyE.toPolyDefault(pointList));
+            Poly poly1 = PolyE.toPolyDefault(pointList);
+            poly1 = PolyE.simpleAlignPoly(poly, poly1);
+            if (!PolyE.toPointList(poly1).equals(PolyE.toPointList(poly))) {
+                if (difference == null) {
+                    difference = poly.difference(poly1);
+                } else {
+                    difference = difference.difference(poly1);
+                }
             }
         }
-        differencePointList = PolyE.toPointList(difference);
+        if (difference != null && !difference.isEmpty()) {
+            difference = PolyE.filtrationPoly(difference);
+            if (difference != null && !difference.isEmpty()) {
+                differencePointList = PolyE.toPointList(difference);
+            }
+        }
     }
 
     @Override
@@ -87,15 +96,15 @@ public class HouseIntersectedResult implements Parcelable {
         return 0;
     }
 
-    public static final Creator<HouseIntersectedResult> CREATOR = new Creator<HouseIntersectedResult>() {
+    public static final Creator<PolyIntersectedResult> CREATOR = new Creator<PolyIntersectedResult>() {
         @Override
-        public HouseIntersectedResult createFromParcel(Parcel in) {
-            return new HouseIntersectedResult(in);
+        public PolyIntersectedResult createFromParcel(Parcel in) {
+            return new PolyIntersectedResult(in);
         }
 
         @Override
-        public HouseIntersectedResult[] newArray(int size) {
-            return new HouseIntersectedResult[size];
+        public PolyIntersectedResult[] newArray(int size) {
+            return new PolyIntersectedResult[size];
         }
     };
 
