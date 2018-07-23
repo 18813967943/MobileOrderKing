@@ -95,7 +95,11 @@ public class Point implements Parcelable {
 
     // 转三维点
     public LJ3DPoint toLJ3DPoint() {
-        return new LJ3DPoint(x, y, 0.0d);
+        LJ3DPoint lj3DPoint = new LJ3DPoint();
+        lj3DPoint.x = x;
+        lj3DPoint.y = y;
+        lj3DPoint.z = 0.0d;
+        return lj3DPoint;
     }
 
     @Override

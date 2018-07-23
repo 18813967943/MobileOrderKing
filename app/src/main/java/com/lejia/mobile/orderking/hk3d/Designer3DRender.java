@@ -295,8 +295,54 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             ArrayList<House> housesList = houseDatasManager.getHousesList();
             if (housesList != null && housesList.size() > 0) {
                 for (House house : housesList) {
-                    house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute, ViewingShader.scene_colorAttribute, false);
+                    house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                            , ViewingShader.scene_colorAttribute, false);
                 }
+            }
+        }
+    }
+
+    /**
+     * 触摸选中处理
+     *
+     * @param x
+     * @param y
+     */
+    public void checkClickAtViews(float x, float y) {
+        if (houseDatasManager == null)
+            return;
+        RendererObject object = null;
+        int[] view = new int[]{0, 0, mDisplayWidth, mDisplayHeight};
+        y = view[3] - y - 1;
+        float[] r1 = new float[4];
+        float[] r2 = new float[4];
+        float[] mv = new float[16];
+        Matrix.multiplyMM(mv, 0, ViewingMatrixs.mViewMatrix, 0, ViewingMatrixs.mModelMatrix, 0);
+        int near = GLU.gluUnProject(x, y, 0.0f, mv, 0, ViewingMatrixs.mProjectionMatrix, 0,
+                view, 0, r1, 0);
+        int far = GLU.gluUnProject(x, y, 1.0f, mv, 0, ViewingMatrixs.mProjectionMatrix, 0,
+                view, 0, r2, 0);
+        // 返回正确值
+        if (near == 1 && far == 1) {
+            for (int i = 0; i < 3; i++) {
+                r1[i] /= r1[3];
+                r2[i] /= r2[3];
+            }
+            // 初始化射线
+            LJ3DPoint a = new LJ3DPoint(r1[0], r1[1], r1[2]);
+            LJ3DPoint b = new LJ3DPoint(r2[0], r2[1], r2[2]);
+            Ray ray = new Ray(a, LJ3DPoint.normalize(b.subtract(a)));
+            // 求出相交对象
+            ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
+            ArrayList<House> housesList = houseDatasManager.getHousesList();
+            if (housesList != null && housesList.size() > 0) {
+                for (House house : housesList) {
+                    rendererObjectsList.addAll(house.getTotalRendererObjectList());
+                }
+            }
+            object = LJ3DPoint.checkRayIntersectedObject(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
+            if (object != null) {
+                System.out.println("#### RendererObject : " + object.getClass().getName());
             }
         }
     }

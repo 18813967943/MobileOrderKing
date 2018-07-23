@@ -63,6 +63,61 @@ public class TouchManager {
         return false;
     }
 
+    /*******************************************************
+     * 短按及长按操作
+     * ****************************************************/
+    private Point checkDown;
+    private long checkDownTime;
+    private Point checkUp;
+    private long checkUpTime;
+
+    /**
+     * 设置当前按下点坐标及时间
+     *
+     * @param x
+     * @param y
+     */
+    private void setCheckDown(float x, float y) {
+        if (checkDown == null)
+            checkDown = new Point(x, y);
+        else {
+            checkDown.x = x;
+            checkDown.y = y;
+        }
+        checkDownTime = System.currentTimeMillis();
+    }
+
+    /**
+     * 设置弹起点时，进行检测
+     *
+     * @param x
+     * @param y
+     */
+    private void setCheckUp(float x, float y) {
+        if (checkUp == null)
+            checkUp = new Point(x, y);
+        else {
+            checkUp.x = x;
+            checkUp.y = y;
+        }
+        checkUpTime = System.currentTimeMillis();
+        // 根据距离及时间差区分长按及短按
+        double dist = checkUp.dist(checkDown);
+        if (dist <= 16) { // 避免手指未移动下屏幕自动跳点之间的差距
+            long time = checkUpTime - checkDownTime;
+            // 短按
+            if (time <= 350) {
+                System.out.println("###### 短按 !");
+                designer3DRender.checkClickAtViews(x, y);
+            }
+            // 长按
+            else {
+                System.out.println("###### 长按 !");
+
+            }
+        }
+    }
+
     /*************************************************
      *  绘制矩形房间
      * ***********************************************/
@@ -75,6 +130,7 @@ public class TouchManager {
             case MotionEvent.ACTION_DOWN:
                 rectHouse = new RectHouse(mContext);
                 rectDown = new Point(event.getX(), event.getY());
+                setCheckDown(event.getX(), event.getY());
                 LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY(), true);
                 rectHouse.setDown(new Point(touchDown.x, touchDown.y));
                 houseDatasManager.add(rectHouse);
@@ -94,6 +150,7 @@ public class TouchManager {
                 break;
             case MotionEvent.ACTION_UP:
                 houseDatasManager.gpcClosedCheck(rectHouse);
+                setCheckUp(event.getX(), event.getY());
                 break;
         }
     }

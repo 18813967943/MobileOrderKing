@@ -350,6 +350,91 @@ public class LJ3DPoint implements Parcelable {
         return normal;
     }
 
+    /**
+     * 获取当前点击屏幕相交面
+     *
+     * @param ray
+     * @param objectList
+     * @param eyes
+     * @return
+     */
+    public static RendererObject checkRayIntersectedObject(Ray ray, ArrayList<RendererObject> objectList, LJ3DPoint eyes) {
+        if (ray == null || objectList == null)
+            return null;
+        // 记录相交点和面
+        ArrayList<LJ3DPoint> intersectedPointList = new ArrayList<>();
+        ArrayList<RendererObject> intersectedSpaceList = new ArrayList<>();
+        // 循环遍历面
+        for (int i = 0; i < objectList.size(); i++) {
+            RendererObject space = objectList.get(i);
+            int[] indices = space.indices;
+            ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
+            for (int j = 0; j < indices.length / 3; j++) {
+                // 三角面顶点
+                int index = j * 3;
+                LJ3DPoint a = plist.get(indices[index]);
+                LJ3DPoint b = plist.get(indices[index + 1]);
+                LJ3DPoint c = plist.get(indices[index + 2]);
+                boolean rayIn = checkRayInTriangle(ray, a, b, c);
+                if (rayIn) {
+                    // 三角面法向量
+                    LJ3DPoint normal = normalize((b.subtract(a)).crossProduct(c.subtract(a)));
+                    // 三角面内部一个点
+                    LJ3DPoint center = getTriangleInnerPoint(a, b, c);
+                    // 判断是否相交
+                    LJ3DPoint intersected = rayCrossPlane(ray, center, normal);
+                    if (intersected != null) {
+                        intersectedPointList.add(intersected);
+                        intersectedSpaceList.add(space);
+                    }
+                }
+            }
+        }
+        // 返回面
+        RendererObject result = null;
+        // 对比距离远近
+        int interSize = intersectedPointList.size();
+        if (interSize == 0) {
+            return null;
+        } else {
+            float minDistance = Float.MAX_VALUE;
+            for (int i = 0; i < interSize; i++) {
+                float tempDist = getTwoWCSPointDistance(intersectedPointList.get(i), eyes);
+                if (tempDist <= minDistance) {
+                    minDistance = tempDist;
+                    result = intersectedSpaceList.get(i);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取两点之间的距离
+     *
+     * @param p1
+     * @param p2
+     * @return
+     */
+    public static float getTwoWCSPointDistance(LJ3DPoint p1, LJ3DPoint p2) {
+        if (p1 == null || p2 == null)
+            return -1;
+        LJ3DPoint sub = p1.subtract(p2);
+        return (float) Math.sqrt(Math.abs(sub.dotProduct(sub)));
+    }
+
+    /**
+     * 根据三角形三个顶点，获取三角形内部一点
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    private static LJ3DPoint getTriangleInnerPoint(LJ3DPoint a, LJ3DPoint b, LJ3DPoint c) {
+        return new LJ3DPoint((a.x + b.x + c.x) / 3, (a.y + b.y + c.y) / 3, (a.z + b.z + c.z) / 3);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof LJ3DPoint))

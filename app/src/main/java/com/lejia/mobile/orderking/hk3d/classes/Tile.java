@@ -38,7 +38,17 @@ public class Tile implements Parcelable {
     /**
      * 材质位图
      */
-    private Bitmap bitmap;
+    public Bitmap bitmap;
+
+    /**
+     * 对应绑定的材质编号
+     */
+    public int textureId;
+
+    /**
+     * 砖的缝隙
+     */
+    public int brickGap;
 
     public Tile() {
         super();
@@ -61,6 +71,8 @@ public class Tile implements Parcelable {
         int bmpSize = in.readInt();
         if (bmpSize > 0)
             bitmap = in.readParcelable(Bitmap.class.getClassLoader());
+        textureId = in.readInt();
+        brickGap = in.readInt();
     }
 
     public int getId() {
@@ -223,6 +235,8 @@ public class Tile implements Parcelable {
             dest.writeParcelable(bitmap, flags);
         } else
             dest.writeInt(0);
+        dest.writeInt(textureId);
+        dest.writeInt(brickGap);
     }
 
     @Override

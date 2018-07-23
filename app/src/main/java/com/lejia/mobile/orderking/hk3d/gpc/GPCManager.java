@@ -2,8 +2,9 @@ package com.lejia.mobile.orderking.hk3d.gpc;
 
 import android.content.Context;
 
-import com.lejia.mobile.orderking.hk3d.classes.Point;
-import com.lejia.mobile.orderking.hk3d.classes.Tile;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.classes.PointList;
+import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 
 import java.util.ArrayList;
 
@@ -16,20 +17,45 @@ import java.util.ArrayList;
 public class GPCManager {
 
     private Context mContext;
+    private PointList pointList; // 围点
+    private ArrayList<TileDescription> tileDescriptionsList; // 多层数据列表
 
-    public GPCManager(Context context) {
-        this.mContext = context;
+    /**
+     * 铺砖结果对象
+     */
+    private TilesResult tilesResult;
+
+    /**
+     * 铺砖组合完毕接口
+     */
+    private OnTilesResultListener onTilesResultListener;
+
+    public GPCManager(PointList pointList, ArrayList<TileDescription> tileDescriptionsList) {
+        this.mContext = OrderKingApplication.getInstant();
+        this.pointList = pointList;
+        this.tileDescriptionsList = tileDescriptionsList;
+    }
+
+    // 绑定铺贴结果接口
+    public void setOnTilesResultListener(OnTilesResultListener onTilesResultListener) {
+        this.onTilesResultListener = onTilesResultListener;
     }
 
     /**
-     * 常态铺砖
+     * 设置新的铺砖数据对象进行铺贴
      *
-     * @param direction，详细信息请查看Direction对象
-     * @param pointsList                   铺砖区域
-     * @param tile                         铺砖对象
+     * @param tileDescriptionsList
      */
-    public void asyncDoNormalTile(int direction, ArrayList<Point> pointsList, Tile tile) {
-        if (pointsList == null || pointsList.size() < 3 || tile == null)
+    public void setTileDescriptionsList(ArrayList<TileDescription> tileDescriptionsList) {
+        this.tileDescriptionsList = tileDescriptionsList;
+        tile();
+    }
+
+    /**
+     * 进行铺砖
+     */
+    public void tile() {
+        if (tileDescriptionsList == null || tileDescriptionsList.size() == 0)
             return;
 
     }

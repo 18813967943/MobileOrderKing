@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.adapters.MatrerialTypesListAdapter;
 import com.lejia.mobile.orderking.adapters.TilesPreviewAdapter;
+import com.lejia.mobile.orderking.adapters.TilesRightIconsAdapter;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.Tile;
@@ -77,6 +78,20 @@ public class TilesManager {
     private ArrayList<LJNodes> detailesNodesList;
 
     /**
+     * 修改版本后的右边按钮
+     */
+    private int[] tilesNormalTopIcons; // 铺砖右上角普通资源
+    private int[] tilesSelectTopIcons; // 铺砖右上角选中资源
+    private int[] tilesNormalBottomIcons; // 铺砖右下角普通资源
+    private int[] tilesSelectBottomIcons; // 铺砖右下角选中资源
+
+    private int[] layoutNormalTopIcons; // 布置右上角普通资源
+    private int[] layoutSelectTopIcons; // 布置右上角选中资源
+
+    private TilesRightIconsAdapter tilesRightTopIconsAdapter;
+    private TilesRightIconsAdapter tilesRightBottomIconsAdapter;
+
+    /**
      * 当前加载详细节点
      */
     private LJNodes currentLoadNode;
@@ -97,6 +112,15 @@ public class TilesManager {
     private TilesPreviewAdapter tilesPreviewAdapter;
 
     private void init() {
+        // 菜单图标资源设定
+        tilesNormalTopIcons = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.wode};
+        tilesSelectTopIcons = new int[]{R.mipmap.yangshi, R.mipmap.huanzhuan_copy, R.mipmap.wode_copy};
+        tilesNormalBottomIcons = new int[]{R.mipmap.quyu, R.mipmap.huagong, R.mipmap.qipu, R.mipmap.jiaodu};
+        tilesSelectBottomIcons = new int[]{R.mipmap.quyu_copy, R.mipmap.huagong_copy, R.mipmap.qipu_copy, R.mipmap.jiaodu_copy};
+        layoutNormalTopIcons = new int[]{R.mipmap.kecanting, R.mipmap.woshi, R.mipmap.chufang,
+                R.mipmap.weishengjian, R.mipmap.gengduo};
+        layoutSelectTopIcons = new int[]{R.mipmap.kecanting_chosen, R.mipmap.woshi_chosen, R.mipmap.chufang_chosen,
+                R.mipmap.weishengjian_chosen, R.mipmap.gengduo_chosen};
         // 主界面底部菜单栏、绘制墙体方式
         titlesView.setOnTitlesStatusListener(onTitlesStatusListener);
         drawStates.setOnClickListener(onClickListener);
@@ -107,11 +131,14 @@ public class TilesManager {
         // 菜单有边框文本标题
         materialTypeList = ((OrderKingApplication) context).materialTypeList;
         materialNodesList = materialTypeList.getMaterialTypeList();
-        nodesAdapter = new MatrerialTypesListAdapter(context, materialNodesList);
-        nodesList.setAdapter(nodesAdapter);
-        detailesNodesList = materialNodesList.get(0).getChildrenList();
-        detailesAdapter = new MatrerialTypesListAdapter(context, detailesNodesList);
-        detaileList.setAdapter(detailesAdapter);
+
+        tilesRightTopIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalTopIcons, tilesSelectTopIcons);
+        tilesRightBottomIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalBottomIcons, tilesSelectBottomIcons);
+        nodesList.setAdapter(tilesRightBottomIconsAdapter);
+        detaileList.setAdapter(tilesRightTopIconsAdapter);
+        nodesList.setSelector(R.drawable.grid_selector);
+        detaileList.setSelector(R.drawable.grid_selector);
+
         nodesList.setOnItemClickListener(mainNodesItemClickListener);
         detaileList.setOnItemClickListener(detailesItemClickListener);
         // 材质展示窗口
@@ -121,7 +148,9 @@ public class TilesManager {
         tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
         tilesGrid.setOnItemClickListener(onItemClickListener);
         tilesGrid.setSelector(R.drawable.grid_selector);
-        // 加载默认节点材质数据展示
+        // 修改版本展示使用
+        detailesNodesList = materialNodesList.get(1).getChildrenList();
+        tilesRightTopIconsAdapter.setSelectePosition(1);
         showPage(0, 1, true);
     }
 
@@ -161,14 +190,10 @@ public class TilesManager {
                 case 2:
                     // 铺砖
                     menuLayout.setVisibility(View.VISIBLE);
-                    nodesAdapter.changeList(materialNodesList);
-                    detailesAdapter.changeList(materialNodesList.get(0).getChildrenList());
                     break;
                 case 3:
                     // 布置
                     menuLayout.setVisibility(View.VISIBLE);
-                    nodesAdapter.changeList(null);
-                    detailesAdapter.changeList(null);
                     break;
             }
         }
@@ -231,18 +256,7 @@ public class TilesManager {
     private AdapterView.OnItemClickListener mainNodesItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // 混铺
-            if (position == materialNodesList.size() - 1) {
 
-            }
-            // 详细节点刷新
-            else {
-                detailesNodesList = materialNodesList.get(position).getChildrenList();
-                detailesAdapter.changeList(detailesNodesList);
-                // 加载详细节点第一个数据
-                currentNodeIndex = 0;
-                showPage(currentNodeIndex, 1, true);
-            }
         }
     };
 
@@ -250,9 +264,7 @@ public class TilesManager {
     private AdapterView.OnItemClickListener detailesItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // 获取详细节点第一页数据
-            currentNodeIndex = position;
-            showPage(position, 1, true);
+
         }
     };
 

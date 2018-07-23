@@ -1,5 +1,6 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -12,7 +13,6 @@ import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Author by HEKE
@@ -89,6 +89,7 @@ public class HouseDatasManager {
      *
      * @param checkHouse
      */
+    @SuppressLint("StaticFieldLeak")
     public void gpcClosedCheck(House checkHouse) {
         // 空或者未闭合房间直接返回
         if (checkHouse == null || !checkHouse.isWallClosed)
@@ -107,6 +108,7 @@ public class HouseDatasManager {
                 House checkHouse = houses[0];
                 if (housesList.size() == 1) {
                     PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(checkHouse.centerPointList));
+                    checkHouse.initGroundAndSelector();
                 } else {
                     // 获取所有相交的列表集
                     ArrayList<PolyIntersectedResult> intersectedResultsList = new ArrayList<>();
@@ -127,26 +129,11 @@ public class HouseDatasManager {
                             // 获取相交房间的所属组合区域，并先从渲染数据中移除当前房间与相交房间
                             remove(checkHouse);
                             for (PolyIntersectedResult ret : intersectedResultsList) {
-                                //Map.Entry<Integer, Poly> atEntry = PolyM.get(ret.house);
-                                //ret.atPolyEntry = atEntry;
                                 // 从渲染缓存中移除相交房间
                                 remove(ret.house);
                             }
                             // 重新组合替换组合区域
                             Poly checkPoly = PolyE.toPolyDefault(checkHouse.centerPointList);
-                           /* Poly newPoly = null;
-                            for (PolyIntersectedResult ret : intersectedResultsList) {
-                                if (ret.atPolyEntry != null) {
-                                    if (newPoly == null) {
-                                        newPoly = PolyE.filtrationPoly(ret.atPolyEntry.getValue().union(checkPoly));
-                                        PolyM.removePoly(ret.atPolyEntry.getKey());
-                                    } else {
-                                        newPoly = PolyE.filtrationPoly(newPoly.union(ret.atPolyEntry.getValue()));
-                                        PolyM.removePoly(ret.atPolyEntry.getKey());
-                                    }
-                                    ret.atPolyEntry = null;
-                                }
-                            }*/
                             PolyM.put(PolyM.newCreateIndex(), checkPoly);
                             // 新增相交的房间及切割后的相交房间
                             ArrayList<PointList> totalPointList = new ArrayList<>();
@@ -176,6 +163,7 @@ public class HouseDatasManager {
                     // 未与任何区域相交，直接加入新区域
                     else {
                         PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(checkHouse.centerPointList));
+                        checkHouse.initGroundAndSelector();
                     }
                 }
                 // 测试耗时

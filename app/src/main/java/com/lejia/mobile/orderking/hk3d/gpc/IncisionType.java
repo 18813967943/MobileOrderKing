@@ -9,8 +9,10 @@ package com.lejia.mobile.orderking.hk3d.gpc;
 public enum IncisionType {
     // 常态
     NORMAL,
-    // 波打线
-    WAVELINES,
+    // 斜切波打线
+    BEVELL_WAVELINES,
+    // 转角波打线
+    CORNER_WAVELINES,
     // 魔方样式
     STYLE_MAGIC
 }

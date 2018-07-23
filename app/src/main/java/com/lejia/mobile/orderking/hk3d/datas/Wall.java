@@ -5,11 +5,13 @@ import android.opengl.GLES30;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.classes.PointList;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Author by HEKE
@@ -29,6 +31,11 @@ public class Wall extends RendererObject {
         invalid = (pointsList == null || pointsList.size() == 0);
         if (invalid)
             return;
+        uuid = UUID.randomUUID().toString();
+        PointList pointList = new PointList(pointsList);
+        pointList.setPointsList(pointList.antiClockwise());
+        pointsList = pointList.getPointsList();
+        lj3DPointsList = pointList.to3dList();
         indices = new int[]{0, 1, 2, 0, 2, 3};
         vertexs = new float[3 * indices.length];
         colors = new float[4 * indices.length];
@@ -65,29 +72,22 @@ public class Wall extends RendererObject {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        // invalid
         if (invalid)
             return;
-        // Pass in the position information
         vertexsBuffer.position(0);
         GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 0, vertexsBuffer);
         GLES30.glEnableVertexAttribArray(positionAttribute);
         if (!onlyPosition) {
-            // Pass in the normal information
             normalsBuffer.position(0);
             GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false,
                     0, normalsBuffer);
             GLES30.glEnableVertexAttribArray(normalAttribute);
-
-            // Pass in the color information
             colorsBuffer.position(0);
             GLES30.glVertexAttribPointer(colorAttribute, 4, GLES30.GL_FLOAT, false,
                     0, colorsBuffer);
             GLES30.glEnableVertexAttribArray(colorAttribute);
-            // use color only render
             GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
         }
-        // Draw the wall.
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
     }
 

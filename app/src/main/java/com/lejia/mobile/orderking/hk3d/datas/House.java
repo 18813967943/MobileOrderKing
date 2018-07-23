@@ -2,10 +2,10 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.content.Context;
 
-import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
+import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.seisw.util.geom.Poly;
 import com.seisw.util.geom.PolyDefault;
 
@@ -52,6 +52,16 @@ public abstract class House {
      */
     public Ground ground;
 
+    /**
+     * 选中区域
+     */
+    public Selector selector;
+
+    /**
+     * 是否被选中标志
+     */
+    private boolean selected;
+
     public House(Context context) {
         this.mContext = context;
         this.wallsList = new ArrayList<>();
@@ -85,10 +95,21 @@ public abstract class House {
         innerPointList = new PointList(centerPointList.offsetList(false, halfThickness));
         outerPointList = new PointList(centerPointList.offsetList(true, halfThickness));
         createRenderer();
+        initGroundAndSelector();
     }
 
     public Context getContext() {
         return mContext;
+    }
+
+    // 判断是否选中
+    public boolean isSelected() {
+        return selected;
+    }
+
+    // 设置是否被选中
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     /**
@@ -105,7 +126,10 @@ public abstract class House {
                 wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
             if (ground != null) {
-
+                ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
+            if (selector != null && selected) {
+                selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,7 +166,16 @@ public abstract class House {
                 wallsList.add(wall);
             }
         }
+    }
+
+    /**
+     * 加载地面及选中对象
+     */
+    public void initGroundAndSelector() {
+        if (innerPointList == null || innerPointList.invalid())
+            return;
         ground = new Ground(innerPointList);
+        selector = new Selector(innerPointList);
     }
 
     /**
@@ -185,6 +218,20 @@ public abstract class House {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 获取房间所有可触摸渲染数据
+     */
+    public ArrayList<RendererObject> getTotalRendererObjectList() {
+        ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
+        if (wallsList != null && wallsList.size() > 0) {
+            rendererObjectsList.addAll(wallsList);
+        }
+        if (ground != null) {
+            rendererObjectsList.add(ground);
+        }
+        return rendererObjectsList;
     }
 
 }

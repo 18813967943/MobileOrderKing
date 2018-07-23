@@ -8,21 +8,21 @@
 
     <ImageView
         android:id="@+id/materialPreview"
-        android:layout_width="@dimen/d70dp"
-        android:layout_height="@dimen/d60dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@mipmap/place_img_white"
         android:scaleType="matrix" />
 
     <TextView
         android:id="@+id/materialName"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/d15dp"
+        android:layout_height="@dimen/d30dp"
         android:layout_gravity="bottom"
         android:background="#35000000"
         android:gravity="center_vertical"
         android:lines="1"
         android:paddingLeft="3dp"
         android:textColor="#fff"
-        android:textSize="9sp" />
+        android:textSize="12sp" />
 
 </FrameLayout>

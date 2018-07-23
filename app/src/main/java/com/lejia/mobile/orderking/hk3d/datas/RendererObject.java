@@ -4,9 +4,9 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
-import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.FloatBuffer;
@@ -44,6 +44,8 @@ public abstract class RendererObject {
 
     public ArrayList<LJ3DPoint> lj3DPointsList; // 三维围点列表
 
+    public String uuid; // 唯一编码
+
     /**
      * 基础渲染
      *
@@ -66,25 +68,26 @@ public abstract class RendererObject {
             return -1;
         int[] textureId = new int[1];
         try {
-            // 判断是否包含缓存
-            Texture texture = TexturesCache.get(key);
-            if (texture != null) {
-                textureId[0] = texture.textureId;
-            } else {
-                GLES30.glGenTextures(1, textureId, 0);
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
-                GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
-                // 存入缓存
-                TexturesCache.put(key, textureId[0], bitmap);
-            }
+            GLES30.glGenTextures(1, textureId, 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
+            // 刷新缓存
+            TexturesCache.put(key, textureId[0], bitmap);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return textureId[0];
+    }
+
+    /**
+     * 刷新画布
+     */
+    public void refreshRender() {
+        ((OrderKingApplication) OrderKingApplication.getInstant()).render();
     }
 
     /**

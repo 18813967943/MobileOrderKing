@@ -32,9 +32,16 @@ public class TexturesCache {
     public static synchronized void put(String key, int textureId, Bitmap bitmap) {
         if (TextUtils.isTextEmpity(key) || bitmap == null || bitmap.isRecycled())
             return;
-        if (staticMap.containsKey(key))
-            return;
-        Texture texture = new Texture();
+        Texture texture = null;
+        if (staticMap.containsKey(key)) {
+            texture = staticMap.get(key);
+            if (texture.bitmap != null) {
+                texture.bitmap.recycle();
+                texture.bitmap = null;
+            }
+        }
+        if (texture == null)
+            texture = new Texture();
         texture.key = key;
         texture.textureId = textureId;
         texture.bitmap = bitmap;

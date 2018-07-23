@@ -46,10 +46,37 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 获取指定位置的数据
+     *
+     * @param position
+     * @return
+     */
+    public Point get(int position) {
+        if (invalid())
+            return null;
+        if (position < 0 || position >= size())
+            return null;
+        return pointsList.get(position);
+    }
+
+    /**
      * 获取具体数据列表
      */
     public ArrayList<Point> getPointsList() {
         return pointsList;
+    }
+
+    /**
+     * 转为三维点列表
+     */
+    public ArrayList<LJ3DPoint> to3dList() {
+        if (invalid())
+            return null;
+        ArrayList<LJ3DPoint> point3dList = new ArrayList<>();
+        for (Point point : pointsList) {
+            point3dList.add(point.toLJ3DPoint());
+        }
+        return point3dList;
     }
 
     /**

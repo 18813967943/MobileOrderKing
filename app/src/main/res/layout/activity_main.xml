@@ -108,11 +108,11 @@
 
     <RelativeLayout
         android:id="@+id/rightLayout"
-        android:layout_width="@dimen/d200dp"
+        android:layout_width="@dimen/d180dp"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomLayout"
         android:layout_alignParentRight="true"
-        android:background="#FFFFFFFA"
+        android:background="#FFFFFFFE"
         android:orientation="horizontal"
         android:visibility="gone">
 
@@ -123,7 +123,7 @@
 
         <LinearLayout
             android:id="@+id/menuRightLayout"
-            android:layout_width="@dimen/d60dp"
+            android:layout_width="@dimen/d50dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:orientation="vertical"
@@ -138,7 +138,8 @@
                     android:id="@+id/detialsList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="3dp"
+                    android:divider="@null"
+                    android:dividerHeight="0dp"
                     android:scrollbars="none" />
             </LinearLayout>
 
@@ -152,7 +153,8 @@
                     android:id="@+id/nodesList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="3dp"
+                    android:divider="@null"
+                    android:dividerHeight="0dp"
                     android:scrollbars="none" />
             </LinearLayout>
         </LinearLayout>
@@ -170,7 +172,7 @@
             android:layout_marginLeft="1dp"
             android:layout_marginRight="1dp"
             android:layout_toLeftOf="@id/menuRightLayout"
-            android:numColumns="2"
+            android:numColumns="1"
             android:scrollbars="none" />
     </RelativeLayout>
 
