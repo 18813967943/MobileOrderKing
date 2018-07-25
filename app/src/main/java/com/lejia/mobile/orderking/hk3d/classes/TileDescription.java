@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lejia.mobile.orderking.utils.TextUtils;
+
 import java.util.ArrayList;
 
 /**
@@ -14,15 +16,22 @@ import java.util.ArrayList;
  */
 public class TileDescription implements Parcelable {
 
+    public int id; // 在数据库中的编号
+
     /**
      * 铺砖类型，普通砖1，波打线2，切割四块为3，转角切2块为4,等等
      */
-    public int type;
+    public int styleType;
+
+    /**
+     * 预览图
+     */
+    public String previewImg;
 
     /**
      * 当前瓷砖信息存储列表
      */
-    public ArrayList<Tile> tilesList;
+    public ArrayList<Tile> materialList;
 
     private int size; // 本层材质数量
     private int count; // 加载计数
@@ -33,27 +42,109 @@ public class TileDescription implements Parcelable {
     }
 
     public TileDescription(int type, ArrayList<Tile> tilesList) {
-        this.type = type;
-        this.tilesList = tilesList;
+        this.styleType = type;
+        this.materialList = tilesList;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getStyleType() {
+        return styleType;
+    }
+
+    public void setStyleType(int styleType) {
+        this.styleType = styleType;
+    }
+
+    public String getPreviewImg() {
+        return previewImg;
+    }
+
+    public void setPreviewImg(String previewImg) {
+        this.previewImg = previewImg;
+    }
+
+    public ArrayList<Tile> getMaterialList() {
+        return materialList;
+    }
+
+    public void setMaterialList(ArrayList<Tile> materialList) {
+        this.materialList = materialList;
     }
 
     protected TileDescription(Parcel in) {
-        type = in.readInt();
-        tilesList = in.createTypedArrayList(Tile.CREATOR);
+        styleType = in.readInt();
+        materialList = in.createTypedArrayList(Tile.CREATOR);
+    }
+
+    /**
+     * 此层有用的瓷砖数量
+     *
+     * @return
+     */
+    public int size() {
+        if (materialList == null)
+            return 0;
+        return materialList.size();
     }
 
     /**
      * 加载所有贴图
      */
     public void loadBitmaps(OnTileDescriptionLoadListener onTileDescriptionLoadListener) {
-        if (tilesList == null || tilesList.size() == 0)
+        if (materialList == null || materialList.size() == 0)
             return;
         this.onTileDescriptionLoadListener = onTileDescriptionLoadListener;
-        this.size = tilesList.size();
+        this.size = materialList.size();
         this.count = 0;
-        for (Tile tile : tilesList) {
+        for (Tile tile : materialList) {
             tile.getBitmap(onTileBitmapListener);
         }
+    }
+
+    /**
+     * 根据材质编码获取位图
+     *
+     * @param materialCode 编码
+     * @return 对应位图
+     */
+    public Bitmap getTileBitmap(String materialCode) {
+        if (TextUtils.isTextEmpity(materialCode) || materialList == null || materialList.size() == 0)
+            return null;
+        for (Tile tile : materialList) {
+            if (tile.materialCode.equals(materialCode)) {
+                return tile.bitmap;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取瓷砖的宽度
+     *
+     * @param position
+     */
+    public int getTileWidth(int position) {
+        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+            return 0;
+        return materialList.get(position).materialWidth / 10;
+    }
+
+    /**
+     * 获取瓷砖的高度
+     *
+     * @param position
+     */
+    public int getTileHeight(int position) {
+        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+            return 0;
+        return materialList.get(position).materialHeight / 10;
     }
 
     /**
@@ -73,8 +164,8 @@ public class TileDescription implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(type);
-        dest.writeTypedList(tilesList);
+        dest.writeInt(styleType);
+        dest.writeTypedList(materialList);
     }
 
     @Override

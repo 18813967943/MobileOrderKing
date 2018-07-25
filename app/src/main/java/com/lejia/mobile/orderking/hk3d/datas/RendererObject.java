@@ -10,6 +10,7 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 /**
@@ -29,7 +30,8 @@ public abstract class RendererObject {
     public float[] normalTexcoord; // 法线纹理uv
     public FloatBuffer normalTexcoordBuffer; // 法线纹理uv字节缓存
 
-    public int[] indices; // 索引
+    public short[] indices; // 索引
+    public ShortBuffer indicesBuffer; // 索引字节缓存
 
     public float[] normals; // 法线
     public FloatBuffer normalsBuffer; // 法线字节缓存
@@ -59,16 +61,18 @@ public abstract class RendererObject {
     /**
      * 创建材质纹理对应编号及缓存
      *
-     * @param key    唯一身份证
-     * @param bitmap 对应贴图
+     * @param key              唯一身份证
+     * @param bitmap           对应贴图
+     * @param fromReplaceTiles 是否来自于材质替换
      * @return 返回材质纹理对应渲染编号
      */
-    public int createTextureIdAndCache(String key, Bitmap bitmap) {
+    public int createTextureIdAndCache(String key, Bitmap bitmap, boolean fromReplaceTiles) {
         if (TextUtils.isTextEmpity(key) || bitmap == null || bitmap.isRecycled())
             return -1;
         int[] textureId = new int[1];
         try {
             GLES30.glGenTextures(1, textureId, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
             GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);

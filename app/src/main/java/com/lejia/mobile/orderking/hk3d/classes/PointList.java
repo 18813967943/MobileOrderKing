@@ -205,12 +205,13 @@ public class PointList implements Parcelable {
         if (size == 0)
             return null;
         RectD rectD = new RectD();
-        double minX = Float.MAX_VALUE;
-        double maxX = Float.MIN_VALUE;
-        double minY = Float.MAX_VALUE;
-        double maxY = Float.MIN_VALUE;
+        double minX = Integer.MAX_VALUE; // 使用整形最大最小值，double不支持负数
+        double maxX = Integer.MIN_VALUE;
+        double minY = Integer.MAX_VALUE;
+        double maxY = Integer.MIN_VALUE;
         try {
-            for (Point point : pointsList) {
+            for (int i = 0; i < pointsList.size(); i++) {
+                Point point = pointsList.get(i);
                 if (point.x < minX) {
                     minX = point.x;
                 }

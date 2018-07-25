@@ -5,34 +5,27 @@ in vec4 vColor; // 颜色
 in vec3 vNormal; // 法线
 in vec4 vShadowCoord; // 阴影纹理
 in vec2 uv0;
-in vec2 uv1;
 uniform vec3 uLightPos; // 灯光位置
 uniform sampler2D uShadowTexture; // 阴影纹理通道编号
 uniform sampler2D s_baseMap; // 正常模型或面的材质纹理通道编号
 uniform float s_flags; // 颜色使用标志
-uniform float n_flags; // 法线贴图标志
 uniform float l_flags; // 光照使用标志
 out vec4 outColor;
 void main()
 {
      bool needColor = (s_flags==1.0); // 是否只需要颜色填充
      bool hasLight = (l_flags==1.0); // 是否开启即时光影
-     bool hasNormalMap = (n_flags==1.0); // 是否包含法线贴图
      if(needColor){
          outColor = vColor;
      }else{
          outColor = texture(s_baseMap, uv0);
-         if(hasNormalMap){
-            vec4 normalMap = texture(s_baseMap, uv1);
-            outColor = outColor*normalMap + outColor*0.2;
-         }
          if(hasLight){
             // 灯光至点的单位向量
             vec3 lightVec = uLightPos - vPosition;
             lightVec = normalize(lightVec);
             // 镜面光环境光
-            float diffuseComponent = max(0.0,dot(lightVec, vNormal) );
-            float ambientComponent = 0.3;
+            float diffuseComponent = max(0.0,dot(lightVec, vNormal));
+            float ambientComponent = 0.7;
             // 阴影处理
             float shadow = 1.0;
             if(vShadowCoord.w > 0.0){

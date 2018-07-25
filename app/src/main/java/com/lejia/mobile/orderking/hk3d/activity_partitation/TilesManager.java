@@ -15,7 +15,10 @@ import com.lejia.mobile.orderking.adapters.TilesPreviewAdapter;
 import com.lejia.mobile.orderking.adapters.TilesRightIconsAdapter;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
-import com.lejia.mobile.orderking.hk3d.classes.Tile;
+import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
+import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
+import com.lejia.mobile.orderking.hk3d.datas.Ground;
+import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.httpsResult.ResponseEntity;
@@ -73,10 +76,6 @@ public class TilesManager {
     private MatrerialTypesListAdapter nodesAdapter;
     private ArrayList<LJNodes> materialNodesList;
 
-    // 节点详细节点列表适配器
-    private MatrerialTypesListAdapter detailesAdapter;
-    private ArrayList<LJNodes> detailesNodesList;
-
     /**
      * 修改版本后的右边按钮
      */
@@ -106,15 +105,15 @@ public class TilesManager {
     /**
      * 当前总资源预览图列表
      */
-    private ArrayList<Tile> tilesList;
+    private ArrayList<TileDescription> tileDescriptionsList;
 
     // 资源预览图列表适配器
     private TilesPreviewAdapter tilesPreviewAdapter;
 
     private void init() {
         // 菜单图标资源设定
-        tilesNormalTopIcons = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.wode};
-        tilesSelectTopIcons = new int[]{R.mipmap.yangshi, R.mipmap.huanzhuan_copy, R.mipmap.wode_copy};
+        tilesNormalTopIcons = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.fangan, R.mipmap.wode};
+        tilesSelectTopIcons = new int[]{R.mipmap.yangshi, R.mipmap.huanzhuan_copy, R.mipmap.rectangle_3_copy_4, R.mipmap.wode_copy};
         tilesNormalBottomIcons = new int[]{R.mipmap.quyu, R.mipmap.huagong, R.mipmap.qipu, R.mipmap.jiaodu};
         tilesSelectBottomIcons = new int[]{R.mipmap.quyu_copy, R.mipmap.huagong_copy, R.mipmap.qipu_copy, R.mipmap.jiaodu_copy};
         layoutNormalTopIcons = new int[]{R.mipmap.kecanting, R.mipmap.woshi, R.mipmap.chufang,
@@ -142,16 +141,15 @@ public class TilesManager {
         nodesList.setOnItemClickListener(mainNodesItemClickListener);
         detaileList.setOnItemClickListener(detailesItemClickListener);
         // 材质展示窗口
-        tilesList = new ArrayList<>();
-        tilesPreviewAdapter = new TilesPreviewAdapter(context, tilesList);
+        tileDescriptionsList = new ArrayList<>();
+        tilesPreviewAdapter = new TilesPreviewAdapter(context, tileDescriptionsList);
         tilesGrid.setAdapter(tilesPreviewAdapter);
         tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
         tilesGrid.setOnItemClickListener(onItemClickListener);
         tilesGrid.setSelector(R.drawable.grid_selector);
         // 修改版本展示使用
-        detailesNodesList = materialNodesList.get(1).getChildrenList();
         tilesRightTopIconsAdapter.setSelectePosition(1);
-        showPage(0, 1, true);
+        showPage(1, 1, true);
     }
 
     public TilesManager(Activity activity, TitlesView titlesView, RelativeLayout menuLayout
@@ -256,7 +254,7 @@ public class TilesManager {
     private AdapterView.OnItemClickListener mainNodesItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+            tilesRightBottomIconsAdapter.setSelectePosition(position);
         }
     };
 
@@ -264,7 +262,8 @@ public class TilesManager {
     private AdapterView.OnItemClickListener detailesItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+            tilesRightTopIconsAdapter.setSelectePosition(position);
+            showPage(position, 1, true);
         }
     };
 
@@ -276,10 +275,10 @@ public class TilesManager {
      * @param needClearList   是否清楚当前已加载的数据内容
      */
     private void showPage(int detailNodeIndex, int page, boolean needClearList) {
-        currentLoadNode = detailesNodesList.get(detailNodeIndex);
+        currentLoadNode = materialNodesList.get(detailNodeIndex);
         this.page = page;
         if (needClearList) {
-            tilesList.clear();
+            tileDescriptionsList.clear();
         }
         getPage();
     }
@@ -306,13 +305,13 @@ public class TilesManager {
                         // 有数据时刷新
                         if (entity.state == 1) {
                             JSONArray array = entity.getJSonArray("materialList");
-                            ArrayList<Tile> pageTilesList = new ArrayList<>();
+                            ArrayList<TileDescription> pageTileDiscriptionsList = new ArrayList<>();
                             for (int i = 0; i < array.length(); i++) {
                                 JSONObject object = array.getJSONObject(i);
-                                Tile tile = new Gson().fromJson(object.toString(), Tile.class);
-                                pageTilesList.add(tile);
+                                TileDescription tileDescription = new Gson().fromJson(object.toString(), TileDescription.class);
+                                pageTileDiscriptionsList.add(tileDescription);
                             }
-                            tilesList.addAll(pageTilesList);
+                            tileDescriptionsList.addAll(pageTileDiscriptionsList);
                             // 刷新列表显示
                             tilesPreviewAdapter.notifyDataSetChanged();
                         }
@@ -348,7 +347,17 @@ public class TilesManager {
     private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            System.out.println("##### position : " + position + "  code : " + tilesList.get(position).getMaterialCode());
+            // 获取三维场景数据触摸管理对象
+            TouchSelectedManager touchSelectedManager = designer3DManager.getDesigner3DRender().getTouchSelectedManager();
+            if (touchSelectedManager != null) {
+                RendererObject selector = touchSelectedManager.getSelector();
+                if (selector != null && (selector instanceof Ground)) { // 选中对象为地面时
+                    Ground ground = (Ground) selector;
+                    ArrayList<TileDescription> useTileDescriptionsList = new ArrayList<>();
+                    useTileDescriptionsList.add(tileDescriptionsList.get(position));
+                    ground.setTileDescriptionsList(useTileDescriptionsList);
+                }
+            }
         }
     };
 

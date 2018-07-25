@@ -24,15 +24,15 @@ public class Trianglulate {
      * @param points
      * @return
      */
-    public int[] getTristrip(Point[] points) {
+    public short[] getTristrip(Point[] points) {
         triangleIndices = new ArrayList<>();
         process(points, true);
         if (triangleIndices.size() == 0)
             return null;
         int size = triangleIndices.size();
-        int[] indices = new int[size];
+        short[] indices = new short[size];
         for (int i = 0; i < size; i++) {
-            indices[i] = triangleIndices.get(i).intValue();
+            indices[i] = triangleIndices.get(i).shortValue();
         }
         triangleIndices.clear();
         triangleIndices = null;

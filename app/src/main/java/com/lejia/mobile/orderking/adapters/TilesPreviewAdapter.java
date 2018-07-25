@@ -9,7 +9,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.lejia.mobile.orderking.R;
-import com.lejia.mobile.orderking.hk3d.classes.Tile;
+import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
+import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.util.ArrayList;
 
@@ -22,9 +23,9 @@ import java.util.ArrayList;
 public class TilesPreviewAdapter extends BaseAdapter {
 
     private Context mContext;
-    private ArrayList<Tile> tilesList;
+    private ArrayList<TileDescription> tilesList;
 
-    public TilesPreviewAdapter(Context context, ArrayList<Tile> tilesList) {
+    public TilesPreviewAdapter(Context context, ArrayList<TileDescription> tilesList) {
         mContext = context;
         this.tilesList = tilesList;
     }
@@ -44,6 +45,16 @@ public class TilesPreviewAdapter extends BaseAdapter {
         return position;
     }
 
+    /**
+     * 获取预览图名称
+     */
+    private String getMaterialName(String url) {
+        if (TextUtils.isTextEmpity(url))
+            return null;
+        String[] vs = url.split("[//]");
+        return vs[vs.length - 1].split("[.]")[0];
+    }
+
     @Override
     public View getView(int position, View v, ViewGroup parent) {
         ViewHolder holder = null;
@@ -56,9 +67,11 @@ public class TilesPreviewAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) v.getTag();
         }
-        Tile tile = tilesList.get(position);
-        holder.name.setText(tile.getMaterialName());
-        Glide.with(mContext).load(tile.getImageURL()).into(holder.preview);
+        TileDescription tile = tilesList.get(position);
+        String imageUrl = tile.getPreviewImg();
+        String name = getMaterialName(imageUrl);
+        holder.name.setText(name);
+        Glide.with(mContext).load(imageUrl).into(holder.preview);
         return v;
     }
 

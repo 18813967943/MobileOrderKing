@@ -125,11 +125,11 @@ public abstract class House {
             for (Wall wall : wallsList) {
                 wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
-            if (ground != null) {
-                ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-            }
             if (selector != null && selected) {
                 selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
+            if (ground != null) {
+                ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,8 +174,15 @@ public abstract class House {
     public void initGroundAndSelector() {
         if (innerPointList == null || innerPointList.invalid())
             return;
-        ground = new Ground(innerPointList);
+        ground = new Ground(innerPointList, this);
         selector = new Selector(innerPointList);
+    }
+
+    /**
+     * 获取选中对象
+     */
+    public Selector getSelector() {
+        return selector;
     }
 
     /**

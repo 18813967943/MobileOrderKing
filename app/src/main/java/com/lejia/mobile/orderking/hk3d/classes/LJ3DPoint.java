@@ -261,7 +261,7 @@ public class LJ3DPoint implements Parcelable {
         int ssz = spaceList.size();
         for (int i = 0; i < ssz; i++) {
             RendererObject space = spaceList.get(i);
-            int[] indices = space.indices;
+            short[] indices = space.indices;
             ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
             int size = indices.length / 3;
             for (int j = 0; j < size; j++) {
@@ -367,7 +367,7 @@ public class LJ3DPoint implements Parcelable {
         // 循环遍历面
         for (int i = 0; i < objectList.size(); i++) {
             RendererObject space = objectList.get(i);
-            int[] indices = space.indices;
+            short[] indices = space.indices;
             ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
             for (int j = 0; j < indices.length / 3; j++) {
                 // 三角面顶点

@@ -1,5 +1,6 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
+import com.lejia.mobile.orderking.hk3d.classes.L3DMatrix;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 public class Area3D extends RendererObject {
 
     private boolean isWallTile; // 是否墙砖
+    private boolean isGap; // 是否是砖缝
     private String materialCode; // 瓷砖编码
     private ArrayList<Point> pointsList; // 围点
 
@@ -65,9 +67,10 @@ public class Area3D extends RendererObject {
         }
     }
 
-    public Area3D(boolean isWallTile, int textureId, String materialCode, ArrayList<Point> pointsList) {
+    public Area3D(boolean isWallTile, int textureId, boolean isGap, String materialCode, ArrayList<Point> pointsList) {
         this.isWallTile = isWallTile;
         this.textureId = textureId;
+        this.isGap = isGap;
         this.materialCode = materialCode;
         this.pointsList = pointsList;
         initDatas();
@@ -87,6 +90,22 @@ public class Area3D extends RendererObject {
 
     public String getMaterialCode() {
         return materialCode;
+    }
+
+    public boolean isGap() {
+        return isGap;
+    }
+
+    /**
+     * 平移区域围点
+     *
+     * @param transX
+     * @param transY
+     */
+    public ArrayList<Point> translatePointsList(double transX, double transY) {
+        if (pointsList == null || pointsList.size() == 0)
+            return null;
+        return L3DMatrix.translate(pointsList, transX, transY, 0);
     }
 
     @Override

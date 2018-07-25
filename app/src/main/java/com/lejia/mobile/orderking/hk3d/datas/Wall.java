@@ -36,7 +36,7 @@ public class Wall extends RendererObject {
         pointList.setPointsList(pointList.antiClockwise());
         pointsList = pointList.getPointsList();
         lj3DPointsList = pointList.to3dList();
-        indices = new int[]{0, 1, 2, 0, 2, 3};
+        indices = new short[]{0, 1, 2, 0, 2, 3};
         vertexs = new float[3 * indices.length];
         colors = new float[4 * indices.length];
         normals = new float[3 * indices.length];
@@ -74,17 +74,14 @@ public class Wall extends RendererObject {
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         if (invalid)
             return;
-        vertexsBuffer.position(0);
-        GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 0, vertexsBuffer);
+        GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
         GLES30.glEnableVertexAttribArray(positionAttribute);
         if (!onlyPosition) {
-            normalsBuffer.position(0);
             GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false,
-                    0, normalsBuffer);
+                    12, normalsBuffer);
             GLES30.glEnableVertexAttribArray(normalAttribute);
-            colorsBuffer.position(0);
             GLES30.glVertexAttribPointer(colorAttribute, 4, GLES30.GL_FLOAT, false,
-                    0, colorsBuffer);
+                    16, colorsBuffer);
             GLES30.glEnableVertexAttribArray(colorAttribute);
             GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
         }

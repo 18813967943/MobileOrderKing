@@ -53,9 +53,4 @@ public class Direction {
      */
     public static final int DIR_CENTER = 8;
 
-    /**
-     * 倾斜45°角
-     */
-    public static final int DIR_SKEW_45 = 9;
-
 }

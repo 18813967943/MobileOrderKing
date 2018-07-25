@@ -27,11 +27,9 @@ public class ViewingShader {
     public static int scene_normalAttribute; // 法线
     public static int scene_colorAttribute; // 颜色
     public static int scene_uv0; // 光照贴图
-    public static int scene_uv1; // 法线贴图
     public static int scene_s_baseMap; // 材质贴图通道
     public static int scene_only_color; // 仅仅使用颜色渲染标志
     public static int scene_use_light; // 使用光照渲染标志
-    public static int scene_has_normal; // 是否包含法线贴图标志
 
     // 加载着色器
     public static void loadShader(Context context) {
@@ -48,9 +46,7 @@ public class ViewingShader {
         scene_normalAttribute = GLES30.glGetAttribLocation(mProgram, "aNormal");
         scene_colorAttribute = GLES30.glGetAttribLocation(mProgram, "aColor");
         scene_uv0 = GLES30.glGetAttribLocation(mProgram, "a_texCoord");
-        scene_uv1 = GLES30.glGetAttribLocation(mProgram, "uv1Coord");
         scene_only_color = GLES30.glGetUniformLocation(mProgram, "s_flags");
-        scene_has_normal = GLES30.glGetUniformLocation(mProgram, "n_flags");
         scene_use_light = GLES30.glGetUniformLocation(mProgram, "l_flags");
     }
 

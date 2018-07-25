@@ -129,5 +129,5 @@ public class OrderKingApplication extends Application {
         double screenInches = Math.sqrt(x + y);
         return screenInches >= 7.0d;
     }
-    
+
 }

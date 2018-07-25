@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class DummyGround extends RendererObject {
 
     public DummyGround(Context context) {
-        indices = new int[]{0, 1, 2, 0, 2, 3};
+        indices = new short[]{0, 1, 2, 0, 2, 3};
         lj3DPointsList = new ArrayList<>();
         int maxValue = Integer.MAX_VALUE / 10000;
         lj3DPointsList.add(new LJ3DPoint(maxValue, maxValue, 0.0d));

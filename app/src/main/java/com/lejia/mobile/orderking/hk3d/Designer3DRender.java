@@ -1,6 +1,7 @@
 package com.lejia.mobile.orderking.hk3d;
 
 import android.content.Context;
+import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -72,6 +73,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     int[] depthTextureId;
     int[] renderTextureId;
 
+    // 触摸管理对象
+    private TouchSelectedManager touchSelectedManager;
+
+    // 当前渲染状态
+    private int rendererState = RendererState.STATE_2D;
+
     public Designer3DRender(Context context, OnRenderStatesListener onRenderStatesListener) {
         this.mContext = context;
         this.houseDatasManager = new HouseDatasManager(mContext);
@@ -82,6 +89,11 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     // 获取所有数据管理对象
     public HouseDatasManager getHouseDatasManager() {
         return houseDatasManager;
+    }
+
+    // 获取触摸选中管理对象
+    public TouchSelectedManager getTouchSelectedManager() {
+        return touchSelectedManager;
     }
 
     @Override
@@ -163,8 +175,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
         Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
-        // scale and translate
-
+        // scale 、translate 、rotate ModelMatrix
+        animationModelViews();
         //Set view matrix from light source position
         Matrix.setLookAtM(LightMatrixs.mLightViewMatrix, 0,
                 //lightX, lightY, lightZ,
@@ -175,16 +187,15 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 //upX, upY, upZ
                 //up vector in the direction of axisY
                 -LightMatrixs.mActualLightPosition[0], 0, -LightMatrixs.mActualLightPosition[2]);
-        //------------------------- render depth map --------------------------
 
-        // Cull front faces for shadow generation to avoid self shadowing
-        GLES30.glCullFace(GLES30.GL_FRONT);
+        // 关闭剔除3.0不支持
+        GLES30.glDisable(GLES20.GL_CULL_FACE);
+        //------------------------- render depth map --------------------------
+        // shadow generation to avoid self shadowing
         renderShadowMap();
 
         //------------------------- render scene ------------------------------
-
-        // Cull back faces for normal render
-        GLES30.glCullFace(GLES30.GL_BACK);
+        // normal render
         renderScene();
 
         // Print openGL errors to console
@@ -193,6 +204,14 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             String msg = "OpenGL error: " + debugInfo;
             Log.w(TAG, msg);
         }
+    }
+
+    /**
+     * TODO 执行切换动画
+     */
+    private void animationModelViews() {
+        int setRendererState = RendererState.getRenderState();
+
     }
 
     /**
@@ -226,7 +245,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         if (houseDatasManager != null) {
             ArrayList<House> housesList = houseDatasManager.getHousesList();
             if (housesList != null && housesList.size() > 0) {
-                for (House house : housesList) {
+                for (int i = housesList.size() - 1; i > -1; i--) {
+                    House house = housesList.get(i);
                     house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
                 }
             }
@@ -294,7 +314,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         if (houseDatasManager != null) {
             ArrayList<House> housesList = houseDatasManager.getHousesList();
             if (housesList != null && housesList.size() > 0) {
-                for (House house : housesList) {
+                for (int i = housesList.size() - 1; i > -1; i--) {
+                    House house = housesList.get(i);
                     house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
                             , ViewingShader.scene_colorAttribute, false);
                 }
@@ -342,7 +363,11 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             }
             object = LJ3DPoint.checkRayIntersectedObject(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
             if (object != null) {
-                System.out.println("#### RendererObject : " + object.getClass().getName());
+                if (touchSelectedManager == null)
+                    touchSelectedManager = new TouchSelectedManager(mContext, rendererObjectsList);
+                else
+                    touchSelectedManager.setRendererObjectsList(rendererObjectsList);
+                touchSelectedManager.setSelector(object);
             }
         }
     }

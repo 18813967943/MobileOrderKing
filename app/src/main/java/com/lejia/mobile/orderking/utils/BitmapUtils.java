@@ -171,8 +171,10 @@ public class BitmapUtils {
      * 镜像
      *
      * @param bitmap
+     * @param flag   0为x轴对调，1为y轴对调
+     * @return 返回镜像的位图
      */
-    public static Bitmap mirror(Bitmap bitmap) {
+    public static Bitmap mirror(Bitmap bitmap, int flag) {
         if (bitmap == null || bitmap.isRecycled())
             return null;
         Bitmap mirror = null;
@@ -181,8 +183,16 @@ public class BitmapUtils {
             Bitmap bitmap2 = Bitmap.createBitmap(bitmap1.getWidth(), bitmap1.getHeight(), Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap2);
             Matrix orig = canvas.getMatrix();
-            orig.setScale(-1, 1);                     //翻转X
-            orig.postTranslate(bitmap1.getWidth(), 0);//平移
+            //翻转X
+            if (flag == 0) {
+                orig.setScale(-1, 1);
+                orig.postTranslate(bitmap1.getWidth(), 0);//平移
+            }
+            // 翻转Y
+            else if (flag == 1) {
+                orig.setScale(1, -1);
+                orig.postTranslate(0, bitmap1.getHeight());//平移
+            }
             canvas.drawBitmap(bitmap1, orig, null);
             mirror = bitmap2;
         } catch (Exception e) {
@@ -214,6 +224,5 @@ public class BitmapUtils {
         res.recycle();
         return ret;
     }
-
 
 }

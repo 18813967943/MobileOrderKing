@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
 
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -11,6 +12,7 @@ import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
 import com.lejia.mobile.orderking.hk3d.gpc.GPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
+import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,9 +27,11 @@ import java.util.UUID;
  */
 public class Ground extends RendererObject {
 
+    private House house; // 所属房间
     private boolean needLoadBitmap; // 是否需要加载瓷砖贴图
     private boolean canDraw; // 是否可渲染
     private boolean needBindTextureId; // 是否需要打开绑定材质贴图标签
+    private boolean fromReplaceTiles; // 来自于瓷砖替换操作
     private PointList pointList; // 地面围点列表
     private GPCManager gpcManager; // 切割管理对象
 
@@ -45,16 +49,16 @@ public class Ground extends RendererObject {
         uuid = UUID.randomUUID().toString();
         // 字节缓存数据
         pointList.setPointsList(pointList.antiClockwise());
-        indices = new Trianglulate().getTristrip(pointList.toArray());
         lj3DPointsList = pointList.to3dList();
         RectD box = pointList.getRectBox();
         indices = new Trianglulate().getTristrip(pointList.toArray());
-        vertexs = new float[3 * indices.length];
-        texcoord = new float[2 * indices.length];
-        normals = new float[3 * indices.length];
+        int size = indices.length;
+        vertexs = new float[3 * size];
+        texcoord = new float[2 * size];
+        normals = new float[3 * size];
         LJ3DPoint normal = LJ3DPoint.spaceNormal(lj3DPointsList.get(indices[0]), lj3DPointsList.get(indices[1])
                 , lj3DPointsList.get(indices[2]));
-        for (int i = 0; i < indices.length; i++) {
+        for (int i = 0; i < size; i++) {
             LJ3DPoint point = lj3DPointsList.get(indices[i]);
             int index = 3 * i;
             vertexs[index] = (float) point.x;
@@ -64,7 +68,7 @@ public class Ground extends RendererObject {
             normals[index + 1] = (float) normal.y;
             normals[index + 2] = (float) normal.z;
             int uvIndex = 2 * i;
-            texcoord[uvIndex] = (float) (Math.abs(point.x - box.left) / box.width());
+            texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
             texcoord[uvIndex + 1] = (float) (Math.abs(point.y - box.bottom) / box.height());
         }
         vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -73,11 +77,19 @@ public class Ground extends RendererObject {
         normalsBuffer.put(normals).position(0);
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
+        indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
+        indicesBuffer.put(indices).position(0);
     }
 
-    public Ground(PointList pointList) {
+    public Ground(PointList pointList, House house) {
         this.pointList = pointList;
+        this.house = house;
         initDatas();
+    }
+
+    // 获取所属的房间
+    public House getHouse() {
+        return house;
     }
 
     /**
@@ -92,10 +104,29 @@ public class Ground extends RendererObject {
             cellSize = this.tileDescriptionsList.size();
             cellCount = 0;
             canDraw = false;
+            fromReplaceTiles = true;
             for (TileDescription tileDescription : this.tileDescriptionsList) {
                 tileDescription.loadBitmaps(onTileDescriptionLoadListener);
             }
         }
+    }
+
+    /**
+     * 根据材质编码获取材质位图
+     *
+     * @param materialCode 编码
+     * @return 返回对应贴图
+     */
+    public Bitmap getTileBitmap(String materialCode) {
+        if (TextUtils.isTextEmpity(materialCode) || tileDescriptionsList == null || tileDescriptionsList.size() == 0)
+            return null;
+        Bitmap bmp = null;
+        for (TileDescription tileDescription : tileDescriptionsList) {
+            bmp = tileDescription.getTileBitmap(materialCode);
+            if (bmp != null)
+                break;
+        }
+        return bmp;
     }
 
     /**
@@ -113,6 +144,20 @@ public class Ground extends RendererObject {
         }
     };
 
+    /**
+     * 铺砖完成结果监听对象
+     */
+    private OnTilesResultListener onTilesResultListener = new OnTilesResultListener() {
+        @Override
+        public void textureJointCompleted(Bitmap bitmap) {
+            if (bitmap != null) {
+                Ground.this.bitmap = bitmap;
+                needBindTextureId = true;
+                refreshRender();
+            }
+        }
+    };
+
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         // 进行切割
@@ -120,40 +165,29 @@ public class Ground extends RendererObject {
             needLoadBitmap = false;
             // 进行铺砖对象切割
             if (gpcManager == null)
-                gpcManager = new GPCManager(pointList, tileDescriptionsList);
-            else
-                gpcManager.setTileDescriptionsList(tileDescriptionsList);
-            gpcManager.setOnTilesResultListener(new OnTilesResultListener() {
-                @Override
-                public void textureJointCompleted(Bitmap bitmap) {
-                    if (bitmap != null) {
-                        Ground.this.bitmap = bitmap;
-                        needBindTextureId = true;
-                        refreshRender();
-                    }
-                }
-            });
+                gpcManager = new GPCManager(pointList, tileDescriptionsList, this, onTilesResultListener);
+            gpcManager.setTileDescriptionsList(tileDescriptionsList);
         }
         // 渲染内容
         else {
             // 加载材质贴图
             if (needBindTextureId) {
                 needBindTextureId = false;
-                textureId = createTextureIdAndCache(uuid, bitmap);
+                textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
                 canDraw = true;
                 refreshRender();
             }
             // 材质贴图不为空
             if (textureId != -1 && canDraw) {
-                vertexsBuffer.position(0); // 顶点
-                GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 0, vertexsBuffer);
+                // 顶点
+                GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
                 GLES30.glEnableVertexAttribArray(positionAttribute);
                 if (!onlyPosition) {
-                    normalsBuffer.position(0); // 法线
-                    GLES30.glVertexAttribPointer(ViewingShader.scene_normalAttribute, 3, GLES30.GL_FLOAT, false, 0, normalsBuffer);
-                    GLES30.glEnableVertexAttribArray(ViewingShader.scene_normalAttribute);
-                    texcoordBuffer.position(0); // 纹理
-                    GLES30.glVertexAttribPointer(ViewingShader.scene_uv0, 2, GLES30.GL_FLOAT, false, 0, texcoordBuffer);
+                    // 法线
+                    GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false, 12, normalsBuffer);
+                    GLES30.glEnableVertexAttribArray(normalAttribute);
+                    // 纹理
+                    GLES30.glVertexAttribPointer(ViewingShader.scene_uv0, 2, GLES30.GL_FLOAT, false, 8, texcoordBuffer);
                     GLES30.glEnableVertexAttribArray(ViewingShader.scene_uv0);
                     // 贴图
                     GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
@@ -161,8 +195,11 @@ public class Ground extends RendererObject {
                     GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
                     // 着色器使用标志
                     GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                    GLES30.glUniform1f(ViewingShader.scene_has_normal, 0.0f);
-                    GLES30.glUniform1f(ViewingShader.scene_use_light, 1.0f);
+                    if (RendererState.isNot2D()) {
+                        GLES30.glUniform1f(ViewingShader.scene_use_light, 1.0f);
+                    } else {
+                        GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
+                    }
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
             }
