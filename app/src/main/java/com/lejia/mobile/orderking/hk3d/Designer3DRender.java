@@ -8,6 +8,7 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PolyM;
@@ -34,6 +35,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
     private Context mContext;
     private OnRenderStatesListener onRenderStatesListener;
+    private boolean release; // 释放数据
 
     /**
      * 数据管理对象
@@ -64,7 +66,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
      */
     private float eyeX;
     private float eyeY;
-    private float eyeZ = -far / 10;
+    private float eyeZ = -far / 20;
 
     /**
      * FBO
@@ -174,7 +176,10 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
+        // set model view default
         Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
+        // set the matrix to the phone or tablet align to left and top directions
+        Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
         // scale 、translate 、rotate ModelMatrix
         animationModelViews();
         //Set view matrix from light source position
@@ -197,6 +202,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         //------------------------- render scene ------------------------------
         // normal render
         renderScene();
+
+        // release datas
+        if (release) {
+            release = false;
+            release();
+        }
 
         // Print openGL errors to console
         int debugInfo = GLES30.glGetError();
@@ -416,6 +427,31 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             }
         }
         return null;
+    }
+
+    /**
+     * 请求释放数据
+     */
+    public void requestRelease() {
+        this.release = true;
+        ((OrderKingApplication) mContext.getApplicationContext()).render();
+    }
+
+    /**
+     * 释放具体数据
+     */
+    private void release() {
+        ArrayList<House> housesList = houseDatasManager.getHousesList();
+        if (housesList != null && housesList.size() > 0) {
+            for (House house : housesList) {
+                ArrayList<RendererObject> rendererObjectsList = house.getTotalRendererObjectList();
+                if (rendererObjectsList != null && rendererObjectsList.size() > 0) {
+                    for (RendererObject rendererObject : rendererObjectsList) {
+                        rendererObject.release();
+                    }
+                }
+            }
+        }
     }
 
 }

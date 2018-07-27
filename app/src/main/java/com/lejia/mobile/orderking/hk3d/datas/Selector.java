@@ -68,17 +68,16 @@ public class Selector extends RendererObject {
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         // Pass in the position information
-        vertexsBuffer.position(0);
-        GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 0, vertexsBuffer);
+        GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
         GLES30.glEnableVertexAttribArray(positionAttribute);
         if (!onlyPosition) {
             // Pass in the color information
-            colorsBuffer.position(0);
             GLES30.glVertexAttribPointer(colorAttribute, 4, GLES30.GL_FLOAT, false,
-                    0, colorsBuffer);
+                    16, colorsBuffer);
             GLES30.glEnableVertexAttribArray(colorAttribute);
             // use color only render
-            GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
+            GLES30.glUniform1f(ViewingShader.scene_only_color, 1.0f);
+            GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
         }
         // draw selector lines
         GLES30.glLineWidth(8.0f);

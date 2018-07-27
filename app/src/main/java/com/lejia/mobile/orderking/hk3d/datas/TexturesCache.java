@@ -67,8 +67,7 @@ public class TexturesCache {
             Map.Entry<String, Texture> entry = iterator.next();
             Texture texture = entry.getValue();
             texture.release();
-            texture = null;
-            entry.setValue(texture);
+            entry.setValue(null);
         }
         clear();
     }

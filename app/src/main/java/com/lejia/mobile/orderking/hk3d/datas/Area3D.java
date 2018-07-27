@@ -17,22 +17,28 @@ import java.util.ArrayList;
  */
 public class Area3D extends RendererObject {
 
-    private boolean isWallTile; // 是否墙砖
     private boolean isGap; // 是否是砖缝
     private String materialCode; // 瓷砖编码
-    private ArrayList<Point> pointsList; // 围点
+    private ArrayList<Point> pointsList; // 自身切割后的围点(实际显示的)
+    private ArrayList<Point> originList; // 自身完整区域的围点
 
     private int horizontalAngle; // 水平旋转角度
     private int verticalAngle; // 垂直旋转角度
 
+    /**
+     * 铺砖类型，默认为普通铺砖
+     */
+    private int styleType = 1;
+
     private void initDatas() {
         PointList pointList = new PointList(pointsList);
+        PointList mOriginList = new PointList(originList);
         if (pointList.invalid())
             return;
         pointList.setPointsList(pointList.antiClockwise());
         pointsList = pointList.getPointsList();
         lj3DPointsList = pointList.to3dList();
-        RectD box = pointList.getRectBox();
+        RectD box = mOriginList.getRectBox();
         indices = new Trianglulate().getTristrip(pointList.toArray());
         vertexs = new float[3 * indices.length];
         texcoord = new float[2 * indices.length];
@@ -67,17 +73,12 @@ public class Area3D extends RendererObject {
         }
     }
 
-    public Area3D(boolean isWallTile, int textureId, boolean isGap, String materialCode, ArrayList<Point> pointsList) {
-        this.isWallTile = isWallTile;
-        this.textureId = textureId;
+    public Area3D(boolean isGap, String materialCode, ArrayList<Point> pointsList, ArrayList<Point> originList) {
         this.isGap = isGap;
         this.materialCode = materialCode;
         this.pointsList = pointsList;
+        this.originList = originList;
         initDatas();
-    }
-
-    public boolean isWallTile() {
-        return isWallTile;
     }
 
     public int getHorizontalAngle() {
@@ -94,6 +95,18 @@ public class Area3D extends RendererObject {
 
     public boolean isGap() {
         return isGap;
+    }
+
+    public int getStyleType() {
+        return styleType;
+    }
+
+    public void setStyleType(int styleType) {
+        this.styleType = styleType;
+    }
+
+    public ArrayList<Point> getPointsList() {
+        return pointsList;
     }
 
     /**

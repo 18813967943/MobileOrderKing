@@ -116,6 +116,15 @@ public class OrderKingApplication extends Application {
     }
 
     /**
+     * 释放三维加载过的数据
+     */
+    public void release3DViews() {
+        if (designer3DSurfaceView == null)
+            return;
+        designer3DSurfaceView.getDesigner3DRender().requestRelease();
+    }
+
+    /**
      * 根据设备尺寸分辨手机或平板
      *
      * @return

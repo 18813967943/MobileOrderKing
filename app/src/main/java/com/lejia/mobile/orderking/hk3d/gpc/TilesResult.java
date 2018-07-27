@@ -2,6 +2,8 @@ package com.lejia.mobile.orderking.hk3d.gpc;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
 
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -27,7 +29,7 @@ public class TilesResult {
     /**
      * 对应的切割管理对象
      */
-    private GPCManager gpcManager;
+    private NSGPCManager gpcManager;
 
     /**
      * 所有切割结果区域列表
@@ -44,17 +46,24 @@ public class TilesResult {
     private double transX;
     private double transY;
 
+    // 缝隙颜色画笔
+    private Paint gapPaint;
+
     private void initCanvas() {
         if (box == null)
             return;
         holeBitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(holeBitmap);
-        canvas.drawColor(gpcManager.getGapsColor());
         transX = -box.left;
         transY = -box.top;
+        gapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        gapPaint.setDither(true);
+        gapPaint.setAntiAlias(true);
+        gapPaint.setStyle(Paint.Style.FILL);
+        gapPaint.setColor(gpcManager.getGapsColor());
     }
 
-    public TilesResult(RectD rectD, GPCManager gpcManager) {
+    public TilesResult(RectD rectD, NSGPCManager gpcManager) {
         this.box = rectD;
         this.gpcManager = gpcManager;
         this.area3DSList = new ArrayList<>();
@@ -66,7 +75,11 @@ public class TilesResult {
      */
     public void refreshGapsColor() {
         canvas.drawColor(gpcManager.getGapsColor());
-
+        for (Area3D area3D : area3DSList) {
+            if (!area3D.isGap()) {
+                saveArea3DBitmap(area3D);
+            }
+        }
     }
 
     /**
@@ -79,23 +92,48 @@ public class TilesResult {
             return;
         // 实砖
         if (!area3D.isGap()) {
-            Bitmap bitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode()).copy(Bitmap.Config.ARGB_8888, true);
-            if (bitmap == null || bitmap.isRecycled())
-                return;
-            // 根据区域纹理旋转角度，对资源进行翻转
-            if (area3D.getHorizontalAngle() == 180) {
-                bitmap = BitmapUtils.mirror(bitmap, 0);
-            }
-            if (area3D.getVerticalAngle() == 180) {
-                bitmap = BitmapUtils.mirror(bitmap, 1);
-            }
-            ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
-            PointList pointList = new PointList(transList);
-            RectD box = pointList.getRectBox();
-            canvas.drawBitmap(bitmap, (float) box.left, (float) box.top, null);
-            bitmap.recycle();
+            saveArea3DBitmap(area3D);
+        }
+        // 砖缝
+        else {
+            saveGap(area3D);
         }
         area3DSList.add(area3D);
+    }
+
+    /**
+     * 绘制砖缝至总画布
+     */
+    private void saveGap(Area3D area3D) {
+        if (area3D == null)
+            return;
+        ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
+        Path path = new PointList(transList).getPath(true);
+        canvas.drawPath(path, gapPaint);
+    }
+
+    /**
+     * 保存单个区域的铺砖材质至总画布
+     *
+     * @param area3D
+     */
+    private void saveArea3DBitmap(Area3D area3D) {
+        Bitmap bitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode()
+                , area3D.getStyleType()).copy(Bitmap.Config.ARGB_8888, true);
+        if (bitmap == null || bitmap.isRecycled())
+            return;
+        // 根据区域纹理旋转角度，对资源进行翻转
+        if (area3D.getHorizontalAngle() == 180) {
+            bitmap = BitmapUtils.mirror(bitmap, 0);
+        }
+        if (area3D.getVerticalAngle() == 180) {
+            bitmap = BitmapUtils.mirror(bitmap, 1);
+        }
+        ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
+        PointList pointList = new PointList(transList);
+        RectD box = pointList.getRectBox();
+        canvas.drawBitmap(bitmap, (float) box.left, (float) box.top, null);
+        bitmap.recycle();
     }
 
     /**

@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
-import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.datas.Ground;
 
@@ -19,7 +18,7 @@ import java.util.ArrayList;
  * @time 2018/7/10 9:51
  * TODO: 切割管理对象
  */
-public class GPCManager {
+public class NSGPCManager {
 
     private Context mContext;
     private PointList pointList; // 围点
@@ -39,12 +38,12 @@ public class GPCManager {
     /**
      * 砖缝颜色
      */
-    private int gapsColor = 0xFF000000;
+    private int gapsColor = 0xFF333333;
 
     /**
      * 砖缝厚度
      */
-    private int brickGap = 5;
+    private int brickGap = 2;
 
     /**
      * 铺砖结果对象
@@ -56,8 +55,8 @@ public class GPCManager {
      */
     private OnTilesResultListener onTilesResultListener;
 
-    public GPCManager(PointList pointList, ArrayList<TileDescription> tileDescriptionsList,
-                      Ground ground, OnTilesResultListener onTilesResultListener) {
+    public NSGPCManager(PointList pointList, ArrayList<TileDescription> tileDescriptionsList,
+                        Ground ground, OnTilesResultListener onTilesResultListener) {
         this.mContext = OrderKingApplication.getInstant();
         this.pointList = pointList;
         this.tileDescriptionsList = tileDescriptionsList;
@@ -154,7 +153,7 @@ public class GPCManager {
             protected TilesResult doInBackground(String... strings) {
                 // 进行新的切割操作
                 if (tilesResult == null)
-                    tilesResult = new TilesResult(pointList.getRectBox(), GPCManager.this);
+                    tilesResult = new TilesResult(pointList.getRectBox(), NSGPCManager.this);
                 else
                     tilesResult.clearDatas();
                 try {
@@ -163,7 +162,8 @@ public class GPCManager {
                         switch (tileDescription.styleType) {
                             case 1:
                                 // 普通砖
-                                normalTile(pointsList, tileDescription);
+                                new SingleTilePave(mContext, pointsList, tileDescription, skewTile,
+                                        direction, brickGap, NSGPCManager.this, tilesResult);
                                 break;
                             case 2:
                                 // 波打线
@@ -193,65 +193,6 @@ public class GPCManager {
                     onTilesResultListener.textureJointCompleted(tilesResult.getHoleBitmap());
             }
         }.execute();
-    }
-
-    /**
-     * 普通砖切割
-     *
-     * @param pointsList
-     * @param tileDescription
-     */
-    private void normalTile(ArrayList<Point> pointsList, TileDescription tileDescription) {
-        if (pointsList == null || pointsList.size() == 0)
-            return;
-        PointList pointList = new PointList(pointsList);
-        RectD box = pointList.getRectBox();
-        Point begainPoint = null;
-        int width = tileDescription.getTileWidth(0);
-        int height = tileDescription.getTileHeight(0);
-        switch (direction) {
-            case Direction.DIR_LEFT_TOP:
-                // 左上
-                begainPoint = new Point(box.left, box.top);
-                break;
-            case Direction.DIR_TOP_CENTER:
-                // 上中
-                begainPoint = new Point(box.centerX(), box.top);
-                break;
-            case Direction.DIR_RIGHT_TOP:
-                // 右上
-                begainPoint = new Point(box.right, box.top);
-                break;
-            case Direction.DIR_RIGHT_CENTER:
-                // 右中
-                begainPoint = new Point(box.right, box.centerY());
-                break;
-            case Direction.DIR_RIGHT_BOTTOM:
-                // 右下
-                begainPoint = new Point(box.right, box.bottom);
-                break;
-            case Direction.DIR_BOTTOM_CENTER:
-                // 下中
-                begainPoint = new Point(box.centerX(), box.bottom);
-                break;
-            case Direction.DIR_LEFT_BOTTOM:
-                // 左下
-                begainPoint = new Point(box.left, box.bottom);
-                break;
-            case Direction.DIR_LEFT_CENTER:
-                // 左中
-                begainPoint = new Point(box.left, box.centerY());
-                break;
-            case Direction.DIR_CENTER:
-                // 居中
-                begainPoint = new Point(box.centerX(), box.centerY());
-                break;
-        }
-        double angle = 0.0d;
-        if (skewTile) {
-            angle = -45.0d;
-        }
-
     }
 
     // 获取铺砖结果对象

@@ -10,7 +10,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
-import com.lejia.mobile.orderking.hk3d.gpc.GPCManager;
+import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
@@ -33,7 +33,7 @@ public class Ground extends RendererObject {
     private boolean needBindTextureId; // 是否需要打开绑定材质贴图标签
     private boolean fromReplaceTiles; // 来自于瓷砖替换操作
     private PointList pointList; // 地面围点列表
-    private GPCManager gpcManager; // 切割管理对象
+    private NSGPCManager gpcManager; // 切割管理对象
 
     /**
      * 瓷砖列表
@@ -68,8 +68,8 @@ public class Ground extends RendererObject {
             normals[index + 1] = (float) normal.y;
             normals[index + 2] = (float) normal.z;
             int uvIndex = 2 * i;
-            texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
-            texcoord[uvIndex + 1] = (float) (Math.abs(point.y - box.bottom) / box.height());
+            texcoord[uvIndex] = (float) (Math.abs(point.x - box.left) / box.width());
+            texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(point.y - box.bottom) / box.height());
         }
         vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         vertexsBuffer.put(vertexs).position(0);
@@ -98,13 +98,15 @@ public class Ground extends RendererObject {
      * @param tileDescriptionsList
      */
     public void setTileDescriptionsList(ArrayList<TileDescription> tileDescriptionsList) {
+        if (tileDescriptionsList == null || tileDescriptionsList.size() == 0)
+            return;
+        fromReplaceTiles = !TileDescription.isTileDescriptionListEquals(this.tileDescriptionsList, tileDescriptionsList);
         this.tileDescriptionsList = tileDescriptionsList;
         // 有效加载数据
         if (this.tileDescriptionsList != null && this.tileDescriptionsList.size() > 0) {
             cellSize = this.tileDescriptionsList.size();
             cellCount = 0;
             canDraw = false;
-            fromReplaceTiles = true;
             for (TileDescription tileDescription : this.tileDescriptionsList) {
                 tileDescription.loadBitmaps(onTileDescriptionLoadListener);
             }
@@ -117,15 +119,23 @@ public class Ground extends RendererObject {
      * @param materialCode 编码
      * @return 返回对应贴图
      */
-    public Bitmap getTileBitmap(String materialCode) {
+    public Bitmap getTileBitmap(String materialCode, int styleType) {
         if (TextUtils.isTextEmpity(materialCode) || tileDescriptionsList == null || tileDescriptionsList.size() == 0)
             return null;
         Bitmap bmp = null;
-        for (TileDescription tileDescription : tileDescriptionsList) {
-            bmp = tileDescription.getTileBitmap(materialCode);
-            if (bmp != null)
-                break;
+        // 普通铺砖、波打线
+        if (styleType <= 2) {
+            for (TileDescription tileDescription : tileDescriptionsList) {
+                bmp = tileDescription.getTileBitmap(materialCode);
+                if (bmp != null)
+                    break;
+            }
         }
+        // 样式砖
+        else {
+
+        }
+        // 方案砖
         return bmp;
     }
 
@@ -165,7 +175,7 @@ public class Ground extends RendererObject {
             needLoadBitmap = false;
             // 进行铺砖对象切割
             if (gpcManager == null)
-                gpcManager = new GPCManager(pointList, tileDescriptionsList, this, onTilesResultListener);
+                gpcManager = new NSGPCManager(pointList, tileDescriptionsList, this, onTilesResultListener);
             gpcManager.setTileDescriptionsList(tileDescriptionsList);
         }
         // 渲染内容

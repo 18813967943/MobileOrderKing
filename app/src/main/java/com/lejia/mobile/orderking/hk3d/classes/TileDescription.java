@@ -148,6 +148,17 @@ public class TileDescription implements Parcelable {
     }
 
     /**
+     * 获取材质编码
+     *
+     * @param position
+     */
+    public String getMaterialCode(int position) {
+        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+            return null;
+        return materialList.get(position).materialCode;
+    }
+
+    /**
      * 材质贴图加载完毕回调监听接口
      */
     private Tile.OnTileBitmapListener onTileBitmapListener = new Tile.OnTileBitmapListener() {
@@ -193,6 +204,41 @@ public class TileDescription implements Parcelable {
      */
     public interface OnTileDescriptionLoadListener {
         void onLoaded();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TileDescription)) {
+            return false;
+        }
+        TileDescription other = (TileDescription) obj;
+        if (other.styleType == styleType && other.previewImg.equals(previewImg) && other.size() == size()) {
+            return true;
+        }
+        return super.equals(obj);
+    }
+
+    /**
+     * 判断两组列表是否相同
+     *
+     * @param list1
+     * @param list2
+     * @return true表示选择铺砖方案相同
+     */
+    public static boolean isTileDescriptionListEquals(ArrayList<TileDescription> list1, ArrayList<TileDescription> list2) {
+        if (list1 == null || list2 == null || list1.size() == 0 || list2.size() == 0)
+            return false;
+        if (list1.size() != list2.size())
+            return false;
+        boolean equals = true;
+        for (int i = 0; i < list1.size(); i++) {
+            TileDescription t1 = list1.get(i);
+            TileDescription t2 = list2.get(i);
+            equals = equals && t1.equals(t2);
+            if (!equals)
+                break;
+        }
+        return equals;
     }
 
 }

@@ -80,6 +80,56 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 转为切割铺砖围点列表
+     *
+     * @return
+     */
+    public ArrayList<geom.Point> toGeomPointList() {
+        if (invalid())
+            return null;
+        ArrayList<geom.Point> geomList = new ArrayList<>();
+        for (Point point : pointsList) {
+            geomList.add(new geom.Point((float) point.x, (float) point.y));
+        }
+        return geomList;
+    }
+
+    /**
+     * 将铺砖切割围点转换成本列表围点
+     */
+    public static ArrayList<Point> staticExchangeGemoListToThisList(ArrayList<geom.Point> geomList) {
+        if (geomList == null || geomList.size() == 0)
+            return null;
+        ArrayList<Point> pointsList = new ArrayList<>();
+        for (geom.Point point : geomList) {
+            Point point1 = new Point();
+            point1.x = point.x;
+            point1.y = point.y;
+            pointsList.add(point1);
+        }
+        return pointsList;
+    }
+
+    /**
+     * 将铺砖切割围点转换成本列表围点
+     *
+     * @param geomList
+     * @return
+     */
+    public ArrayList<Point> exchangeGemoListToThisList(ArrayList<geom.Point> geomList) {
+        if (geomList == null || geomList.size() == 0)
+            return null;
+        ArrayList<Point> pointsList = new ArrayList<>();
+        for (geom.Point point : geomList) {
+            Point point1 = new Point();
+            point1.x = point.x;
+            point1.y = point.y;
+            pointsList.add(point1);
+        }
+        return pointsList;
+    }
+
+    /**
      * 设置具体数据列表
      *
      * @param pointsList
@@ -233,6 +283,33 @@ public class PointList implements Parcelable {
             e.printStackTrace();
         }
         return rectD;
+    }
+
+    /**
+     * 获取外包盒子的围点列表
+     */
+    public ArrayList<Point> getBoxList() {
+        if (invalid())
+            return null;
+        RectD box = getRectBox();
+        ArrayList<Point> pointsList = new ArrayList<>();
+        Point p1 = new Point();
+        p1.x = box.left;
+        p1.y = box.top;
+        pointsList.add(p1);
+        Point p2 = new Point();
+        p2.x = box.right;
+        p2.y = box.top;
+        pointsList.add(p2);
+        Point p3 = new Point();
+        p3.x = box.right;
+        p3.y = box.bottom;
+        pointsList.add(p3);
+        Point p4 = new Point();
+        p4.x = box.left;
+        p4.y = box.bottom;
+        pointsList.add(p4);
+        return pointsList;
     }
 
     /**

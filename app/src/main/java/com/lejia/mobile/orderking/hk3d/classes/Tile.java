@@ -266,4 +266,15 @@ public class Tile implements Parcelable {
         void onTileBitmapThenDoSomething(Bitmap bitmap);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Tile))
+            return false;
+        Tile other = (Tile) obj;
+        if (other.materialCode.equals(materialCode) && other.imageURL.equals(imageURL)) {
+            return true;
+        }
+        return super.equals(obj);
+    }
+
 }

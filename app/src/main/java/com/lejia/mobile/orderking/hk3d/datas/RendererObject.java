@@ -5,8 +5,8 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
-import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
+import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.FloatBuffer;
@@ -71,6 +71,17 @@ public abstract class RendererObject {
             return -1;
         int[] textureId = new int[1];
         try {
+            Texture texture = TexturesCache.get(key);
+            if (texture != null) {
+                // 无替换铺砖操作
+                if (!fromReplaceTiles) {
+                    return texture.textureId;
+                }
+                // 刷新铺砖材质，先删除当前铺砖材质
+                else {
+                    GLES30.glDeleteTextures(1, new int[]{texture.textureId}, 0);
+                }
+            }
             GLES30.glGenTextures(1, textureId, 0);
             GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
@@ -99,7 +110,6 @@ public abstract class RendererObject {
      */
     public void release() {
         GLES30.glDeleteTextures(2, new int[]{textureId, normalTextureId}, 0);
-        GLES30.glDeleteProgram(ViewingShader.mProgram);
     }
 
 }
