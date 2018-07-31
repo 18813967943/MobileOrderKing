@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.activity_partitation;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.dialogs.MenuBar;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.utils.TextUtils;

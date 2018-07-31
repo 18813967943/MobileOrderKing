@@ -30,6 +30,11 @@ public class Area3D extends RendererObject {
      */
     private int styleType = 1;
 
+    /**
+     * 是否斜铺
+     */
+    private boolean isSkewTile;
+
     private void initDatas() {
         PointList pointList = new PointList(pointsList);
         PointList mOriginList = new PointList(originList);
@@ -109,6 +114,14 @@ public class Area3D extends RendererObject {
         return pointsList;
     }
 
+    public boolean isSkewTile() {
+        return isSkewTile;
+    }
+
+    public void setSkewTile(boolean skewTile) {
+        isSkewTile = skewTile;
+    }
+
     /**
      * 平移区域围点
      *
@@ -116,9 +129,9 @@ public class Area3D extends RendererObject {
      * @param transY
      */
     public ArrayList<Point> translatePointsList(double transX, double transY) {
-        if (pointsList == null || pointsList.size() == 0)
+        if (originList == null || originList.size() == 0)
             return null;
-        return L3DMatrix.translate(pointsList, transX, transY, 0);
+        return L3DMatrix.translate(originList, transX, transY, 0);
     }
 
     @Override

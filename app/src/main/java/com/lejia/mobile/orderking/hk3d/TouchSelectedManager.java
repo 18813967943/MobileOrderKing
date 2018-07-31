@@ -70,5 +70,14 @@ public class TouchSelectedManager {
     public RendererObject getSelector() {
         return selector;
     }
-    
+
+    /**
+     * 获取选中的地面
+     */
+    public Ground getSelectedGround() {
+        if (selector == null || !(selector instanceof Ground))
+            return null;
+        return (Ground) selector;
+    }
+
 }

@@ -10,9 +10,14 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.Base64;
 
+import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.classes.PointList;
+import com.lejia.mobile.orderking.hk3d.classes.RectD;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author HEKE 位图处理
@@ -223,6 +228,27 @@ public class BitmapUtils {
         Bitmap ret = Bitmap.createBitmap(res, 0, 0, bmpWidth, bmpHeight, matrix, true);
         res.recycle();
         return ret;
+    }
+
+    /**
+     * 位图绕中心点旋转角度
+     *
+     * @param bitmap
+     * @param degree
+     * @param pointsList
+     * @return
+     */
+    public static Bitmap rotateWithCenter(Bitmap bitmap, int degree, ArrayList<Point> pointsList) {
+        if (bitmap == null || bitmap.isRecycled())
+            return null;
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        Matrix matrix = new Matrix();
+        matrix.setRotate(degree, width / 2, height / 2);
+        Bitmap drawBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+        drawBitmap.setHasAlpha(true);
+        bitmap.recycle();
+        return drawBitmap;
     }
 
 }

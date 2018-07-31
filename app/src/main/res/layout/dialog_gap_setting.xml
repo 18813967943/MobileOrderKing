@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/common_lightgrey_bg"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:padding="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/common_white_bg"
+        android:orientation="vertical"
+        android:padding="3dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/d8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gaps_size"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/gapSize"
+                android:layout_width="@dimen/d70dp"
+                android:layout_height="@dimen/d35dp"
+                android:layout_marginLeft="16dp"
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:lines="1"
+                android:maxLength="3"
+                android:text="4"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/gapSizeConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="@string/confirm"
+                android:textColor="#3AE4D6"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/d8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gaps_color"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/gapBalck"
+                android:layout_width="@dimen/d25dp"
+                android:layout_height="@dimen/d25dp"
+                android:layout_marginLeft="16dp"
+                android:background="@mipmap/huise_chosen" />
+
+            <ImageView
+                android:id="@+id/gapWhite"
+                android:layout_width="@dimen/d25dp"
+                android:layout_height="@dimen/d25dp"
+                android:layout_marginLeft="16dp"
+                android:background="@mipmap/baise" />
+
+            <ImageView
+                android:id="@+id/gapColors"
+                android:layout_width="@dimen/d25dp"
+                android:layout_height="@dimen/d25dp"
+                android:layout_marginLeft="16dp"
+                android:background="@mipmap/caise" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/d8dp">
+
+            <Button
+                android:id="@+id/calBrickCounts"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/d35dp"
+                android:background="@drawable/common_oringe_btn"
+                android:gravity="center"
+                android:text="@string/calculate_tiles_count"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -60,7 +60,6 @@ public class TilesResult {
         gapPaint.setDither(true);
         gapPaint.setAntiAlias(true);
         gapPaint.setStyle(Paint.Style.FILL);
-        gapPaint.setColor(gpcManager.getGapsColor());
     }
 
     public TilesResult(RectD rectD, NSGPCManager gpcManager) {
@@ -68,18 +67,6 @@ public class TilesResult {
         this.gpcManager = gpcManager;
         this.area3DSList = new ArrayList<>();
         initCanvas();
-    }
-
-    /**
-     * 刷新背景色(砖缝颜色，渲染时刻使用整张图像进行渲染)
-     */
-    public void refreshGapsColor() {
-        canvas.drawColor(gpcManager.getGapsColor());
-        for (Area3D area3D : area3DSList) {
-            if (!area3D.isGap()) {
-                saveArea3DBitmap(area3D);
-            }
-        }
     }
 
     /**
@@ -107,6 +94,13 @@ public class TilesResult {
     private void saveGap(Area3D area3D) {
         if (area3D == null)
             return;
+        int color = gpcManager.getGapsColor();
+        if (color == 0) { // 黑色砖缝
+            color = 0xFF333333;
+        } else if (color == -1) { // 白色砖缝
+            color = 0xFFFFFFFF;
+        }
+        gapPaint.setColor(color);
         ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
         Path path = new PointList(transList).getPath(true);
         canvas.drawPath(path, gapPaint);
@@ -120,6 +114,9 @@ public class TilesResult {
     private void saveArea3DBitmap(Area3D area3D) {
         Bitmap bitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode()
                 , area3D.getStyleType()).copy(Bitmap.Config.ARGB_8888, true);
+        if (area3D.isSkewTile()) {
+            bitmap = BitmapUtils.rotateWithCenter(bitmap, -45, area3D.getPointsList());
+        }
         if (bitmap == null || bitmap.isRecycled())
             return;
         // 根据区域纹理旋转角度，对资源进行翻转
@@ -154,6 +151,9 @@ public class TilesResult {
      */
     public void clearDatas() {
         area3DSList.clear();
+        holeBitmap.recycle();
+        holeBitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(holeBitmap);
     }
 
     /**

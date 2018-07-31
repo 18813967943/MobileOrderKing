@@ -15,10 +15,13 @@ import com.lejia.mobile.orderking.adapters.TilesPreviewAdapter;
 import com.lejia.mobile.orderking.adapters.TilesRightIconsAdapter;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.dialogs.TileDirectionDialog;
+import com.lejia.mobile.orderking.dialogs.TileGapsSettingDialog;
 import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.datas.Ground;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.httpsResult.ResponseEntity;
@@ -26,6 +29,7 @@ import com.lejia.mobile.orderking.httpsResult.classes.LJNodes;
 import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
+import com.lejia.mobile.orderking.widgets.TileDirectionSelectorView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
 
 import org.json.JSONArray;
@@ -109,6 +113,16 @@ public class TilesManager {
 
     // 资源预览图列表适配器
     private TilesPreviewAdapter tilesPreviewAdapter;
+
+    /**
+     * 铺砖起铺方向窗口
+     */
+    private TileDirectionDialog tileDirectionDialog;
+
+    /**
+     * 砖缝数据设置窗口
+     */
+    private TileGapsSettingDialog tileGapsSettingDialog;
 
     private void init() {
         // 菜单图标资源设定
@@ -255,6 +269,103 @@ public class TilesManager {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             tilesRightBottomIconsAdapter.setSelectePosition(position);
+            // 根据位置弹出响应的操作窗口
+            switch (position) {
+                case Classify.FLAG_AREAS:
+                    break;
+                case Classify.FLAG_GAPS:
+                    // 弹出与隐藏砖缝设置窗口
+                    if (tileGapsSettingDialog == null)
+                        tileGapsSettingDialog = new TileGapsSettingDialog(mActivity, onTileGapSettingListener);
+                    Ground gapsSelectedGround = getSelectedGround();
+                    if (gapsSelectedGround != null) {
+                        NSGPCManager nsgpcManager = gapsSelectedGround.getGpcManager();
+                        if (nsgpcManager != null) {
+                            tileGapsSettingDialog.setGapsColor(nsgpcManager.getGapsColor());
+                            tileGapsSettingDialog.setGapsSize(nsgpcManager.getBrickGap());
+                        }
+                    }
+                    tileGapsSettingDialog.autoShowOrHide();
+                    break;
+                case Classify.FLAG_DIRECTION:
+                    // 弹出与隐藏设置起铺方向窗口
+                    if (tileDirectionDialog == null)
+                        tileDirectionDialog = new TileDirectionDialog(mActivity, onTileDirectionsSelectedListener);
+                    Ground selectedGround = getSelectedGround();
+                    if (selectedGround != null) {
+                        NSGPCManager nsgpcManager = selectedGround.getGpcManager();
+                        if (nsgpcManager != null)
+                            tileDirectionDialog.setDirection(nsgpcManager.getDirection());
+                    }
+                    tileDirectionDialog.autoShowOrHide();
+                    break;
+                case Classify.FLAG_SKEW_TILE:
+                    // 设置选中地面铺砖是否斜铺
+                    Ground ground = getSelectedGround();
+                    if (ground != null) {
+                        NSGPCManager nsgpcManager = ground.getGpcManager();
+                        nsgpcManager.setSkewTile(!nsgpcManager.isSkewTile());
+                    }
+                    break;
+            }
+        }
+    };
+
+    // 砖缝设置回调接口
+    private TileGapsSettingDialog.OnTileGapSettingListener onTileGapSettingListener = new TileGapsSettingDialog.OnTileGapSettingListener() {
+        @Override
+        public void setGapSize(int size) {
+            // 设置砖缝大小
+            Ground ground = getSelectedGround();
+            if (ground != null) {
+                NSGPCManager nsgpcManager = ground.getGpcManager();
+                if (nsgpcManager != null) {
+                    nsgpcManager.setBrickGap(size);
+                }
+            }
+        }
+
+        @Override
+        public void setGapColor(int color) {
+            // 设置砖缝颜色
+            Ground ground = getSelectedGround();
+            if (ground != null) {
+                NSGPCManager nsgpcManager = ground.getGpcManager();
+                if (nsgpcManager != null) {
+                    nsgpcManager.setGapsColor(color);
+                }
+            }
+        }
+
+        @Override
+        public void calBrickCounts() {
+
+        }
+    };
+
+    /**
+     * TODO 获取选中的地面
+     */
+    private Ground getSelectedGround() {
+        TouchSelectedManager touchSelectedManager = designer3DManager.getDesigner3DRender().getTouchSelectedManager();
+        Ground ground = null;
+        if (touchSelectedManager != null)
+            ground = touchSelectedManager.getSelectedGround();
+        return ground;
+    }
+
+    // 铺砖起始方向选中回调接口
+    private TileDirectionSelectorView.OnTileDirectionsSelectedListener onTileDirectionsSelectedListener = new TileDirectionSelectorView.OnTileDirectionsSelectedListener() {
+        @Override
+        public void selected(int direction) {
+            // 设置当前选中地面的铺砖起铺方向
+            Ground ground = getSelectedGround();
+            if (ground != null) {
+                NSGPCManager nsgpcManager = ground.getGpcManager();
+                if (nsgpcManager != null) {
+                    nsgpcManager.setDirection(direction);
+                }
+            }
         }
     };
 
@@ -275,7 +386,10 @@ public class TilesManager {
      * @param needClearList   是否清楚当前已加载的数据内容
      */
     private void showPage(int detailNodeIndex, int page, boolean needClearList) {
+        if (currentNodeIndex == detailNodeIndex)
+            return;
         currentLoadNode = materialNodesList.get(detailNodeIndex);
+        currentNodeIndex = detailNodeIndex;
         this.page = page;
         if (needClearList) {
             tileDescriptionsList.clear();
@@ -312,6 +426,11 @@ public class TilesManager {
                                 pageTileDiscriptionsList.add(tileDescription);
                             }
                             tileDescriptionsList.addAll(pageTileDiscriptionsList);
+                            // 默认装载第一页用于换砖的材质数据
+                            OrderKingApplication app = ((OrderKingApplication) mActivity.getApplicationContext());
+                            if (app.defaultTileDescriptionList != null && app.defaultTileDescriptionList.size() == 0) {
+                                app.setDefaultTileDescriptionList(pageTileDiscriptionsList);
+                            }
                             // 刷新列表显示
                             tilesPreviewAdapter.notifyDataSetChanged();
                         }

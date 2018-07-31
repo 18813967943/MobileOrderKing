@@ -80,6 +80,7 @@ public class SingleTilePave {
             ArrayList<geom.Point> originList = geomOriginList.get(i);
             Area3D area3D = new Area3D(isGap, materialCode, PointList.staticExchangeGemoListToThisList(pointsList)
                     , PointList.staticExchangeGemoListToThisList(originList));
+            area3D.setSkewTile(skewTile);
             tilesResult.putArea3D(area3D);
         }
     }

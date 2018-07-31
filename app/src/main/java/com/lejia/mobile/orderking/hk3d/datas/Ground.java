@@ -1,8 +1,11 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
+import android.os.AsyncTask;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
@@ -85,6 +88,30 @@ public class Ground extends RendererObject {
         this.pointList = pointList;
         this.house = house;
         initDatas();
+        defaultLoadGroundTile();
+    }
+
+    // 默认加载地砖
+    @SuppressLint("StaticFieldLeak")
+    private void defaultLoadGroundTile() {
+        // 默认铺砖
+        new AsyncTask<String, Integer, String>() {
+            @Override
+            protected String doInBackground(String... strings) {
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                TileDescription tileDescription = ((OrderKingApplication) house.getContext().getApplicationContext()).getRandomTileDescription();
+                if (tileDescription != null) {
+                    ArrayList<TileDescription> tileDescriptionsList = new ArrayList<>();
+                    tileDescriptionsList.add(tileDescription);
+                    setTileDescriptionsList(tileDescriptionsList);
+                }
+            }
+        }.execute();
     }
 
     // 获取所属的房间
@@ -111,6 +138,13 @@ public class Ground extends RendererObject {
                 tileDescription.loadBitmaps(onTileDescriptionLoadListener);
             }
         }
+    }
+
+    /**
+     * 获取地面内部的铺砖管理对象
+     */
+    public NSGPCManager getGpcManager() {
+        return gpcManager;
     }
 
     /**

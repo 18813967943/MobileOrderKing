@@ -17,151 +17,157 @@
         android:layout_below="@id/topbarLayout"
         android:background="@mipmap/login_bg">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:paddingBottom="@dimen/largest">
+            android:fillViewport="true"
+            android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#90ffffff"
-                android:orientation="vertical"
-                android:paddingBottom="@dimen/middle"
-                android:paddingLeft="@dimen/largest"
-                android:paddingRight="@dimen/largest"
-                android:paddingTop="@dimen/middle">
+                android:paddingBottom="@dimen/largest">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:background="#90ffffff"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/middle"
+                    android:paddingLeft="@dimen/largest"
+                    android:paddingRight="@dimen/largest"
+                    android:paddingTop="@dimen/middle">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/account"
-                        android:textColor="#000"
-                        android:textSize="16sp" />
+                        android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/account"
-                        android:layout_width="@dimen/d180dp"
-                        android:layout_height="@dimen/d45dp"
-                        android:layout_marginLeft="8dp"
-                        android:imeOptions="actionNext"
-                        android:inputType="number"
-                        android:textColor="#000"
-                        android:textSize="14sp"
-                        android:theme="@style/MyEditText"
-                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/account"
+                            android:textColor="#000"
+                            android:textSize="16sp" />
 
-                </LinearLayout>
+                        <EditText
+                            android:id="@+id/account"
+                            android:layout_width="@dimen/d180dp"
+                            android:layout_height="@dimen/d45dp"
+                            android:layout_marginLeft="8dp"
+                            android:imeOptions="actionNext"
+                            android:inputType="number"
+                            android:textColor="#000"
+                            android:textSize="14sp"
+                            android:theme="@style/MyEditText" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/middle"
-                    android:orientation="horizontal">
+                    </LinearLayout>
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/password"
-                        android:textColor="#000"
-                        android:textSize="16sp" />
+                        android:layout_marginTop="@dimen/middle"
+                        android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/password"
-                        android:layout_width="@dimen/d180dp"
-                        android:layout_height="@dimen/d45dp"
-                        android:layout_marginLeft="8dp"
-                        android:imeOptions="actionNext"
-                        android:inputType="textPassword"
-                        android:textColor="#000"
-                        android:textSize="14sp"
-                        android:theme="@style/MyEditText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/password"
+                            android:textColor="#000"
+                            android:textSize="16sp" />
 
-                </LinearLayout>
+                        <EditText
+                            android:id="@+id/password"
+                            android:layout_width="@dimen/d180dp"
+                            android:layout_height="@dimen/d45dp"
+                            android:layout_marginLeft="8dp"
+                            android:imeOptions="actionNext"
+                            android:inputType="textPassword"
+                            android:textColor="#000"
+                            android:textSize="14sp"
+                            android:theme="@style/MyEditText" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/middle"
-                    android:orientation="horizontal">
+                    </LinearLayout>
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/repeat_password"
-                        android:textColor="#000"
-                        android:textSize="16sp" />
+                        android:layout_marginTop="@dimen/middle"
+                        android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/repeat_password"
-                        android:layout_width="@dimen/d150dp"
-                        android:layout_height="@dimen/d45dp"
-                        android:layout_marginLeft="8dp"
-                        android:imeOptions="actionNext"
-                        android:inputType="textPassword"
-                        android:textColor="#000"
-                        android:textSize="14sp"
-                        android:theme="@style/MyEditText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/repeat_password"
+                            android:textColor="#000"
+                            android:textSize="16sp" />
 
-                </LinearLayout>
+                        <EditText
+                            android:id="@+id/repeat_password"
+                            android:layout_width="@dimen/d150dp"
+                            android:layout_height="@dimen/d45dp"
+                            android:layout_marginLeft="8dp"
+                            android:imeOptions="actionNext"
+                            android:inputType="textPassword"
+                            android:textColor="#000"
+                            android:textSize="14sp"
+                            android:theme="@style/MyEditText" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/middle"
-                    android:orientation="horizontal">
+                    </LinearLayout>
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/pass_code"
-                        android:textColor="#000"
-                        android:textSize="16sp" />
+                        android:layout_marginTop="@dimen/middle"
+                        android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/passcode"
-                        android:layout_width="@dimen/d100dp"
-                        android:layout_height="@dimen/d45dp"
-                        android:layout_marginLeft="8dp"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:textColor="#000"
-                        android:textSize="14sp"
-                        android:theme="@style/MyEditText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/pass_code"
+                            android:textColor="#000"
+                            android:textSize="16sp" />
 
-                    <com.lejia.mobile.orderking.widgets.AuthCodeImageView
-                        android:id="@+id/authCode"
-                        android:layout_width="@dimen/d70dp"
-                        android:layout_height="@dimen/d35dp"
-                        android:layout_marginLeft="@dimen/small" />
+                        <EditText
+                            android:id="@+id/passcode"
+                            android:layout_width="@dimen/d100dp"
+                            android:layout_height="@dimen/d45dp"
+                            android:layout_marginLeft="8dp"
+                            android:imeOptions="actionDone"
+                            android:inputType="number"
+                            android:textColor="#000"
+                            android:textSize="14sp"
+                            android:theme="@style/MyEditText" />
 
-                </LinearLayout>
+                        <com.lejia.mobile.orderking.widgets.AuthCodeImageView
+                            android:id="@+id/authCode"
+                            android:layout_width="@dimen/d70dp"
+                            android:layout_height="@dimen/d35dp"
+                            android:layout_marginLeft="@dimen/small" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/large"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    </LinearLayout>
 
-                    <Button
-                        android:id="@+id/register"
-                        android:layout_width="@dimen/d100dp"
-                        android:layout_height="@dimen/d40dp"
-                        android:layout_marginLeft="@dimen/middle"
-                        android:background="@drawable/common_transparent_white_btn"
-                        android:text="@string/register"
-                        android:textColor="#000"
-                        android:textSize="16sp" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/large"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/register"
+                            android:layout_width="@dimen/d100dp"
+                            android:layout_height="@dimen/d40dp"
+                            android:layout_marginLeft="@dimen/middle"
+                            android:background="@drawable/common_transparent_white_btn"
+                            android:text="@string/register"
+                            android:textColor="#000"
+                            android:textSize="16sp" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+        </ScrollView>
     </RelativeLayout>
 </RelativeLayout>

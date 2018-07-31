@@ -27,4 +27,8 @@
         <item>另存</item>
         <item>量尺</item>
     </string-array>
+    <string name="gaps_size">砖缝宽</string>
+    <string name="gaps_color">砖缝色</string>
+    <string name="calculate_tiles_count">算砖</string>
+    <string name="confirm">确定</string>
 </resources>

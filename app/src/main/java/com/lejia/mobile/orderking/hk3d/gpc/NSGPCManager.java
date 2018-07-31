@@ -12,6 +12,8 @@ import com.lejia.mobile.orderking.hk3d.datas.Ground;
 
 import java.util.ArrayList;
 
+import geom.gpc.GPCConfig;
+
 /**
  * Author by HEKE
  *
@@ -28,7 +30,7 @@ public class NSGPCManager {
     /**
      * 铺砖起始方向
      */
-    private int direction = Direction.DIR_LEFT_TOP;
+    private int direction = GPCConfig.FROM_LEFT_TOP;
 
     /**
      * 是否45°斜铺
@@ -108,8 +110,7 @@ public class NSGPCManager {
      */
     public void setGapsColor(int color) {
         this.gapsColor = color;
-        if (tilesResult != null)
-            tilesResult.refreshGapsColor();
+        tile();
     }
 
     public int getGapsColor() {
@@ -124,6 +125,10 @@ public class NSGPCManager {
     public void setBrickGap(int brickGap) {
         this.brickGap = brickGap;
         tile();
+    }
+
+    public int getBrickGap() {
+        return brickGap;
     }
 
     // 获取当前铺贴方向

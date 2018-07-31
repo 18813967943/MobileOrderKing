@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EE6D6D6D"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="@dimen/d270dp"
+        android:layout_height="@dimen/d270dp"
+        android:background="@drawable/common_white_bg"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="@dimen/d220dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.lejia.mobile.orderking.widgets.ColorSelectorImageView
+                android:id="@+id/colorMirror"
+                android:layout_width="@dimen/d200dp"
+                android:layout_height="@dimen/d200dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="@dimen/d8dp"
+                android:background="@mipmap/caise"
+                android:scaleType="matrix" />
+
+            <Button
+                android:id="@+id/confirm"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/d40dp"
+                android:layout_margin="@dimen/d8dp"
+                android:background="@drawable/common_lightblue_btn"
+                android:gravity="center"
+                android:text="@string/confirm"
+                android:textColor="#fff"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.lejia.mobile.orderking.widgets.ColorsPillarSelectorView
+                android:id="@+id/cpsView"
+                android:layout_width="@dimen/d35dp"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/d8dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

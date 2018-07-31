@@ -176,10 +176,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
-        // set model view default
-        Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
-        // set the matrix to the phone or tablet align to left and top directions
-        Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
+        // set model view scale、translate、rotate，set the init matrixs
+        setMineModelViews();
         // scale 、translate 、rotate ModelMatrix
         animationModelViews();
         //Set view matrix from light source position
@@ -218,7 +216,18 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     }
 
     /**
-     * TODO 执行切换动画
+     * 缩放、平移、旋转矩阵
+     */
+    private void setMineModelViews() {
+        // init matrix
+        Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
+        // set the matrix to the phone or tablet align to left and top directions
+        Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
+
+    }
+
+    /**
+     * TODO 执行2D/25D/3D切换动画
      */
     private void animationModelViews() {
         int setRendererState = RendererState.getRenderState();

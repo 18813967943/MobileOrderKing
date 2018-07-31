@@ -7,8 +7,11 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
+import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
+
+import java.util.ArrayList;
 
 /**
  * Author by HEKE
@@ -48,11 +51,17 @@ public class OrderKingApplication extends Application {
         return context;
     }
 
+    /**
+     * 默认换砖材质第一页数据对象内容
+     */
+    public ArrayList<TileDescription> defaultTileDescriptionList;
+
     @Override
     public void onCreate() {
         super.onCreate();
         // 设置单例程序上下文
         context = getApplicationContext();
+        defaultTileDescriptionList = new ArrayList<>();
         // 自动读取用户登入缓存信息
         sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
         String vs = sp.getString("USER", null);
@@ -95,6 +104,25 @@ public class OrderKingApplication extends Application {
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("MATERIAL_TYPE_LIST", json);
         editor.commit();
+    }
+
+    /**
+     * 设置企业对应的换砖第一页数据材质，主要用于画房间结束后默认加载材质内容
+     *
+     * @param defaultTileDescriptionList
+     */
+    public void setDefaultTileDescriptionList(ArrayList<TileDescription> defaultTileDescriptionList) {
+        this.defaultTileDescriptionList = defaultTileDescriptionList;
+    }
+
+    /**
+     * 获取随机默认铺砖材质
+     */
+    public TileDescription getRandomTileDescription() {
+        if (defaultTileDescriptionList == null || defaultTileDescriptionList.size() == 0)
+            return null;
+        int position = (int) (Math.random() * defaultTileDescriptionList.size());
+        return defaultTileDescriptionList.get(position);
     }
 
     /**

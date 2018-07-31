@@ -196,8 +196,8 @@ public class HouseDatasManager {
      */
     public void clear() {
         // 释放当前三维绑定缓存数据
-        housesList.clear();
         ((OrderKingApplication) mContext.getApplicationContext()).release3DViews();
+        housesList.clear();
         // 清空房间组合信息
         PolyM.clear();
         // 清除材质缓存
