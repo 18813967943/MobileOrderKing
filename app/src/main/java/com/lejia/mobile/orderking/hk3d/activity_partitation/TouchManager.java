@@ -51,8 +51,12 @@ public class TouchManager {
                     drawRectHouse(event);
                     break;
                 case TilesManager.DRAW_NORMAL:
+                    // 线段画房间
+                    drawNormalHouse(event);
                     break;
                 case TilesManager.DRAW_LINE_BUILD:
+                    // 线建房间
+
                     break;
             }
         }
@@ -142,7 +146,10 @@ public class TouchManager {
                     double dist = rectDown.dist(mx, my);
                     if (dist >= 24) {
                         LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(mx, my, false);
-                        rectHouse.setUp(touchMove.x, touchMove.y);
+                        // 与其他房间的端点对齐检测
+                        Point alignPoint = houseDatasManager.checkUpAlign(touchMove.off(), rectHouse);
+                        // 设置起点
+                        rectHouse.setUp(alignPoint.x, alignPoint.y);
                         rectDown.x = mx;
                         rectDown.y = my;
                     }
@@ -151,6 +158,25 @@ public class TouchManager {
             case MotionEvent.ACTION_UP:
                 houseDatasManager.gpcClosedCheck(rectHouse);
                 setCheckUp(event.getX(), event.getY());
+                break;
+        }
+    }
+
+    /*************************************************
+     *  绘制线段房间
+     * ***********************************************/
+
+
+    private void drawNormalHouse(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+
+                break;
+            case MotionEvent.ACTION_MOVE:
+
+                break;
+            case MotionEvent.ACTION_UP:
+
                 break;
         }
     }

@@ -19,6 +19,7 @@ void main()
          outColor = vColor;
      }else{
          outColor = texture(s_baseMap, uv0);
+         // 灯光
          if(hasLight){
             // 灯光至点的单位向量
             vec3 lightVec = uLightPos - vPosition;

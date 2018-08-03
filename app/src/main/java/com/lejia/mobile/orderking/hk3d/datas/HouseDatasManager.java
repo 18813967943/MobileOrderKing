@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.classes.CloseHouseCheckResult;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
@@ -100,15 +101,16 @@ public class HouseDatasManager {
             refreshRender();
             return;
         }
-        new AsyncTask<House, Integer, String>() {
+        new AsyncTask<House, Integer, CloseHouseCheckResult>() {
             @Override
-            protected String doInBackground(House... houses) {
+            protected CloseHouseCheckResult doInBackground(House... houses) {
+                CloseHouseCheckResult closeHouseCheckResult = null;
                 long begainTime = System.currentTimeMillis();
                 // 第一个闭合区域，直接组合
                 House checkHouse = houses[0];
                 if (housesList.size() == 1) {
                     PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(checkHouse.centerPointList));
-                    checkHouse.initGroundAndSelector();
+                    closeHouseCheckResult = new CloseHouseCheckResult(checkHouse, null);
                 } else {
                     // 获取所有相交的列表集
                     ArrayList<PolyIntersectedResult> intersectedResultsList = new ArrayList<>();
@@ -136,23 +138,24 @@ public class HouseDatasManager {
                             Poly checkPoly = PolyE.toPolyDefault(checkHouse.centerPointList);
                             PolyM.put(PolyM.newCreateIndex(), checkPoly);
                             // 新增相交的房间及切割后的相交房间
+                            closeHouseCheckResult = new CloseHouseCheckResult();
                             ArrayList<PointList> totalPointList = new ArrayList<>();
                             for (PolyIntersectedResult ret : intersectedResultsList) {
                                 // 切割后的区域
-                                add(ret.differencePointList);
+                                closeHouseCheckResult.add(ret.differencePointList);
                                 // 相交区域
                                 ArrayList<PointList> pointLists = ret.pointListsList;
                                 if (pointLists != null && pointLists.size() > 0) {
                                     totalPointList.addAll(pointLists);
                                     for (PointList pointList : pointLists) {
-                                        add(pointList);
+                                        closeHouseCheckResult.add(pointList);
                                     }
                                 }
                             }
                             // 新增自身切割后的房间
                             PolyIntersectedResult checkHouseResult = new PolyIntersectedResult(1, totalPointList, checkHouse);
                             if (checkHouseResult.differencePointList != null)
-                                add(checkHouseResult.differencePointList);
+                                closeHouseCheckResult.add(checkHouseResult.differencePointList);
                             // 释放数据
                             checkHouseResult.release();
                             for (PolyIntersectedResult ret : intersectedResultsList) {
@@ -163,20 +166,67 @@ public class HouseDatasManager {
                     // 未与任何区域相交，直接加入新区域
                     else {
                         PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(checkHouse.centerPointList));
-                        checkHouse.initGroundAndSelector();
+                        closeHouseCheckResult = new CloseHouseCheckResult(checkHouse, null);
                     }
                 }
                 // 测试耗时
                 System.out.println("####### Take time : " + (System.currentTimeMillis() - begainTime) + "  ms !");
-                return null;
+                return closeHouseCheckResult;
             }
 
             @Override
-            protected void onPostExecute(String v) {
+            protected void onPostExecute(CloseHouseCheckResult v) {
                 super.onPostExecute(v);
+                // 根据结果对应操作，在主进程中操作
+                if (v != null) {
+                    // 需要加载地面的房间
+                    if (v.needLoadGroundHouse != null) {
+                        v.needLoadGroundHouse.initGroundAndSelector();
+                    }
+                    // 切割出的新房间
+                    if (v.pointListsList != null && v.pointListsList.size() > 0) {
+                        ArrayList<PointList> pointListsList = v.pointListsList;
+                        for (PointList pointList : pointListsList) {
+                            add(pointList);
+                        }
+                    }
+                }
+                // 刷新三维渲染内容
                 refreshRender();
             }
         }.execute(checkHouse);
+    }
+
+    /**
+     * 墙体绘制时，端点对齐检测
+     *
+     * @param point      实时移动点或起点
+     * @param checkHouse 被检测房间
+     * @return
+     */
+    public Point checkUpAlign(Point point, House checkHouse) {
+        if (point == null || housesList == null)
+            return null;
+        Point ret = point.copy();
+        for (int i = housesList.size() - 1; i > -1; i--) {
+            House house = housesList.get(i);
+            if (!(house.equals(checkHouse))) {
+                if (house.centerPointList != null) {
+                    ArrayList<Point> pointsList = house.centerPointList.getPointsList();
+                    for (Point point1 : pointsList) {
+                        double absX = Math.abs(point1.x - point.x);
+                        if (absX <= 24) {
+                            ret.x = point1.x;
+                        }
+                        double absY = Math.abs(point1.y - point.y);
+                        if (absY <= 24) {
+                            ret.y = point1.y;
+                        }
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     /**
@@ -191,13 +241,17 @@ public class HouseDatasManager {
         ((OrderKingApplication) mContext.getApplicationContext()).render();
     }
 
+    // 清空房间数据列表
+    public void laterClearWhen3DViewsClearFinished() {
+        housesList.clear();
+    }
+
     /**
      * 清空数据
      */
     public void clear() {
         // 释放当前三维绑定缓存数据
         ((OrderKingApplication) mContext.getApplicationContext()).release3DViews();
-        housesList.clear();
         // 清空房间组合信息
         PolyM.clear();
         // 清除材质缓存

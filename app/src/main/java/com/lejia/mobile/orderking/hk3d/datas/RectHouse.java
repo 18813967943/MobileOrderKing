@@ -36,6 +36,7 @@ public class RectHouse extends House {
     }
 
     public void setUp(double x, double y) {
+        // 设置起点
         if (up == null) {
             up = new Point(x, y);
         } else {

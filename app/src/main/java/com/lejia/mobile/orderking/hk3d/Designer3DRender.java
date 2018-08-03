@@ -102,7 +102,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        GLES30.glEnable(GLES30.GL_CULL_FACE);
         Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyeX, eyeY, eyeZ,
                 0, 0, 0, 0, 1, 0);
         ViewingShader.loadShader(mContext);
@@ -223,7 +222,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
         // set the matrix to the phone or tablet align to left and top directions
         Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
-
     }
 
     /**
@@ -282,7 +280,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         GLES30.glUseProgram(ViewingShader.mProgram);
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-
         float[] tempResultMatrix = new float[16];
         float bias[] = new float[]{
                 0.5f, 0.0f, 0.0f, 0.0f,
@@ -460,6 +457,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     }
                 }
             }
+            houseDatasManager.laterClearWhen3DViewsClearFinished();
         }
     }
 

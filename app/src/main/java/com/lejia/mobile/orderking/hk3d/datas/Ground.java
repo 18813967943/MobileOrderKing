@@ -1,9 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
-import android.os.AsyncTask;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.RendererState;
@@ -34,6 +32,7 @@ public class Ground extends RendererObject {
     private boolean needLoadBitmap; // 是否需要加载瓷砖贴图
     private boolean canDraw; // 是否可渲染
     private boolean needBindTextureId; // 是否需要打开绑定材质贴图标签
+    private boolean needRefreshNameTexture; // 是否需要刷新房间名称显示
     private boolean fromReplaceTiles; // 来自于瓷砖替换操作
     private PointList pointList; // 地面围点列表
     private NSGPCManager gpcManager; // 切割管理对象
@@ -92,26 +91,13 @@ public class Ground extends RendererObject {
     }
 
     // 默认加载地砖
-    @SuppressLint("StaticFieldLeak")
     private void defaultLoadGroundTile() {
-        // 默认铺砖
-        new AsyncTask<String, Integer, String>() {
-            @Override
-            protected String doInBackground(String... strings) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-                TileDescription tileDescription = ((OrderKingApplication) house.getContext().getApplicationContext()).getRandomTileDescription();
-                if (tileDescription != null) {
-                    ArrayList<TileDescription> tileDescriptionsList = new ArrayList<>();
-                    tileDescriptionsList.add(tileDescription);
-                    setTileDescriptionsList(tileDescriptionsList);
-                }
-            }
-        }.execute();
+        TileDescription tileDescription = ((OrderKingApplication) house.getContext().getApplicationContext()).getRandomTileDescription();
+        if (tileDescription != null) {
+            ArrayList<TileDescription> tileDescriptionsList = new ArrayList<>();
+            tileDescriptionsList.add(tileDescription);
+            setTileDescriptionsList(tileDescriptionsList);
+        }
     }
 
     // 获取所属的房间
@@ -219,10 +205,13 @@ public class Ground extends RendererObject {
                 needBindTextureId = false;
                 textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
                 canDraw = true;
+                needRefreshNameTexture = true;
                 refreshRender();
             }
             // 材质贴图不为空
             if (textureId != -1 && canDraw) {
+                // 关闭混色
+                GLES30.glDisable(GLES30.GL_BLEND);
                 // 顶点
                 GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
                 GLES30.glEnableVertexAttribArray(positionAttribute);
@@ -246,6 +235,13 @@ public class Ground extends RendererObject {
                     }
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
+                // TODO 刷新房间名称显示
+                if (needRefreshNameTexture) {
+                    needRefreshNameTexture = false;
+                    if (house.houseName != null) {
+                        house.houseName.createNameTextureWithGroundBitmap(bitmap);
+                    }
+                }
             }
         }
     }

@@ -58,6 +58,11 @@ public abstract class House {
     public Selector selector;
 
     /**
+     * 房间名称对象
+     */
+    public HouseName houseName;
+
+    /**
      * 是否被选中标志
      */
     private boolean selected;
@@ -128,6 +133,9 @@ public abstract class House {
             if (selector != null && selected) {
                 selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
+            if (houseName != null) {
+                houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
             if (ground != null) {
                 ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
@@ -174,8 +182,9 @@ public abstract class House {
     public void initGroundAndSelector() {
         if (innerPointList == null || innerPointList.invalid())
             return;
-        ground = new Ground(innerPointList, this);
-        selector = new Selector(innerPointList);
+        ground = new Ground(innerPointList, this); // 地面
+        selector = new Selector(innerPointList); // 选中框
+        houseName = new HouseName(innerPointList); // 房间名称
     }
 
     /**
@@ -237,6 +246,9 @@ public abstract class House {
         }
         if (ground != null) {
             rendererObjectsList.add(ground);
+        }
+        if (houseName != null) {
+            rendererObjectsList.add(houseName);
         }
         return rendererObjectsList;
     }

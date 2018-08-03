@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
+import android.opengl.GLException;
 import android.opengl.GLUtils;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
@@ -10,6 +11,7 @@ import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
@@ -96,6 +98,42 @@ public abstract class RendererObject {
             e.printStackTrace();
         }
         return textureId[0];
+    }
+
+    /**
+     * 创建指定区域的位图
+     *
+     * @param x 起始点x
+     * @param y 起始点y
+     * @param w 宽度
+     * @param h 高度
+     * @return 返回截取的位图
+     */
+    public Bitmap createBitmapFromGLSurface(int x, int y, int w, int h) {
+        int bitmapBuffer[] = new int[w * h];
+        int bitmapSource[] = new int[w * h];
+        IntBuffer intBuffer = IntBuffer.wrap(bitmapBuffer);
+        intBuffer.position(0);
+        Bitmap overlapBitmap = null;
+        try {
+            GLES30.glReadPixels(x, y, w, h, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, intBuffer);
+            int offset1, offset2;
+            for (int i = 0; i < h; i++) {
+                offset1 = i * w;
+                offset2 = (h - i - 1) * w;
+                for (int j = 0; j < w; j++) {
+                    int texturePixel = bitmapBuffer[offset1 + j];
+                    int blue = (texturePixel >> 16) & 0xff;
+                    int red = (texturePixel << 16) & 0x00ff0000;
+                    int pixel = (texturePixel & 0xff00ff00) | red | blue;
+                    bitmapSource[offset2 + j] = pixel;
+                }
+            }
+            overlapBitmap = Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
+        } catch (GLException e) {
+            return null;
+        }
+        return overlapBitmap;
     }
 
     /**

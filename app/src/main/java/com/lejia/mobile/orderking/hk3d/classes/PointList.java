@@ -784,6 +784,71 @@ public class PointList implements Parcelable {
         return offsetPointsList;
     }
 
+
+    /**
+     * 获取内部一点，优先中心点
+     *
+     * @param forceWithMaxLength 强制将房间名称放置在最长墙体附近显示
+     * @return
+     */
+    public Point getInnerValidPoint(boolean forceWithMaxLength) {
+        if (invalid())
+            return null;
+        Point point = null;
+        try {
+            RectD box = getRectBox();
+            point = new Point(box.centerX(), box.centerY());
+            // 不在内部
+            if (pointRelationToPolygon(pointsList, point) != 1 || forceWithMaxLength) {
+                // 取当前区域的最长水平线段
+                ArrayList<Line> linesList = toLineList();
+                int size = linesList.size();
+                Line maxLengthLine = null;
+                Line nextLine = null;
+                Line beforeLine = null;
+                double maxLength = Integer.MIN_VALUE;
+                double offset = 200;
+                for (int i = 0; i < size; i++) {
+                    Line line = linesList.get(i);
+                    double length = line.getLength();
+                    double angle = line.getAngle();
+                    if (Math.abs(angle % 180.0d) <= 0.5d && length >= maxLength) {
+                        maxLength = length;
+                        maxLengthLine = line;
+                        // 上下一条线段，计算偏置距离
+                        if (i == 0) {
+                            beforeLine = linesList.get(size - 1);
+                            nextLine = linesList.get(i + 1);
+                        } else if (i == size - 1) {
+                            beforeLine = linesList.get(i - 1);
+                            nextLine = linesList.get(0);
+                        } else {
+                            beforeLine = linesList.get(i - 1);
+                            nextLine = linesList.get(i + 1);
+                        }
+                        double beforeLength = beforeLine.getLength();
+                        double nextLength = nextLine.getLength();
+                        double minLength = nextLength < beforeLength ? nextLength : beforeLength;
+                        offset = minLength < 200 ? 100 : 200;
+                    }
+                }
+                // 根据水平线段获取垂直于内部一点
+                if (maxLengthLine != null) {
+                    ArrayList<Point> lepsList = getRotateLEPS(maxLengthLine.getAngle() + 90.0d, offset, maxLengthLine.getCenter());
+                    for (Point point1 : lepsList) {
+                        if (pointRelationToPolygon(pointsList, point1) == 1) {
+                            point = point1;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return point;
+    }
+
     /**
      * 围点进行重复点、相近点、共线点去除、浮点型数据偏差等处理
      *
