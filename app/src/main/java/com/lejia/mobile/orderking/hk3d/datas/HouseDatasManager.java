@@ -32,6 +32,13 @@ public class HouseDatasManager {
     }
 
     /**
+     * 判断当前三维是否包含数据
+     */
+    public boolean hasDatas() {
+        return housesList.size() > 1;
+    }
+
+    /**
      * 新增房间
      *
      * @param house
@@ -195,6 +202,15 @@ public class HouseDatasManager {
                 refreshRender();
             }
         }.execute(checkHouse);
+    }
+
+    /**
+     * 未闭合房间检测
+     *
+     * @param house
+     */
+    public void gpcUncloseCheck(House house) {
+
     }
 
     /**

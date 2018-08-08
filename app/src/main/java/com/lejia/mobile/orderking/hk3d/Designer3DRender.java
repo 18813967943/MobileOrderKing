@@ -68,6 +68,15 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     private float eyeY;
     private float eyeZ = -far / 20;
 
+    /***
+     * 模型矩阵平移、旋转数值
+     * **/
+    private float maxScale = 2.0f;
+    private float minScale = 0.4f;
+    private float scale = 1.0f; // 当前缩放数值
+    private float transX; // X轴平移总量
+    private float transY; // Y轴平移总量
+
     /**
      * FBO
      */
@@ -220,6 +229,10 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     private void setMineModelViews() {
         // init matrix
         Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
+        // scale
+        Matrix.scaleM(ViewingMatrixs.mModelMatrix, 0, scale, scale, 1.0f);
+        // translate
+        Matrix.translateM(ViewingMatrixs.mModelMatrix, 0, transX, transY, 0.0f);
         // set the matrix to the phone or tablet align to left and top directions
         Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
     }
@@ -341,14 +354,61 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     }
 
     /**
+     * 缩放增减
+     *
+     * @param bigger
+     */
+    public void setScale(boolean bigger) {
+        if (bigger) {
+            scale += 0.1f;
+            if (scale >= maxScale)
+                scale = maxScale;
+        } else {
+            scale -= 0.1f;
+            if (scale <= minScale)
+                scale = minScale;
+        }
+        refreshRenderer();
+    }
+
+    /**
+     * 恢复缩放
+     */
+    public void resetScale() {
+        scale = 1.0f;
+        refreshRenderer();
+    }
+
+    /**
+     * 设置平移数值
+     *
+     * @param transXVal
+     * @param transYVal
+     */
+    public void setTransLate(float transXVal, float transYVal) {
+        transX += transXVal;
+        transY += transYVal;
+        refreshRenderer();
+    }
+
+    /**
+     * 恢复平移数据
+     */
+    public void resetTranslate() {
+        transX = 0.0f;
+        transY = 0.0f;
+        refreshRenderer();
+    }
+
+    /**
      * 触摸选中处理
      *
      * @param x
      * @param y
      */
-    public void checkClickAtViews(float x, float y) {
+    public boolean checkClickAtViews(float x, float y) {
         if (houseDatasManager == null)
-            return;
+            return false;
         RendererObject object = null;
         int[] view = new int[]{0, 0, mDisplayWidth, mDisplayHeight};
         y = view[3] - y - 1;
@@ -385,8 +445,10 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 else
                     touchSelectedManager.setRendererObjectsList(rendererObjectsList);
                 touchSelectedManager.setSelector(object);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -440,6 +502,13 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
      */
     public void requestRelease() {
         this.release = true;
+        refreshRenderer();
+    }
+
+    /**
+     * 刷新内容
+     */
+    public void refreshRenderer() {
         ((OrderKingApplication) mContext.getApplicationContext()).render();
     }
 
@@ -459,6 +528,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             }
             houseDatasManager.laterClearWhen3DViewsClearFinished();
         }
+        resetScale();
+        resetTranslate();
     }
 
 }

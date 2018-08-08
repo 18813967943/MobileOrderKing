@@ -236,7 +236,7 @@ public class PolyM {
             Map.Entry<Integer, Poly> entry = iterator.next();
             // 端点吸附处理
             PointList pointList = PolyE.toPointList(entry.getValue());
-            adsorb = pointList.correctAdsorbPoint(checkPoint, 50);
+            adsorb = pointList.correctAdsorbPoint(checkPoint, 96);
             if (adsorb != null) {
                 return adsorb;
             }

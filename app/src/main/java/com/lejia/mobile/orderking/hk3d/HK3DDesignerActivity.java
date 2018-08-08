@@ -140,7 +140,7 @@ public class HK3DDesignerActivity extends Activity {
             if (touchManager == null)
                 touchManager = new TouchManager(this, tilesManager, designer3DManager);
             return touchManager.onTouchEvent(event);
-        } 
+        }
     }
 
 }

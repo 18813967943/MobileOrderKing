@@ -46,12 +46,17 @@ public class Line implements Parcelable {
             auxiliaryLineList = new ArrayList<>();
         }
         auxiliaryLineList.clear();
+        Point center = getCenter();
+        if (center == null)
+            return;
         ArrayList<Point> rotateList = PointList.getRotateVertexs(getAngle(), getThickess(), getLength(), getCenter());
         PointList pointList = new PointList(rotateList);
         ArrayList<Line> linesList = pointList.toLineList();
+        if (linesList == null)
+            return;
         for (Line line : linesList) {
             double length = line.getLength();
-            if (length > thickess) {
+            if (Math.abs(length - thickess) >= 1.0d) {
                 auxiliaryLineList.add(new AuxiliaryLine(line.down.copy(), line.up.copy()));
             }
         }
@@ -177,6 +182,18 @@ public class Line implements Parcelable {
         if (L1 == null || L1.invalid() || L2 == null || L2.invalid())
             return null;
         return L1.getLineIntersectedPoint(L2);
+    }
+
+    /**
+     * 将线段点放入列表中
+     */
+    public ArrayList<Point> toPointList() {
+        if (invalid())
+            return null;
+        ArrayList<Point> pointsList = new ArrayList<>();
+        pointsList.add(down.copy());
+        pointsList.add(up.copy());
+        return pointsList;
     }
 
     /**

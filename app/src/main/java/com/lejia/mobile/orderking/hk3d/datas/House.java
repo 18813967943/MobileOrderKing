@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.content.Context;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
@@ -148,31 +149,43 @@ public abstract class House {
      * TODO 创建绘制对象
      */
     public void createRenderer() {
-        wallsList.clear();
-        int size = innerPointList.size();
-        for (int i = 0; i < size; i++) {
-            Point inow = innerPointList.getIndexAt(i);
-            Point onow = outerPointList.getIndexAt(i);
-            Point inext = null;
-            Point onext = null;
-            if (i == size - 1) {
-                inext = innerPointList.getIndexAt(0);
-                onext = outerPointList.getIndexAt(0);
-            } else {
-                inext = innerPointList.getIndexAt(i + 1);
-                onext = outerPointList.getIndexAt(i + 1);
+        try {
+            wallsList.clear();
+            int size = innerPointList.size();
+            for (int i = 0; i < size; i++) {
+                Point inow = innerPointList.getIndexAt(i);
+                Point onow = outerPointList.getIndexAt(i);
+                Point inext = null;
+                Point onext = null;
+                if (i == size - 1) {
+                    inext = innerPointList.getIndexAt(0);
+                    onext = outerPointList.getIndexAt(0);
+                } else {
+                    inext = innerPointList.getIndexAt(i + 1);
+                    onext = outerPointList.getIndexAt(i + 1);
+                }
+                ArrayList<Point> pointsList = new ArrayList<>();
+                pointsList.add(onow);
+                pointsList.add(onext);
+                // 判断内部两点哪个与外部下一个点更近，视为连接点
+                double nondist = onext.dist(inext);
+                double nindist = onext.dist(inow);
+                if (nondist <= nindist) {
+                    pointsList.add(inext);
+                    pointsList.add(inow);
+                } else {
+                    pointsList.add(inow);
+                    pointsList.add(inext);
+                }
+                PointList pointList = new PointList(pointsList);
+                pointsList = pointList.antiClockwise();
+                if (pointsList != null && pointsList.size() > 0) {
+                    Wall wall = new Wall(pointsList);
+                    wallsList.add(wall);
+                }
             }
-            ArrayList<Point> pointsList = new ArrayList<>();
-            pointsList.add(onow);
-            pointsList.add(onext);
-            pointsList.add(inext);
-            pointsList.add(inow);
-            PointList pointList = new PointList(pointsList);
-            pointsList = pointList.antiClockwise();
-            if (pointsList != null && pointsList.size() > 0) {
-                Wall wall = new Wall(pointsList);
-                wallsList.add(wall);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -251,6 +264,13 @@ public abstract class House {
             rendererObjectsList.add(houseName);
         }
         return rendererObjectsList;
+    }
+
+    /**
+     * 刷新请求
+     */
+    public void refreshRenderer() {
+        ((OrderKingApplication) getContext().getApplicationContext()).render(); // refresh render contents
     }
 
 }

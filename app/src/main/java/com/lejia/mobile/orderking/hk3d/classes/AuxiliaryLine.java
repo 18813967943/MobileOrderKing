@@ -68,6 +68,14 @@ public class AuxiliaryLine implements Parcelable {
         return ret;
     }
 
+    // 获取边线围点列表
+    public ArrayList<Point> getPointList() {
+        ArrayList<Point> pointsList = new ArrayList<>();
+        pointsList.add(down.copy());
+        pointsList.add(up.copy());
+        return pointsList;
+    }
+
     @Override
     public String toString() {
         return down + "," + up;

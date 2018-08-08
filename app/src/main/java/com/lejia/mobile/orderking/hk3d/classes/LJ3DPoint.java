@@ -368,24 +368,26 @@ public class LJ3DPoint implements Parcelable {
         for (int i = 0; i < objectList.size(); i++) {
             RendererObject space = objectList.get(i);
             short[] indices = space.indices;
-            ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
-            for (int j = 0; j < indices.length / 3; j++) {
-                // 三角面顶点
-                int index = j * 3;
-                LJ3DPoint a = plist.get(indices[index]);
-                LJ3DPoint b = plist.get(indices[index + 1]);
-                LJ3DPoint c = plist.get(indices[index + 2]);
-                boolean rayIn = checkRayInTriangle(ray, a, b, c);
-                if (rayIn) {
-                    // 三角面法向量
-                    LJ3DPoint normal = normalize((b.subtract(a)).crossProduct(c.subtract(a)));
-                    // 三角面内部一个点
-                    LJ3DPoint center = getTriangleInnerPoint(a, b, c);
-                    // 判断是否相交
-                    LJ3DPoint intersected = rayCrossPlane(ray, center, normal);
-                    if (intersected != null) {
-                        intersectedPointList.add(intersected);
-                        intersectedSpaceList.add(space);
+            if (indices != null && indices.length > 0) {
+                ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
+                for (int j = 0; j < indices.length / 3; j++) {
+                    // 三角面顶点
+                    int index = j * 3;
+                    LJ3DPoint a = plist.get(indices[index]);
+                    LJ3DPoint b = plist.get(indices[index + 1]);
+                    LJ3DPoint c = plist.get(indices[index + 2]);
+                    boolean rayIn = checkRayInTriangle(ray, a, b, c);
+                    if (rayIn) {
+                        // 三角面法向量
+                        LJ3DPoint normal = normalize((b.subtract(a)).crossProduct(c.subtract(a)));
+                        // 三角面内部一个点
+                        LJ3DPoint center = getTriangleInnerPoint(a, b, c);
+                        // 判断是否相交
+                        LJ3DPoint intersected = rayCrossPlane(ray, center, normal);
+                        if (intersected != null) {
+                            intersectedPointList.add(intersected);
+                            intersectedSpaceList.add(space);
+                        }
                     }
                 }
             }

@@ -43,7 +43,7 @@ public class RectHouse extends House {
             up.setXY(x, y);
         }
         createLists();
-        ((OrderKingApplication) getContext().getApplicationContext()).render(); // refresh render contents
+        refreshRenderer();
     }
 
     /**
