@@ -11,7 +11,6 @@ import android.util.Log;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
-import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
 import com.lejia.mobile.orderking.hk3d.datas.House;
@@ -66,7 +65,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
      */
     private float eyeX;
     private float eyeY;
-    private float eyeZ = -far / 20;
+    private float eyeZ = -far / 25;
 
     /***
      * 模型矩阵平移、旋转数值
@@ -486,7 +485,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             LJ3DPoint intersectedPoint = LJ3DPoint.checkRayIntersectedPoint(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
             if (intersectedPoint != null) {
                 if (needAdsorb) {
-                    Point adsorb = PolyM.doAdsorb(intersectedPoint);
+                    Point adsorb = houseDatasManager.checkAdsorb(intersectedPoint.off());
                     if (adsorb != null) {
                         intersectedPoint = adsorb.toLJ3DPoint();
                     }

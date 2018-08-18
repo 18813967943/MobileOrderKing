@@ -13,21 +13,34 @@ public class IndexPoint implements Parcelable {
 
     public int index; // 下标位置
     public Point point; // 点
+    public boolean isSidePoint; // 是否是端点
+    public boolean isBegain; // 是否是起始点
 
     public IndexPoint(int index, Point point) {
         this.index = index;
         this.point = point;
     }
 
+    public IndexPoint(int index, Point point, boolean isSidePoint, boolean isBegain) {
+        this.index = index;
+        this.point = point;
+        this.isSidePoint = isSidePoint;
+        this.isBegain = isBegain;
+    }
+
     protected IndexPoint(Parcel in) {
         index = in.readInt();
         point = in.readParcelable(Point.class.getClassLoader());
+        isSidePoint = in.readInt() == 1;
+        isBegain = in.readInt() == 1;
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(index);
         dest.writeParcelable(point, flags);
+        dest.writeInt(isSidePoint ? 1 : 0);
+        dest.writeInt(isBegain ? 1 : 0);
     }
 
     @Override
@@ -49,7 +62,7 @@ public class IndexPoint implements Parcelable {
 
     @Override
     public String toString() {
-        return index + "," + point;
+        return index + "," + point + "," + isSidePoint + "," + isBegain;
     }
 
 }

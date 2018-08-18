@@ -2,7 +2,6 @@ package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.content.Context;
 
-import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 
@@ -16,8 +15,8 @@ import java.util.ArrayList;
  */
 public class RectHouse extends House {
 
-    private Point down; // 按下点
-    private Point up; // 弹起点
+    public double width; // 宽度
+    public double height; // 高度
 
     public RectHouse(Context context) {
         super(context);
@@ -61,6 +60,8 @@ public class RectHouse extends House {
         // 创建围点列表
         double poorX = Math.abs(up.x - down.x);
         double poorY = Math.abs(up.y - down.y);
+        width = poorX;
+        height = poorY;
         Point center = new Point((down.x + up.x) / 2, (down.y + up.y) / 2);
         ArrayList<Point> centerPointsList = PointList.getRotateVertexs(0d, poorY, poorX, center);
         centerPointList = createList(centerPointList, centerPointsList);
@@ -70,6 +71,13 @@ public class RectHouse extends House {
         ArrayList<Point> outerPointsList = centerPointList.offsetList(true, 12);
         outerPointList = createList(outerPointList, outerPointsList);
         createRenderer();
+    }
+
+    /**
+     * 宽或者高不符合要求
+     */
+    public boolean isSizeInvalid() {
+        return width < 75 || height < 75;
     }
 
     /**

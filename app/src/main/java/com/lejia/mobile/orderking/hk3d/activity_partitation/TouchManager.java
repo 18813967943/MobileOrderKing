@@ -8,6 +8,7 @@ import com.lejia.mobile.orderking.hk3d.Designer3DRender;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas.LineSegHouse;
 import com.lejia.mobile.orderking.hk3d.datas.NormalHouse;
 import com.lejia.mobile.orderking.hk3d.datas.RectHouse;
 
@@ -24,6 +25,8 @@ public class TouchManager {
     private Designer3DManager designer3DManager;
     private HouseDatasManager houseDatasManager; // 总渲染数据管理对象
     private Designer3DRender designer3DRender; // 渲染对象
+
+    private boolean isLineSegDraw; // 是否线建墙操作
 
     public TouchManager(Context context, TilesManager tilesManager, Designer3DManager designer3DManager) {
         this.mContext = context;
@@ -55,41 +58,48 @@ public class TouchManager {
             switch (drawState) {
                 case TilesManager.DRAW_RECT:
                     // 矩形画房间
+                    isLineSegDraw = false;
                     drawRectHouse(event);
                     break;
                 case TilesManager.DRAW_NORMAL:
                     // 线段画房间
+                    isLineSegDraw = false;
                     drawNormalHouse(event);
                     break;
                 case TilesManager.DRAW_LINE_BUILD:
                     // 线建房间
-
+                    isLineSegDraw = true;
+                    drawNormalHouse(event);
                     break;
             }
         }
         // 多指操作
         else if (fingerCount > 1) {
-            scaleHandler = true;
-            switch (event.getAction() & event.getActionMasked()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    downDist = getTwoFinggerDistance(event);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    moveDist = getTwoFinggerDistance(event);
-                    // 有效变化距离
-                    if (Math.abs(moveDist - downDist) > 24) {
-                        double poor = moveDist - downDist;
-                        // 缩小
-                        if (poor < 0) {
-                            designer3DRender.setScale(false);
+            try {
+                scaleHandler = true;
+                switch (event.getAction() & event.getActionMasked()) {
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        downDist = getTwoFinggerDistance(event);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        moveDist = getTwoFinggerDistance(event);
+                        // 有效变化距离
+                        if (Math.abs(moveDist - downDist) > 24) {
+                            double poor = moveDist - downDist;
+                            // 缩小
+                            if (poor < 0) {
+                                designer3DRender.setScale(false);
+                            }
+                            // 放大
+                            else if (poor > 0) {
+                                designer3DRender.setScale(true);
+                            }
+                            downDist = moveDist; // 重置操作
                         }
-                        // 放大
-                        else if (poor > 0) {
-                            designer3DRender.setScale(true);
-                        }
-                        downDist = moveDist; // 重置操作
-                    }
-                    break;
+                        break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return false;
@@ -124,6 +134,7 @@ public class TouchManager {
     private Point transMove; // 平移实时移动点
     private long transMoveTime;
     private boolean openedTranslate; // 是否打开平移操作
+    private boolean isMoveMaxMinDist; // 已经有滑动操作
     private boolean needRemoveCurrentEditHouse;
 
     /**
@@ -157,9 +168,13 @@ public class TouchManager {
         if (!openedTranslate) {
             transMoveTime = System.currentTimeMillis();
             if (dist < minDist) {
-                if (transMoveTime - transDownTime >= 1000) {
+                if (transMoveTime - transDownTime >= 1000 && !isMoveMaxMinDist) {
                     needRemoveCurrentEditHouse = true;
                     openedTranslate = true;
+                }
+            } else {
+                if (!isMoveMaxMinDist) {
+                    isMoveMaxMinDist = true;
                 }
             }
         }
@@ -180,7 +195,7 @@ public class TouchManager {
                         break;
                     case TilesManager.DRAW_LINE_BUILD:
                         // 线建房间
-
+                        houseDatasManager.remove(normalHouse);
                         break;
                 }
             }
@@ -288,6 +303,7 @@ public class TouchManager {
                 if (!openedTranslate)
                     houseDatasManager.gpcClosedCheck(rectHouse);
                 openedTranslate = false; // 关闭平移
+                isMoveMaxMinDist = false;
                 break;
         }
     }
@@ -302,11 +318,17 @@ public class TouchManager {
     private void drawNormalHouse(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                normalHouse = new NormalHouse(mContext);
+                // 获取触摸在的三维点、设置检测手势按下点
                 normalDown = new Point(event.getX(), event.getY());
                 setCheckDown(event.getX(), event.getY());
                 LJ3DPoint touchDown = designer3DRender.touchPlanTo3D(event.getX(), event.getY(), true);
                 setTransDown(touchDown.x, touchDown.y);
+                // 每次绘制线段墙体时都新建
+                if (isLineSegDraw) {
+                    normalHouse = new LineSegHouse(mContext);
+                } else {
+                    normalHouse = new NormalHouse(mContext);
+                }
                 normalHouse.setDown(new Point(touchDown.x, touchDown.y));
                 houseDatasManager.add(normalHouse);
                 break;
@@ -315,17 +337,23 @@ public class TouchManager {
                 LJ3DPoint touchMove = designer3DRender.touchPlanTo3D(event.getX(), event.getY(), false);
                 setTransMove(touchMove.x, touchMove.y);
                 double dist = normalUp.dist(normalDown);
-                if (dist >= 50 && !openedTranslate) {
+                if (dist >= 24 && !openedTranslate) {
                     // 与其他房间的端点对齐检测
-                    Point alignPoint = houseDatasManager.checkUpAlign(touchMove.off(), rectHouse);
+                    Point alignPoint = houseDatasManager.checkUpAlign(touchMove.off(), normalHouse);
                     normalHouse.setUp(alignPoint);
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 setCheckUp(event.getX(), event.getY());
-                if (!openedTranslate)
-                    houseDatasManager.gpcUncloseCheck(normalHouse);
+                if (!openedTranslate) {
+                    boolean invalid = normalHouse.checkInvalid();
+                    if (invalid)
+                        houseDatasManager.remove(normalHouse);
+                    else
+                        houseDatasManager.gpcUncloseCheck(normalHouse);
+                }
                 openedTranslate = false; // 关闭平移
+                isMoveMaxMinDist = false;
                 break;
         }
     }

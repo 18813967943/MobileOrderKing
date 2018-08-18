@@ -12,7 +12,7 @@ import java.util.Map;
  * Author by HEKE
  *
  * @time 2018/7/18 10:07
- * TODO: 所有房间区域组合管理对象
+ * TODO: 所有闭合房间区域组合管理对象
  */
 public class PolyM {
 
@@ -24,7 +24,7 @@ public class PolyM {
     private static HashMap<Integer, Poly> poliesMap = new HashMap<>();
 
     /**
-     * 数量大小
+     * 闭合区间数量大小
      */
     public static int size() {
         return poliesMap.size();
@@ -208,6 +208,39 @@ public class PolyM {
     }
 
     /**
+     * 获取区域所在组合区域
+     *
+     * @param pointList 围点列表
+     * @return 返回围点列表所在区域
+     */
+    public static Poly getPolyAtPoly(PointList pointList) {
+        if (pointList == null || poliesMap.size() == 0)
+            return null;
+        try {
+            ArrayList<Point> selfList = pointList.getPointsList();
+            Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Poly> polyEntry = iterator.next();
+                Poly poly = polyEntry.getValue();
+                ArrayList<Point> pointsList = PolyE.toPointsList(poly);
+                int count = 0;
+                for (Point point : selfList) {
+                    boolean on = PointList.pointRelationToPolygon(pointsList, point) != -1;
+                    if (on) {
+                        count++;
+                        if (count > 1) {
+                            return poly;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 创建新的索引位置
      */
     public static int newCreateIndex() {
@@ -218,41 +251,6 @@ public class PolyM {
     // 编号回减
     private static void reduceIndex() {
         index--;
-    }
-
-    /**
-     * 吸附操作
-     *
-     * @param touchDown 触摸按下时矫正
-     * @return 吸附点
-     */
-    public static Point doAdsorb(LJ3DPoint touchDown) {
-        if (touchDown == null || poliesMap.size() == 0)
-            return null;
-        Point adsorb = null;
-        Point checkPoint = touchDown.off();
-        Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Poly> entry = iterator.next();
-            // 端点吸附处理
-            PointList pointList = PolyE.toPointList(entry.getValue());
-            adsorb = pointList.correctAdsorbPoint(checkPoint, 96);
-            if (adsorb != null) {
-                return adsorb;
-            }
-        }
-        // 线段吸附处理
-        Iterator<Map.Entry<Integer, Poly>> iterator1 = poliesMap.entrySet().iterator();
-        while (iterator1.hasNext()) {
-            Map.Entry<Integer, Poly> entry = iterator1.next();
-            PointList pointList = PolyE.toPointList(entry.getValue());
-            LineList lineList = new LineList(pointList.toLineList());
-            adsorb = lineList.correctNearlyPoint(touchDown);
-            if (adsorb != null) {
-                return adsorb;
-            }
-        }
-        return null;
     }
 
     /**

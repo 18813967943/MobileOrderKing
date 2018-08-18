@@ -112,8 +112,10 @@ public class TilesResult {
      * @param area3D
      */
     private void saveArea3DBitmap(Area3D area3D) {
-        Bitmap bitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode()
-                , area3D.getStyleType()).copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap codeBitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode(), area3D.getStyleType());
+        if (codeBitmap == null || codeBitmap.isRecycled())
+            return;
+        Bitmap bitmap = codeBitmap.copy(Bitmap.Config.ARGB_8888, true);
         if (area3D.isSkewTile()) {
             bitmap = BitmapUtils.rotateWithCenter(bitmap, -45, area3D.getPointsList());
         }

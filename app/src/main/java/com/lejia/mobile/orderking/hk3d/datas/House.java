@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
@@ -27,6 +28,14 @@ public abstract class House {
 
     // 房间是否与其他房间重叠
     public boolean isOverlap;
+
+    public Point down; // 按下点
+    public Point up; // 弹起点
+
+    /**
+     * 墙体厚度
+     */
+    public int thickness = 24;
 
     /**
      * 墙中点列表
@@ -68,8 +77,24 @@ public abstract class House {
      */
     private boolean selected;
 
+    /**
+     * 是否线建墙
+     */
+    public boolean isLineSeg;
+
+    /**
+     * 线建墙墙体
+     */
+    public LineSeg lineSeg;
+
     public House(Context context) {
         this.mContext = context;
+        this.wallsList = new ArrayList<>();
+    }
+
+    public House(Context context, boolean isLineSeg) {
+        this.mContext = context;
+        this.isLineSeg = isLineSeg;
         this.wallsList = new ArrayList<>();
     }
 
@@ -85,6 +110,29 @@ public abstract class House {
         this.wallsList = new ArrayList<>();
         this.isWallClosed = true;
         loadDatas(center_pointList, thickness);
+    }
+
+    /**
+     * 根据已知的区域组合生成房间的构造函数
+     *
+     * @param context
+     * @param center_pointList 墙中点列表
+     * @param thickness        所有墙体通用厚度
+     * @param isLineSeg        是否线建墙
+     */
+    public House(Context context, PointList center_pointList, int thickness, boolean isLineSeg) {
+        this.mContext = context;
+        this.wallsList = new ArrayList<>();
+        this.isWallClosed = true;
+        this.isLineSeg = isLineSeg;
+        loadDatas(center_pointList, thickness);
+    }
+
+    /**
+     * 判断房间是否无效
+     */
+    public boolean isInvalid() {
+        return down == null || up == null;
     }
 
     /**
@@ -118,6 +166,49 @@ public abstract class House {
         this.selected = selected;
     }
 
+    public int getThickness() {
+        return thickness;
+    }
+
+    public void setThickness(int thickness) {
+        this.thickness = thickness;
+    }
+
+    /**
+     * 点吸附检测
+     *
+     * @param check
+     */
+    public Point adsorbPoint(Point check) {
+        if (check == null || centerPointList == null)
+            return null;
+        for (int i = 0; i < centerPointList.size(); i++) {
+            Point point = centerPointList.getIndexAt(i);
+            if (point.dist(check) <= 50) {
+                return point.copy();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 线段吸附
+     *
+     * @param check
+     */
+    public Point adsorbLine(Point check) {
+        if (check == null || centerPointList == null)
+            return null;
+        ArrayList<Line> linesList = isWallClosed ? centerPointList.toLineList() : centerPointList.toNotClosedLineList();
+        for (Line line : linesList) {
+            Point adsorb = line.getAdsorbPoint(check.x, check.y, 50);
+            if (adsorb != null) {
+                return adsorb;
+            }
+        }
+        return null;
+    }
+
     /**
      * TODO 渲染数据
      *
@@ -128,13 +219,26 @@ public abstract class House {
      */
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         try {
-            for (Wall wall : wallsList) {
-                wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            // 线建墙
+            if (isLineSeg) {
+                if (lineSeg != null) {
+                    lineSeg.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                }
+            }
+            // 非线建墙
+            else {
+                if (wallsList.size() > 0) {
+                    for (int i = 0; i < wallsList.size(); i++) { // 不使用迭代操作
+                        Wall wall = wallsList.get(i);
+                        if (wall != null)
+                            wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                    }
+                }
             }
             if (selector != null && selected) {
                 selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
-            if (houseName != null) {
+            if (isWallClosed && houseName != null) {
                 houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
             if (ground != null) {
@@ -158,6 +262,8 @@ public abstract class House {
                 Point inext = null;
                 Point onext = null;
                 if (i == size - 1) {
+                    if (!isWallClosed) // 非闭合房间，最后一面墙不处理
+                        break;
                     inext = innerPointList.getIndexAt(0);
                     onext = outerPointList.getIndexAt(0);
                 } else {
@@ -264,6 +370,30 @@ public abstract class House {
             rendererObjectsList.add(houseName);
         }
         return rendererObjectsList;
+    }
+
+    /**
+     * 判断点是否在此房间内部
+     *
+     * @param point
+     * @return
+     */
+    public boolean isPointInner(Point point) {
+        if (!isWallClosed || innerPointList == null || point == null)
+            return false;
+        return PointList.pointRelationToPolygon(innerPointList.getPointsList(), point) == 1;
+    }
+
+    /**
+     * 获取未闭合房间的内部线段一点
+     */
+    public Point getUncloseInnerLineCenterPoint() {
+        if (centerPointList == null || isWallClosed)
+            return null;
+        if (centerPointList.size() <= 2)
+            return centerPointList.toNotClosedLineList().get(0).getCenter();
+        else
+            return centerPointList.toNotClosedLineList().get(1).getCenter();
     }
 
     /**

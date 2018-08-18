@@ -42,6 +42,7 @@ public class RoomNameBitmapFactory {
             double area = pointList.area();
             // 内部一点
             Point roomNameAtPoint = pointList.getInnerValidPoint(false);
+            RectD houseInnerBox = pointList.getRectBox();
             // 房间名称为null，自动根据面积选择
             if (TextUtils.isTextEmpity(roomName)) {
                 // 客餐厅
@@ -84,6 +85,10 @@ public class RoomNameBitmapFactory {
                 String drawValue = roomName + " " + area + "m²";
                 String blackValue = roomName + " ";
                 float width = 6 + paint.measureText(drawValue);
+                if (width > houseInnerBox.width()) { // 房间宽度过窄，使用小字体
+                    paint.setTextSize(TextUtils.sp2px(OrderKingApplication.getInstant(), 9));
+                    width = 6 + paint.measureText(drawValue);
+                }
                 float blackWidth = paint.measureText(blackValue);
                 Paint.FontMetrics fm = paint.getFontMetrics();
                 float height = 6 + fm.bottom - fm.top;

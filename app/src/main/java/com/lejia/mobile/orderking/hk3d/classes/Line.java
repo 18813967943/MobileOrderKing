@@ -221,16 +221,19 @@ public class Line implements Parcelable {
     public Point getAdsorbPoint(double x, double y) {
         if (invalid())
             return null;
-        Point point = new Point(x, y);
-        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), 2d * getThickess(), getLength(), point);
+        Point point = new Point();
+        point.x = x;
+        point.y = y;
+        double maxAdsorbLength = 2d * getThickess();
+        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), maxAdsorbLength, getLength(), getCenter());
         boolean invalid = PointList.pointRelationToPolygon(pointsList, point) == -1;
         if (invalid)
             return null;
         Point map = null;
         try {
-            ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 5d * getThickess(), point);
+            ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 10d * maxAdsorbLength, point);
             Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
-            map = lepsLine.getLineIntersectedPoint(this);
+            map = getLineIntersectedPoint(lepsLine);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -251,15 +254,16 @@ public class Line implements Parcelable {
         Point point = new Point();
         point.x = x;
         point.y = y;
-        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), 2d * dist, getLength(), point);
+        double maxAdsorbLength = dist;
+        ArrayList<Point> pointsList = PointList.getRotateVertexs(getAngle(), maxAdsorbLength, getLength(), getCenter());
         boolean invalid = PointList.pointRelationToPolygon(pointsList, point) == -1;
         if (invalid)
             return null;
         Point map = null;
         try {
-            ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 5d * dist, point);
+            ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle() + 90d, 10 * maxAdsorbLength, point);
             Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
-            map = lepsLine.getLineIntersectedPoint(this);
+            map = getLineIntersectedPoint(lepsLine);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -283,6 +287,24 @@ public class Line implements Parcelable {
             return line.getLineIntersectedPoint(this) != null;
         }
         return false;
+    }
+
+    /**
+     * 检测是否是此线段的端点
+     *
+     * @param point
+     * @return 0为起点，1为终点，-1不是端点
+     */
+    public int isSidePoint(Point point) {
+        if (point == null || invalid())
+            return -1;
+        boolean downEqual = down.equals(point);
+        if (downEqual)
+            return 0;
+        boolean upEqual = up.equals(point);
+        if (upEqual)
+            return 1;
+        return -1;
     }
 
     @Override

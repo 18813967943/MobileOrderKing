@@ -144,7 +144,7 @@ public class LineList implements Parcelable {
         Point checkPoint = point.off();
         Point ret = null;
         for (Line line : linesList) {
-            ret = line.getAdsorbPoint(checkPoint.x, checkPoint.y, 50);
+            ret = line.getAdsorbPoint(checkPoint.x, checkPoint.y, 96);
             if (ret != null)
                 break;
         }

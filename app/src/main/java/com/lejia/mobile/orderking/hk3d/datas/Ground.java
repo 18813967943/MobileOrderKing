@@ -140,7 +140,7 @@ public class Ground extends RendererObject {
      * @return 返回对应贴图
      */
     public Bitmap getTileBitmap(String materialCode, int styleType) {
-        if (TextUtils.isTextEmpity(materialCode) || tileDescriptionsList == null || tileDescriptionsList.size() == 0)
+        if (TextUtils.isTextEmpity(materialCode) || tileDescriptionsList == null)
             return null;
         Bitmap bmp = null;
         // 普通铺砖、波打线

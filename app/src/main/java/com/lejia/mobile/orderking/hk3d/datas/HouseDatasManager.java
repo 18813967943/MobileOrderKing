@@ -6,11 +6,16 @@ import android.os.AsyncTask;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.CloseHouseCheckResult;
+import com.lejia.mobile.orderking.hk3d.classes.Line;
+import com.lejia.mobile.orderking.hk3d.classes.LineList;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
 import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.lejia.mobile.orderking.hk3d.classes.PolyM;
+import com.lejia.mobile.orderking.hk3d.classes.PolyUM;
+import com.lejia.mobile.orderking.hk3d.classes.UncloseCheckResult;
+import com.lejia.mobile.orderking.hk3d.factory.PointsSplitor;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;
@@ -49,17 +54,17 @@ public class HouseDatasManager {
         housesList.add(house);
     }
 
-
     /**
      * 新增房间
      *
      * @param pointList
      */
-    public void add(PointList pointList) {
+    public House add(PointList pointList) {
         if (pointList == null || pointList.invalid())
-            return;
+            return null;
         NormalHouse normalHouse = new NormalHouse(mContext, pointList, 24);
         housesList.add(normalHouse);
+        return normalHouse;
     }
 
     /**
@@ -67,8 +72,8 @@ public class HouseDatasManager {
      *
      * @param poly
      */
-    public void add(Poly poly) {
-        add(PolyE.toPointList(poly));
+    public House add(Poly poly) {
+        return add(PolyE.toPointList(poly));
     }
 
     /**
@@ -76,8 +81,8 @@ public class HouseDatasManager {
      *
      * @param pointsList
      */
-    public void add(ArrayList<Point> pointsList) {
-        add(new PointList(pointsList));
+    public House add(ArrayList<Point> pointsList) {
+        return add(new PointList(pointsList));
     }
 
     /**
@@ -89,7 +94,15 @@ public class HouseDatasManager {
     public boolean remove(House house) {
         if (house == null || housesList.size() == 0)
             return false;
-        return housesList.remove(house);
+        boolean removed = housesList.remove(house);
+        // 未闭合普通房间或者线建墙去除缓存数据
+        if (house instanceof NormalHouse) {
+            if (!house.isWallClosed) {
+                PolyUM.remove("" + house.hashCode());
+            }
+        }
+        refreshRender();
+        return removed;
     }
 
     /**
@@ -104,15 +117,23 @@ public class HouseDatasManager {
             return;
         // 手指弹起后，如果房间的面积小于1平方米，直接删除
         if (checkHouse.centerPointList.area() < 1) {
-            housesList.remove(checkHouse);
+            remove(checkHouse);
             refreshRender();
             return;
+        }
+        // 检测房间宽度或高度过小
+        if (checkHouse instanceof RectHouse) {
+            RectHouse rectHouse = (RectHouse) checkHouse;
+            if (rectHouse.isSizeInvalid()) {
+                remove(checkHouse);
+                refreshRender();
+                return;
+            }
         }
         new AsyncTask<House, Integer, CloseHouseCheckResult>() {
             @Override
             protected CloseHouseCheckResult doInBackground(House... houses) {
                 CloseHouseCheckResult closeHouseCheckResult = null;
-                long begainTime = System.currentTimeMillis();
                 // 第一个闭合区域，直接组合
                 House checkHouse = houses[0];
                 if (housesList.size() == 1) {
@@ -176,8 +197,6 @@ public class HouseDatasManager {
                         closeHouseCheckResult = new CloseHouseCheckResult(checkHouse, null);
                     }
                 }
-                // 测试耗时
-                System.out.println("####### Take time : " + (System.currentTimeMillis() - begainTime) + "  ms !");
                 return closeHouseCheckResult;
             }
 
@@ -204,13 +223,460 @@ public class HouseDatasManager {
         }.execute(checkHouse);
     }
 
+    /************************************
+     * TODO 未闭合房间绘制处理
+     * ********************************/
+
     /**
      * 未闭合房间检测
      *
      * @param house
      */
     public void gpcUncloseCheck(House house) {
+        if (house == null)
+            return;
+        try {
+            // 自身数据
+            PointList centerList = house.centerPointList;
+            Line selfLine = centerList.toNotClosedLineList().get(0);
+            // 循环遍历求出相交数据
+            ArrayList<UncloseCheckResult> uncloseCheckResultsList = new ArrayList<>();
+            for (House house1 : housesList) {
+                if (!(house.equals(house1))) {
+                    ArrayList<Line> wallLineList = null;
+                    if (house1.centerPointList != null && house1.centerPointList.size() > 1) {
+                        if (house1.isWallClosed)
+                            wallLineList = house1.centerPointList.toLineList();
+                        else
+                            wallLineList = house1.centerPointList.toNotClosedLineList();
+                    }
+                    if (wallLineList != null) {
+                        for (Line line : wallLineList) {
+                            Point interPoint = selfLine.getLineIntersectedPoint(line);
+                            if (interPoint != null) {
+                                int sideIndex = selfLine.isSidePoint(interPoint);
+                                if (uncloseCheckResultsList.size() == 0) {
+                                    uncloseCheckResultsList.add(new UncloseCheckResult(house1, interPoint, sideIndex, (sideIndex != -1)));
+                                } else {
+                                    boolean existed = false;
+                                    for (UncloseCheckResult uncloseCheckResult : uncloseCheckResultsList) {
+                                        if (uncloseCheckResult.interPoint.equals(interPoint)) {
+                                            existed = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!existed)
+                                        uncloseCheckResultsList.add(new UncloseCheckResult(house1, interPoint, sideIndex, (sideIndex != -1)));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // 根据相交结果对象列表分别处理数据
+            // 1、无任何交集，直接存入数据缓存
+            int size = uncloseCheckResultsList.size();
+            if (size == 0) {
+                PolyUM.put("" + house.hashCode(), PolyE.toPolyDefault(centerList));
+            }
+            // 2、相交于一个房间
+            else if (size == 1) {
+                UncloseCheckResult uncloseCheckResult = uncloseCheckResultsList.get(0);
+                if (uncloseCheckResult.interHouse.isWallClosed) { // 相较于闭合房间，存入缓存
+                    PolyUM.put("" + house.hashCode(), PolyE.toPolyDefault(centerList));
+                } else { // 相较于未闭合房间
+                    // 端点相交，合并房间
+                    if (uncloseCheckResult.isSidePoint) {
+                        if (uncloseCheckResult.isInterHouseSidePoint) { // 被相交房间端点相连
+                            // 组合点结果列表
+                            ArrayList<Point> polyPointList = new ArrayList<>();
+                            // 起点相交
+                            if (uncloseCheckResult.sideIndex == 0) {
+                                if (uncloseCheckResult.isInterHouseSidePointBegain) {
+                                    polyPointList.add(selfLine.up.copy());
+                                    PointList interList = uncloseCheckResult.interHouse.centerPointList;
+                                    polyPointList.addAll(interList.copy());
+                                } else {
+                                    PointList interList = uncloseCheckResult.interHouse.centerPointList;
+                                    polyPointList.addAll(interList.copy());
+                                    polyPointList.add(selfLine.up.copy());
+                                }
+                            }
+                            // 终点相交
+                            else {
+                                if (uncloseCheckResult.isInterHouseSidePointBegain) {
+                                    polyPointList.add(selfLine.down.copy());
+                                    PointList interList = uncloseCheckResult.interHouse.centerPointList;
+                                    polyPointList.addAll(interList.copy());
+                                } else {
+                                    PointList interList = uncloseCheckResult.interHouse.centerPointList;
+                                    polyPointList.addAll(interList.copy());
+                                    polyPointList.add(selfLine.down.copy());
+                                }
+                            }
+                            // 移除房间
+                            remove(house);
+                            // 合并房间，检测新组合两个端点是否在绘制的墙体上或较近
+                            NormalHouse polyHouse = (NormalHouse) uncloseCheckResult.interHouse;
+                            polyHouse.setCenterPointList(polyPointList, false);
+                            PolyUM.put("" + polyHouse.hashCode(), PolyE.toPolyDefault(polyHouse.centerPointList));
+                        } else { // 不是两端端点相连，存入缓存
+                            PolyUM.put("" + house.hashCode(), PolyE.toPolyDefault(centerList));
+                        }
+                    }
+                    // 非端点相交，存入缓存
+                    else {
+                        PolyUM.put("" + house.hashCode(), PolyE.toPolyDefault(centerList));
+                    }
+                }
+            }
+            // 相交于2个房间
+            else if (size == 2) {
+                UncloseCheckResult UCR0 = uncloseCheckResultsList.get(0);
+                UncloseCheckResult UCR1 = uncloseCheckResultsList.get(1);
+                // 首尾相交为同一个房间
+                if (UCR0.interHouse.equals(UCR1.interHouse) || UCR0.isUncloseCheckInterAlsoOn(UCR1) || UCR1.isUncloseCheckInterAlsoOn(UCR0)) {
+                    // 求出目标所在的房间
+                    Point innerPoint = house.getUncloseInnerLineCenterPoint();
+                    House interHouse = UCR0.interHouse;
+                    // 闭合房间
+                    if (interHouse.isWallClosed) {
+                        interHouse = getInnerLineAtHouse(UCR0, UCR1, innerPoint);
+                        // 内部画线段
+                        if (interHouse != null) {
+                            int thickness = interHouse.thickness;
+                            Poly closePoly = PolyE.toPolyDefault(interHouse.centerPointList);
+                            ArrayList<Point> pointsList = new ArrayList<>();
+                            pointsList.add(UCR0.interPoint);
+                            pointsList.add(UCR1.interPoint);
+                            Poly linePoly = PolyE.simpleAlignPoly(closePoly, PolyE.toPolyDefault(pointsList));
+                            ArrayList<Poly> poliesList = PointsSplitor.splitLineAreaWithCloseArea(linePoly, closePoly);
+                            if (poliesList != null) {
+                                // 移除房间
+                                remove(house);
+                                remove(interHouse);
+                                // 新建房间
+                                for (Poly poly : poliesList) {
+                                    if (poly != null && !poly.isEmpty()) {
+                                        PointList pointList = PolyE.toPointList(poly);
+                                        add(pointList);
+                                        PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(pointList)); // 存入缓存
+                                    }
+                                }
+                            }
+                        }
+                        // 外部画线段
+                        else {
+                            ArrayList<Point> interList = new ArrayList<>();
+                            interList.add(UCR0.interPoint);
+                            interList.add(UCR1.interPoint);
+                            ArrayList<Point> pointsList = UCR0.interHouse.centerPointList.fixToLeftTopPointsList();
+                            Poly poly = PointsSplitor.splitSelfUnclosedArea(interList, pointsList, true);
+                            if (poly != null && !poly.isEmpty()) {
+                                remove(house);
+                                House house1 = add(poly);
+                                PolyM.put(PolyM.newCreateIndex(), poly); // 存入缓存
+                            }
+                        }
+                    }
+                    // 非闭合房间，相交同一个断墙则为自身闭合
+                    else {
+                        ArrayList<Point> interPointsList = new ArrayList<>();
+                        interPointsList.add(UCR0.interPoint);
+                        interPointsList.add(UCR1.interPoint);
+                        ArrayList<Point> checkPointsList = UCR0.interHouse.centerPointList.getPointsList();
+                        Poly poly = PointsSplitor.splitSelfUnclosedArea(interPointsList, checkPointsList, false);
+                        if (poly != null && !poly.isEmpty()) {
+                            // 移除房间
+                            remove(house);
+                            remove(interHouse);
+                            // 新建房间
+                            PointList pointList = PolyE.toPointList(poly);
+                            add(pointList);
+                            PolyM.put(PolyM.newCreateIndex(), PolyE.toPolyDefault(pointList)); // 存入缓存
+                        }
+                    }
+                }
+                // 相交于两个不同房间
+                else {
+                    // 相交于两个闭合房间
+                    if (UCR0.interHouse.isWallClosed && UCR1.interHouse.isWallClosed) {
+                        // 判断两个房间是否在同一个区域内
+                        Poly p1 = PolyM.getPolyAtPoly(UCR0.interHouse.centerPointList);
+                        Poly p2 = PolyM.getPolyAtPoly(UCR1.interHouse.centerPointList);
+                        // 同一组合区域
+                        if (p1 != null && p2 != null && p1.equals(p2)) {
+                            ArrayList<Point> selfList = new ArrayList<>();
+                            selfList.add(UCR0.interPoint);
+                            selfList.add(UCR1.interPoint);
+                            Poly poly = PointsSplitor.splitSelfUnclosedArea(selfList, PolyE.toPointList(p1).fixToLeftTopPointsList(), true);
+                            if (poly != null && !poly.isEmpty()) {
+                                // 移除房间
+                                remove(house);
+                                // 新建房间
+                                House house1 = add(poly);
+                                PolyM.put(PolyM.newCreateIndex(), poly);
+                            }
+                        }
+                        // 其他
+                        else {
+                            PolyUM.put(house.hashCode() + "", PolyE.toPolyDefault(house.centerPointList));
+                        }
+                    }
+                    // 相交于一个闭合房间、一个未闭合房间
+                    else if ((UCR0.interHouse.isWallClosed && !UCR1.interHouse.isWallClosed) ||
+                            (!UCR0.interHouse.isWallClosed && UCR1.interHouse.isWallClosed)) {
+                        // 与未闭合房间组合
+                        ArrayList<Point> selfPointsList = new ArrayList<>();
+                        selfPointsList.add(UCR0.interPoint);
+                        selfPointsList.add(UCR1.interPoint);
+                        Line validLine = new Line(selfPointsList.get(0).copy(), selfPointsList.get(1).copy());
+                        boolean isUCR0Closed = UCR0.interHouse.isWallClosed;
+                        ArrayList<Point> needInterUnionList = isUCR0Closed ? UCR1.interHouse.centerPointList.getPointsList()
+                                : UCR0.interHouse.centerPointList.getPointsList();
+                        ArrayList<Point> unionUncloseList = PointsSplitor.polyUncloseHouses(selfPointsList, needInterUnionList);
+                        // 与闭合房间切割
+                        House closeHouse = isUCR0Closed ? UCR0.interHouse : UCR1.interHouse;
+                        House uncloseHouse = isUCR0Closed ? UCR1.interHouse : UCR0.interHouse;
+                        PointList closePointList = closeHouse.centerPointList;
+                        // 内部线段墙体
+                        if (PointList.pointRelationToPolygon(closePointList.getPointsList(), validLine.getCenter()) == 1) {
+                            ArrayList<Poly> poliesList = PointsSplitor.splitLineAreaWithCloseArea(PolyE.toPolyDefault(unionUncloseList)
+                                    , PolyE.toPolyDefault(closePointList));
+                            if (poliesList != null && poliesList.size() > 0) {
+                                // 移除房间
+                                remove(house);
+                                remove(uncloseHouse);
+                                remove(closeHouse);
+                                // 新建房间
+                                for (Poly poly : poliesList) {
+                                    add(poly);
+                                    PolyM.put(PolyM.newCreateIndex(), poly);
+                                }
+                            }
+                        }
+                        // 外部线段墙体
+                        else {
+                            // 获取闭合房间所属区域
+                            Poly atUnionPoly = PolyM.getPolyAtPoly(closePointList);
+                            Poly poly = PointsSplitor.splitSelfUnclosedArea(unionUncloseList,
+                                    PolyE.toPointList(atUnionPoly).fixToLeftTopPointsList(), true);
+                            if (poly != null && !poly.isEmpty()) {
+                                // 移除房间
+                                remove(house);
+                                remove(uncloseHouse);
+                                // 新建房间
+                                add(poly);
+                                PolyM.put(PolyM.newCreateIndex(), poly);
+                            }
+                        }
+                    }
+                    // 相交于两个未闭合的房间
+                    else {
+                        // 相较于两个未闭合房间的端点
+                        if (UCR0.isInterHouseSidePoint && UCR1.isInterHouseSidePoint) {
+                            ArrayList<Point> selfPointsList = new ArrayList<>();
+                            selfPointsList.add(UCR0.interPoint);
+                            selfPointsList.add(UCR1.interPoint);
+                            ArrayList<Point> polyPointsList = PointsSplitor.polyUncloseHouses(selfPointsList,
+                                    UCR0.interHouse.centerPointList.getPointsList());
+                            polyPointsList = PointsSplitor.polyUncloseHouses(polyPointsList == null ? selfPointsList : polyPointsList,
+                                    UCR1.interHouse.centerPointList.getPointsList());
+                            if (polyPointsList != null && polyPointsList.size() > 0) {
+                                // 移除房间
+                                remove(UCR0.interHouse);
+                                remove(UCR1.interHouse);
+                                // 替换房间点
+                                if (house instanceof NormalHouse) {
+                                    ((NormalHouse) house).setCenterPointList(polyPointsList, false);
+                                    PolyUM.put(house.hashCode() + "", PolyE.toPolyDefault(polyPointsList));
+                                    checkSpecialUncloseUnionResult(house);
+                                }
+                            }
+                        }
+                        // 其他情况暂不处理(TODO 考虑后期添加断墙非端点组合切割去除部分数据操作)
+                        else {
+                            PolyUM.put(house.hashCode() + "", PolyE.toPolyDefault(house.centerPointList));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * TODO 三个未闭合线段组合后，进一步检测是否首尾有相交切割组合
+     *
+     * @param house
+     */
+    private void checkSpecialUncloseUnionResult(House house) {
+        if (house == null)
+            return;
+        try {
+            // 检测房间是否在某个房间内部
+            Point selfCheck = house.centerPointList.getIndexAt(1);
+            Point selfBegain = house.centerPointList.getIndexAt(0);
+            Point selfEnd = house.centerPointList.getIndexAt(house.centerPointList.size() - 1);
+            House checkInnerHouse = null;
+            House begainHouse = null;
+            House endHouse = null;
+            // 遍历查找内部房间、相交房间
+            for (int i = 0; i < housesList.size(); i++) {
+                House house1 = housesList.get(i);
+                if (house1.isWallClosed && !house1.equals(house)) {
+                    ArrayList<Point> pointsList = house1.centerPointList.getPointsList();
+                    // 检测所在房间
+                    int inner = PointList.pointRelationToPolygon(pointsList, selfCheck);
+                    if (inner == 1) {
+                        checkInnerHouse = house1;
+                    }
+                    // 检测首尾点是否与其他房间连接
+                    Point checkBegain = house1.adsorbLine(selfBegain);
+                    if (checkBegain != null) {
+                        begainHouse = house1;
+                    }
+                    Point checkEnd = house1.adsorbLine(selfEnd);
+                    if (checkEnd != null) {
+                        endHouse = house1;
+                    }
+                }
+            }
+            // 在一个房间内部
+            if (checkInnerHouse != null) {
+                ArrayList<Poly> poliesList = PointsSplitor.splitLineAreaWithCloseArea(PolyE.toPolyDefault(house.centerPointList)
+                        , PolyE.toPolyDefault(checkInnerHouse.centerPointList));
+                if (poliesList != null) {
+                    // 移除房间
+                    remove(house);
+                    // 新建房间
+                    for (Poly poly : poliesList) {
+                        add(poly);
+                        PolyM.put(PolyM.newCreateIndex(), poly);
+                    }
+                }
+            }
+            // 在外部
+            else {
+                // 首尾都有相交房间
+                if (begainHouse != null && endHouse != null) {
+                    if (begainHouse.isWallClosed && endHouse.isWallClosed) {
+                        Poly begainAtPoly = PolyM.getPolyAtPoly(begainHouse.centerPointList);
+                        Poly endAtPoly = PolyM.getPolyAtPoly(endHouse.centerPointList);
+                        if (begainAtPoly != null && endAtPoly != null && begainAtPoly.equals(endAtPoly)) {
+                            Poly poly = PointsSplitor.splitSelfUnclosedArea(house.centerPointList.getPointsList()
+                                    , PolyE.toPointList(begainAtPoly).fixToLeftTopPointsList(), true);
+                            if (poly != null) {
+                                // 移除房间
+                                remove(house);
+                                // 新建
+                                add(poly);
+                                PolyM.put(PolyM.newCreateIndex(), poly);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取墙体所在的房间
+     *
+     * @param ucr0
+     * @param ucr1
+     * @param onLinePoint
+     * @return
+     */
+    private House getInnerLineAtHouse(UncloseCheckResult ucr0, UncloseCheckResult ucr1, Point onLinePoint) {
+        if (ucr0 == null || ucr1 == null || onLinePoint == null)
+            return null;
+        House house = ucr0.interHouse.isPointInner(onLinePoint) ? ucr0.interHouse : null;
+        if (house != null)
+            return house;
+        house = ucr1.interHouse.isPointInner(onLinePoint) ? ucr1.interHouse : null;
+        if (house != null)
+            return house;
+        return null;
+    }
+
+    /**
+     * 检测点与房间相交结果
+     *
+     * @param housesList
+     * @param point
+     * @return
+     */
+    private ArrayList<House> checkInterList(ArrayList<House> housesList, Point point) {
+        if (housesList == null || housesList.size() == 0 || point == null)
+            return null;
+        ArrayList<House> retList = new ArrayList<>();
+        try {
+            for (House house : housesList) {
+                // 先检测点吸附
+                Point point1 = house.centerPointList.correctAdsorbPoint(point, 2);
+                if (point1 != null) {
+                    retList.add(house);
+                }
+                // 在检测线段吸附
+                if (point1 == null) {
+                    ArrayList<Line> linesList = house.centerPointList.toLineList();
+                    for (Line line : linesList) {
+                        point1 = line.getAdsorbPoint(point.x, point.y, 2);
+                        if (point1 != null) {
+                            retList.add(house);
+                        }
+                    }
+                }
+            }
+            if (retList.size() == 0)
+                retList = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return retList;
+    }
+
+    /**
+     * 吸附处理
+     *
+     * @param check
+     * @return
+     */
+    public Point checkAdsorb(Point check) {
+        if (check == null)
+            return null;
+        try {
+            if (housesList != null) {
+                for (int i = housesList.size() - 1; i > -1; i--) { // 先检测点
+                    House house = housesList.get(i);
+                    PointList pointList = house.centerPointList;
+                    if (pointList != null) {
+                        Point adsorb = pointList.correctAdsorbPoint(check, 96);
+                        if (adsorb != null) {
+                            return adsorb;
+                        }
+                    }
+                }
+                for (int i = housesList.size() - 1; i > -1; i--) { // 检测线段
+                    House house = housesList.get(i);
+                    PointList pointList = house.centerPointList;
+                    if (pointList != null) {
+                        LineList lineList = new LineList(house.isWallClosed ? pointList.toLineList() : pointList.toNotClosedLineList());
+                        Point adsorb = lineList.correctNearlyPoint(check.toLJ3DPoint());
+                        if (adsorb != null) {
+                            return adsorb;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -249,7 +715,20 @@ public class HouseDatasManager {
      * 获取房间列表
      */
     public ArrayList<House> getHousesList() {
-        return housesList;
+        ArrayList<House> copyHouseList = new ArrayList<>();
+        try {
+            int size = housesList.size();
+            for (int i = 0; i < size; i++) {
+                if (i < housesList.size()) {
+                    House house = housesList.get(i);
+                    if (house != null)
+                        copyHouseList.add(house);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return copyHouseList;
     }
 
     // 刷新画布
@@ -270,6 +749,8 @@ public class HouseDatasManager {
         ((OrderKingApplication) mContext.getApplicationContext()).release3DViews();
         // 清空房间组合信息
         PolyM.clear();
+        // 清空普通房间缓存信息
+        PolyUM.clear();
         // 清除材质缓存
         TexturesCache.release();
         refreshRender();

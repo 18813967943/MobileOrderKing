@@ -405,6 +405,26 @@ public class PointList implements Parcelable {
     }
 
     /**
+     * 转化为线段组合
+     */
+    public ArrayList<Line> toNotClosedLineList() {
+        if (invalid())
+            return null;
+        ArrayList<Line> linesList = new ArrayList<>();
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            Point now = pointsList.get(i);
+            Point next = null;
+            if (i != size - 1) {
+                next = pointsList.get(i + 1);
+            }
+            if (next != null)
+                linesList.add(new Line(now.copy(), next.copy()));
+        }
+        return linesList;
+    }
+
+    /**
      * 获取组合路径
      *
      * @param close
@@ -784,7 +804,6 @@ public class PointList implements Parcelable {
         return offsetPointsList;
     }
 
-
     /**
      * 获取内部一点，优先中心点
      *
@@ -880,15 +899,19 @@ public class PointList implements Parcelable {
             Point deviationLast = deviation(wipeRepeatAndNearlyList.get(0), wipeRepeatAndNearlyList.get(wipeRepeatAndNearlyList.size() - 1));
             tempWRANList.add(deviationLast);
             // 去除共线点
-            filtrationList.add(tempWRANList.get(0).copy());
-            for (int i = 1; i < tempWRANList.size(); i++) {
+            for (int i = 0; i < tempWRANList.size(); i++) {
                 Point now = tempWRANList.get(i);
-                Point before = tempWRANList.get(i - 1);
+                Point before = null;
                 Point next = null;
-                if (i == tempWRANList.size() - 1) {
+                if (i == 0) {
+                    before = tempWRANList.get(tempWRANList.size() - 1);
+                    next = tempWRANList.get(i + 1);
+                } else if (i == tempWRANList.size() - 1) {
                     next = tempWRANList.get(0);
+                    before = tempWRANList.get(i - 1);
                 } else {
                     next = tempWRANList.get(i + 1);
+                    before = tempWRANList.get(i - 1);
                 }
                 double nb = now.dist(before); // now、before
                 double nn = now.dist(next); // now、next
