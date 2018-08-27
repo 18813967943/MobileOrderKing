@@ -461,15 +461,13 @@ public class OkHttpRequest {
     /**
      * 下载文件
      *
-     * @param fileUrl     文件url
-     * @param destFileDir 存储目标目录
+     * @param fileUrl      文件url
+     * @param destFilePath 存储目标目录
      */
     @SuppressWarnings("unchecked")
-    public <T> void downLoadFile(String fileUrl, final String destFileDir, final ReqCallBack<T> callBack) {
+    public <T> void downLoadFile(String fileUrl, final String destFilePath, final ReqCallBack<T> callBack) {
         // 检测文件保存本地是否存在
-        String[] urlParts = fileUrl.split("[//]");
-        final String fileName = urlParts[urlParts.length - 1];
-        final File file = new File(destFileDir, fileName);
+        final File file = new File(destFilePath);
         if (file.exists()) {
             successCallBack((T) file, callBack);
             return;
@@ -486,7 +484,7 @@ public class OkHttpRequest {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 InputStream is = null;
-                byte[] buf = new byte[2048];
+                byte[] buf = new byte[1048576]; // 1M的读取、写入速度
                 int len = 0;
                 FileOutputStream fos = null;
                 try {

@@ -1,6 +1,7 @@
 package com.lejia.mobile.orderking.adapters;
 
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -16,10 +17,25 @@ public class MenuBarAdapter extends BaseAdapter {
 
     private Context mContext;
     private String[] items;
+    private int textSize;
+
+    private int selectedPosition = -1;
 
     public MenuBarAdapter(Context context, String[] items) {
         this.mContext = context;
         this.items = items;
+    }
+
+    public MenuBarAdapter(Context context, String[] items, int textSize) {
+        this.mContext = context;
+        this.items = items;
+        this.textSize = textSize;
+        this.selectedPosition = -1;
+    }
+
+    public void setSelectedPosition(int selectedPosition) {
+        this.selectedPosition = selectedPosition;
+        notifyDataSetChanged();
     }
 
     public void refreshTitles(String[] items) {
@@ -60,6 +76,17 @@ public class MenuBarAdapter extends BaseAdapter {
             } else {
                 holder = (ViewHolder) v.getTag();
             }
+            // 设置字体大小
+            if (textSize > 0) {
+                holder.title.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
+            }
+            // 设置选中
+            if (selectedPosition == position) {
+                holder.title.setTextColor(0xFF15D4E0);
+            } else {
+                holder.title.setTextColor(0xFF000000);
+            }
+            // 设置标题
             holder.title.setText(items[position]);
         } catch (Exception e) {
             e.printStackTrace();

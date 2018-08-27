@@ -34,7 +34,6 @@ public class Designer3DSurfaceView extends GLSurfaceView {
             } else {
                 setEGLContextClientVersion(2);
             }
-            // setEGLConfigChooser(8, 8, 8, 8, 16, 0);
             setEGLConfigChooser(new MyEGLConfigChooser());
             setZOrderMediaOverlay(true);
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
@@ -73,7 +72,9 @@ public class Designer3DSurfaceView extends GLSurfaceView {
                     EGL10.EGL_RED_SIZE, 8,
                     EGL10.EGL_GREEN_SIZE, 8,
                     EGL10.EGL_BLUE_SIZE, 8,
+                    EGL10.EGL_ALPHA_SIZE, 8,
                     EGL10.EGL_DEPTH_SIZE, 16,
+                    EGL10.EGL_STENCIL_SIZE, 0,
                     EGL10.EGL_SAMPLE_BUFFERS, 1,
                     EGL10.EGL_SAMPLES, 3,  // 在这里修改MSAA的倍数，采用3层数据采样抗锯齿
                     EGL10.EGL_NONE

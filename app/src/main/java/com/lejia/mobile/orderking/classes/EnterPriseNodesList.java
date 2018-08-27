@@ -58,13 +58,89 @@ public class EnterPriseNodesList {
                                 LJNodes nodes = new Gson().fromJson(object.toString(), LJNodes.class);
                                 materialTypeList.add(nodes);
                             }
+                            // 铺砖材质节点列表
                             ((OrderKingApplication) mContext.getApplicationContext()).setMaterialTypeList(materialTypeList, result.toString());
-                            if (onEnterpriseNodesListCompeletedListener != null)
-                                onEnterpriseNodesListCompeletedListener.done();
+                            // 获取模型节点列表
+                            fetchFuritureNodes();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+            }
+
+            @Override
+            public void onReqFailed(String errorMsg) {
+            }
+        });
+    }
+
+    /**
+     * 请求拉取模型节点列表
+     */
+    private void fetchFuritureNodes() {
+        HashMap<String, String> params = new HashMap<>();
+        OkHttpRequest request = OkHttpRequest.getInstance(mContext);
+        request.requestAsyn(HttpsConfig.GET_FURNITURE_TYPENODE_DATAS_LIST, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+            @Override
+            public void onReqSuccess(Object result) {
+                if (result != null) {
+                    try {
+                        ResponseEntity entity = new ResponseEntity(result);
+                        JSONArray array = entity.getJSonArray("modelMaterialRoomTypeList");
+                        if (array != null && array.length() > 0) {
+                            MaterialTypeList materialTypeList = new MaterialTypeList();
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject object = array.getJSONObject(i);
+                                LJNodes nodes = new Gson().fromJson(object.toString(), LJNodes.class);
+                                materialTypeList.add(nodes);
+                            }
+                            // 存入模型节点列表
+                            ((OrderKingApplication) mContext.getApplicationContext()).setFurnitureMaterialTypeList(materialTypeList, result.toString());
+                            // 拉取大类节点列表
+                            fetchCatlogList();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onReqFailed(String errorMsg) {
+            }
+        });
+    }
+
+    /**
+     * 拉取大类节点列表
+     */
+    private void fetchCatlogList() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("enterpriseID", user.getEnterprise().getId());
+        params.put("token", user.getToken());
+        OkHttpRequest request = OkHttpRequest.getInstance(mContext);
+        request.requestAsyn(HttpsConfig.GET_FURNITURE_CATLOG_LIST, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+            @Override
+            public void onReqSuccess(Object result) {
+                try {
+                    ResponseEntity entity = new ResponseEntity(result);
+                    JSONArray array = entity.getJSonArray("materialTypeList");
+                    if (array != null && array.length() > 0) {
+                        MaterialTypeList materialTypeList = new MaterialTypeList();
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject object = array.getJSONObject(i);
+                            LJNodes nodes = new Gson().fromJson(object.toString(), LJNodes.class);
+                            materialTypeList.add(nodes);
+                        }
+                        // 存储大类节点列表
+                        ((OrderKingApplication) mContext.getApplicationContext()).setFurnitureCatlogList(materialTypeList, result.toString());
+                        // 回调完成
+                        if (onEnterpriseNodesListCompeletedListener != null)
+                            onEnterpriseNodesListCompeletedListener.done();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 

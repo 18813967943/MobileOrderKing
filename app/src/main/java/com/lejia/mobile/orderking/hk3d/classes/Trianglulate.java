@@ -171,13 +171,43 @@ public class Trianglulate {
         return ((aCrossbp >= 0.0) && (bCrosscp >= 0.0) && (cCrossap >= 0.0));
     }
 
-    private boolean isAntiClockwise(double Ax, double Ay, double Bx, double By, double Cx, double Cy) {
+    public boolean isAntiClockwise(double Ax, double Ay, double Bx, double By, double Cx, double Cy) {
         double abx = Bx - Ax;
         double aby = By - Ay;
         double acx = Cx - Ax;
         double acy = Cy - Ay;
         double crossP = abx * acy - aby * acx;
         return (crossP > 0 || Math.abs(crossP) < 1e-6);
+    }
+
+    /**
+     * 创建四分之一弧形索引数据
+     * 声明: 扇形(弧形)点必须以非弧形线上的点为起始点的组合区域
+     *
+     * @return 返回索引
+     */
+    public short[] createRadiansIndices(Point[] points) {
+        if (points == null)
+            return null;
+        short[] V = new short[points.length];
+        for (short i = 0; i < V.length; i++) {
+            V[i] = i;
+        }
+        int size = V.length - 2;
+        short[] ret = new short[3 * size];
+        for (int i = size - 1; i > -1; i--) {
+            short b = (short) (i + 1);
+            short c = (short) i;
+            if (i == 0) {
+                b = (short) (V.length - 1);
+                c = (short) size;
+            }
+            int index = 3 * i;
+            ret[index] = 0;
+            ret[index + 1] = b;
+            ret[index + 2] = c;
+        }
+        return ret;
     }
 
 }

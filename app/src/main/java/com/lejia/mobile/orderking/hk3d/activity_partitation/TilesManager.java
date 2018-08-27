@@ -10,7 +10,9 @@ import android.widget.RelativeLayout;
 
 import com.google.gson.Gson;
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.adapters.FurniturePreviewAdapter;
 import com.lejia.mobile.orderking.adapters.MatrerialTypesListAdapter;
+import com.lejia.mobile.orderking.adapters.MenuBarAdapter;
 import com.lejia.mobile.orderking.adapters.TilesPreviewAdapter;
 import com.lejia.mobile.orderking.adapters.TilesRightIconsAdapter;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
@@ -18,9 +20,13 @@ import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.dialogs.TileDirectionDialog;
 import com.lejia.mobile.orderking.dialogs.TileGapsSettingDialog;
 import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
+import com.lejia.mobile.orderking.hk3d.classes.Tile;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
+import com.lejia.mobile.orderking.hk3d.datas.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas.Ground;
+import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.factory.CadFurnitureCreator;
 import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
@@ -52,6 +58,11 @@ public class TilesManager {
     public static final int DRAW_NORMAL = 1;
     // 线建墙
     public static final int DRAW_LINE_BUILD = 2;
+
+    // 铺砖
+    public static final int FLAG_TILES = 0;
+    // 布置
+    public static final int FLAG_LAYOUTS = 1;
 
     private Activity mActivity;
     private TitlesView titlesView;
@@ -90,9 +101,13 @@ public class TilesManager {
 
     private int[] layoutNormalTopIcons; // 布置右上角普通资源
     private int[] layoutSelectTopIcons; // 布置右上角选中资源
+    private int[] layoutMoreTopIcons; // 布置右上角更多资源
+    private int[] layoutMoreSelectTopIcons; // 布置右上角选中更多资源
+    private String[] layoutBottomTitles; // 布置右下角标题
 
     private TilesRightIconsAdapter tilesRightTopIconsAdapter;
     private TilesRightIconsAdapter tilesRightBottomIconsAdapter;
+    private MenuBarAdapter furnitureTitlesAdapter;
 
     /**
      * 当前加载详细节点
@@ -111,6 +126,14 @@ public class TilesManager {
      */
     private ArrayList<TileDescription> tileDescriptionsList;
 
+    /**
+     * 当前模型总资源预览图数据列表
+     */
+    private ArrayList<Furniture> furnituresList;
+    private FurniturePreviewAdapter furniturePreviewAdapter;
+    private boolean showFurnitureRoomStyleMore; // 是否显示更多空间类型
+    private boolean showFurnitureBottomCatlogView; // 是否显示家具大类内容
+
     // 资源预览图列表适配器
     private TilesPreviewAdapter tilesPreviewAdapter;
 
@@ -124,6 +147,14 @@ public class TilesManager {
      */
     private TileGapsSettingDialog tileGapsSettingDialog;
 
+    /**
+     * 设置铺砖或者布置内容
+     */
+    private int flag = -1;
+
+    // 当前登入用户
+    private User user;
+
     private void init() {
         // 菜单图标资源设定
         tilesNormalTopIcons = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.fangan, R.mipmap.wode};
@@ -133,7 +164,12 @@ public class TilesManager {
         layoutNormalTopIcons = new int[]{R.mipmap.kecanting, R.mipmap.woshi, R.mipmap.chufang,
                 R.mipmap.weishengjian, R.mipmap.gengduo};
         layoutSelectTopIcons = new int[]{R.mipmap.kecanting_chosen, R.mipmap.woshi_chosen, R.mipmap.chufang_chosen,
-                R.mipmap.weishengjian_chosen, R.mipmap.gengduo_chosen};
+                R.mipmap.weishengjian_chosen, R.mipmap.gengduo_copy};
+        layoutMoreTopIcons = new int[]{R.mipmap.xiaohaifang, R.mipmap.shufang, R.mipmap.qita,
+                R.mipmap.shiwai, R.mipmap.gengduo};
+        layoutMoreSelectTopIcons = new int[]{R.mipmap.xiaohaifang_copy, R.mipmap.shufang_copy, R.mipmap.qita_copy,
+                R.mipmap.shiwai_copy, R.mipmap.gengduo_copy};
+        layoutBottomTitles = mActivity.getResources().getStringArray(R.array.furniture_bottom_titles);
         // 主界面底部菜单栏、绘制墙体方式
         titlesView.setOnTitlesStatusListener(onTitlesStatusListener);
         drawStates.setOnClickListener(onClickListener);
@@ -141,29 +177,7 @@ public class TilesManager {
         // 区分手机与平板
         boolean isPad = ((OrderKingApplication) context).isPad();
         pageSize = isPad ? 20 : 10;
-        // 菜单有边框文本标题
-        materialTypeList = ((OrderKingApplication) context).materialTypeList;
-        materialNodesList = materialTypeList.getMaterialTypeList();
-
-        tilesRightTopIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalTopIcons, tilesSelectTopIcons);
-        tilesRightBottomIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalBottomIcons, tilesSelectBottomIcons);
-        nodesList.setAdapter(tilesRightBottomIconsAdapter);
-        detaileList.setAdapter(tilesRightTopIconsAdapter);
-        nodesList.setSelector(R.drawable.grid_selector);
-        detaileList.setSelector(R.drawable.grid_selector);
-
-        nodesList.setOnItemClickListener(mainNodesItemClickListener);
-        detaileList.setOnItemClickListener(detailesItemClickListener);
-        // 材质展示窗口
-        tileDescriptionsList = new ArrayList<>();
-        tilesPreviewAdapter = new TilesPreviewAdapter(context, tileDescriptionsList);
-        tilesGrid.setAdapter(tilesPreviewAdapter);
-        tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
-        tilesGrid.setOnItemClickListener(onItemClickListener);
-        tilesGrid.setSelector(R.drawable.grid_selector);
-        // 修改版本展示使用
-        tilesRightTopIconsAdapter.setSelectePosition(1);
-        showPage(1, 1, true);
+        setFlag(FLAG_TILES);
     }
 
     public TilesManager(Activity activity, TitlesView titlesView, RelativeLayout menuLayout
@@ -178,6 +192,65 @@ public class TilesManager {
         this.drawStates = drawStates;
         this.designer3DManager = designer3DManager;
         init();
+    }
+
+    /**
+     * 设置当前加载数据内容
+     */
+    public void setFlag(int flag) {
+        if (this.flag == flag)
+            return;
+        this.flag = flag;
+        Context context = mActivity.getApplicationContext();
+        // 铺砖
+        if (this.flag == FLAG_TILES) {
+            // 菜单有边框文本标题
+            materialTypeList = ((OrderKingApplication) context).materialTypeList;
+            materialNodesList = materialTypeList.getMaterialTypeList();
+            tilesRightTopIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalTopIcons, tilesSelectTopIcons);
+            tilesRightBottomIconsAdapter = new TilesRightIconsAdapter(context, tilesNormalBottomIcons, tilesSelectBottomIcons);
+            nodesList.setAdapter(tilesRightBottomIconsAdapter);
+            detaileList.setAdapter(tilesRightTopIconsAdapter);
+            nodesList.setSelector(R.drawable.grid_selector);
+            detaileList.setSelector(R.drawable.grid_selector);
+            nodesList.setOnItemClickListener(mainNodesItemClickListener);
+            detaileList.setOnItemClickListener(detailesItemClickListener);
+            // 材质展示窗口
+            tileDescriptionsList = new ArrayList<>();
+            tilesPreviewAdapter = new TilesPreviewAdapter(context, tileDescriptionsList);
+            tilesGrid.setAdapter(tilesPreviewAdapter);
+            tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
+            tilesGrid.setOnItemClickListener(onItemClickListener);
+            tilesGrid.setSelector(R.drawable.grid_selector);
+            // 修改版本展示使用
+            tilesRightTopIconsAdapter.setSelectePosition(1);
+            showPage(1, 1, true);
+        }
+        // 布置
+        else if (this.flag == FLAG_LAYOUTS) {
+            // 设置模型节点
+            materialTypeList = ((OrderKingApplication) context).furnitureMaterialTypeList;
+            materialNodesList = materialTypeList.getMaterialTypeList();
+            tilesRightTopIconsAdapter = new TilesRightIconsAdapter(context, layoutNormalTopIcons, layoutSelectTopIcons);
+            furnitureTitlesAdapter = new MenuBarAdapter(context, layoutBottomTitles, 12);
+            nodesList.setAdapter(furnitureTitlesAdapter);
+            detaileList.setAdapter(tilesRightTopIconsAdapter);
+            nodesList.setSelector(R.drawable.grid_selector);
+            detaileList.setSelector(R.drawable.grid_selector);
+            nodesList.setOnItemClickListener(mainNodesItemClickListener);
+            detaileList.setOnItemClickListener(detailesItemClickListener);
+            // 材质展示窗口
+            furnituresList = new ArrayList<>();
+            furniturePreviewAdapter = new FurniturePreviewAdapter(context, furnituresList);
+            tilesGrid.setAdapter(furniturePreviewAdapter);
+            tilesGrid.setOnScrollerGridListener(onScrollerGridListener);
+            tilesGrid.setOnItemClickListener(onItemClickListener);
+            tilesGrid.setSelector(R.drawable.grid_selector);
+            // 修改版本展示使用
+            tilesRightTopIconsAdapter.setSelectePosition(0);
+            furnitureTitlesAdapter.setSelectedPosition(-1);
+            showPage(0, 1, true);
+        }
     }
 
     /**
@@ -202,10 +275,13 @@ public class TilesManager {
                 case 2:
                     // 铺砖
                     menuLayout.setVisibility(View.VISIBLE);
+                    showFurnitureBottomCatlogView = false;
+                    setFlag(FLAG_TILES);
                     break;
                 case 3:
                     // 布置
                     menuLayout.setVisibility(View.VISIBLE);
+                    setFlag(FLAG_LAYOUTS);
                     break;
             }
         }
@@ -268,45 +344,63 @@ public class TilesManager {
     private AdapterView.OnItemClickListener mainNodesItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            tilesRightBottomIconsAdapter.setSelectePosition(position);
-            // 根据位置弹出响应的操作窗口
-            switch (position) {
-                case Classify.FLAG_AREAS:
-                    break;
-                case Classify.FLAG_GAPS:
-                    // 弹出与隐藏砖缝设置窗口
-                    if (tileGapsSettingDialog == null)
-                        tileGapsSettingDialog = new TileGapsSettingDialog(mActivity, onTileGapSettingListener);
-                    Ground gapsSelectedGround = getSelectedGround();
-                    if (gapsSelectedGround != null) {
-                        NSGPCManager nsgpcManager = gapsSelectedGround.getGpcManager();
-                        if (nsgpcManager != null) {
-                            tileGapsSettingDialog.setGapsColor(nsgpcManager.getGapsColor());
-                            tileGapsSettingDialog.setGapsSize(nsgpcManager.getBrickGap());
+            // 铺砖
+            if (flag == FLAG_TILES) {
+                tilesRightBottomIconsAdapter.setSelectePosition(position);
+                // 根据位置弹出响应的操作窗口
+                switch (position) {
+                    case Classify.FLAG_AREAS:
+                        break;
+                    case Classify.FLAG_GAPS:
+                        // 弹出与隐藏砖缝设置窗口
+                        if (tileGapsSettingDialog == null)
+                            tileGapsSettingDialog = new TileGapsSettingDialog(mActivity, onTileGapSettingListener);
+                        Ground gapsSelectedGround = getSelectedGround();
+                        if (gapsSelectedGround != null) {
+                            NSGPCManager nsgpcManager = gapsSelectedGround.getGpcManager();
+                            if (nsgpcManager != null) {
+                                tileGapsSettingDialog.setGapsColor(nsgpcManager.getGapsColor());
+                                tileGapsSettingDialog.setGapsSize(nsgpcManager.getBrickGap());
+                            }
                         }
-                    }
-                    tileGapsSettingDialog.autoShowOrHide();
-                    break;
-                case Classify.FLAG_DIRECTION:
-                    // 弹出与隐藏设置起铺方向窗口
-                    if (tileDirectionDialog == null)
-                        tileDirectionDialog = new TileDirectionDialog(mActivity, onTileDirectionsSelectedListener);
-                    Ground selectedGround = getSelectedGround();
-                    if (selectedGround != null) {
-                        NSGPCManager nsgpcManager = selectedGround.getGpcManager();
-                        if (nsgpcManager != null)
-                            tileDirectionDialog.setDirection(nsgpcManager.getDirection());
-                    }
-                    tileDirectionDialog.autoShowOrHide();
-                    break;
-                case Classify.FLAG_SKEW_TILE:
-                    // 设置选中地面铺砖是否斜铺
-                    Ground ground = getSelectedGround();
-                    if (ground != null) {
-                        NSGPCManager nsgpcManager = ground.getGpcManager();
-                        nsgpcManager.setSkewTile(!nsgpcManager.isSkewTile());
-                    }
-                    break;
+                        tileGapsSettingDialog.autoShowOrHide();
+                        break;
+                    case Classify.FLAG_DIRECTION:
+                        // 弹出与隐藏设置起铺方向窗口
+                        if (tileDirectionDialog == null)
+                            tileDirectionDialog = new TileDirectionDialog(mActivity, onTileDirectionsSelectedListener);
+                        Ground selectedGround = getSelectedGround();
+                        if (selectedGround != null) {
+                            NSGPCManager nsgpcManager = selectedGround.getGpcManager();
+                            if (nsgpcManager != null)
+                                tileDirectionDialog.setDirection(nsgpcManager.getDirection());
+                        }
+                        tileDirectionDialog.autoShowOrHide();
+                        break;
+                    case Classify.FLAG_SKEW_TILE:
+                        // 设置选中地面铺砖是否斜铺
+                        Ground ground = getSelectedGround();
+                        if (ground != null) {
+                            NSGPCManager nsgpcManager = ground.getGpcManager();
+                            nsgpcManager.setSkewTile(!nsgpcManager.isSkewTile());
+                        }
+                        break;
+                }
+            }
+            // 布置
+            else if (flag == FLAG_LAYOUTS) {
+                furnitureTitlesAdapter.setSelectedPosition(position);
+                showFurnitureBottomCatlogView = true;
+                // 获取大类节点对应数据
+                MaterialTypeList catlogList = ((OrderKingApplication) mActivity.getApplicationContext()).furnitureCatlogList;
+                if (catlogList != null) {
+                    currentLoadNode = catlogList.getChildByName(layoutBottomTitles[position]);
+                }
+                // 根据节点显示数据内容
+                if (currentLoadNode != null) {
+                    tilesRightTopIconsAdapter.setSelectePosition(-1);
+                    showPage(-2, 1, true);
+                }
             }
         }
     };
@@ -339,7 +433,6 @@ public class TilesManager {
 
         @Override
         public void calBrickCounts() {
-
         }
     };
 
@@ -374,7 +467,29 @@ public class TilesManager {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             tilesRightTopIconsAdapter.setSelectePosition(position);
-            showPage(position, 1, true);
+            // 铺砖
+            if (flag == FLAG_TILES) {
+                showPage(position, 1, true);
+            }
+            // 布置
+            else if (flag == FLAG_LAYOUTS) {
+                showFurnitureBottomCatlogView = false;
+                furnitureTitlesAdapter.setSelectedPosition(-1);
+                // 切换
+                if (position == 4) {
+                    showFurnitureRoomStyleMore = !showFurnitureRoomStyleMore;
+                    if (showFurnitureRoomStyleMore) {
+                        tilesRightTopIconsAdapter.refreshDatas(layoutMoreTopIcons, layoutMoreSelectTopIcons);
+                    } else {
+                        tilesRightTopIconsAdapter.refreshDatas(layoutNormalTopIcons, layoutSelectTopIcons);
+                    }
+                }
+                // 加载具体空间类型显示
+                else {
+                    int showPosition = showFurnitureRoomStyleMore ? (position + 4) : position;
+                    showPage(showPosition, 1, true);
+                }
+            }
         }
     };
 
@@ -386,13 +501,16 @@ public class TilesManager {
      * @param needClearList   是否清楚当前已加载的数据内容
      */
     private void showPage(int detailNodeIndex, int page, boolean needClearList) {
-        if (currentNodeIndex == detailNodeIndex)
-            return;
-        currentLoadNode = materialNodesList.get(detailNodeIndex);
-        currentNodeIndex = detailNodeIndex;
+        if (!showFurnitureBottomCatlogView) {
+            currentLoadNode = materialNodesList.get(detailNodeIndex);
+            currentNodeIndex = detailNodeIndex;
+        }
         this.page = page;
         if (needClearList) {
-            tileDescriptionsList.clear();
+            if (flag == FLAG_TILES) // 铺砖
+                tileDescriptionsList.clear();
+            else if (flag == FLAG_LAYOUTS) // 布置
+                furnituresList.clear();
         }
         getPage();
     }
@@ -403,44 +521,165 @@ public class TilesManager {
     private void getPage() {
         if (currentLoadNode == null)
             return;
-        User user = ((OrderKingApplication) mActivity.getApplicationContext()).mUser;
+        user = ((OrderKingApplication) mActivity.getApplicationContext()).mUser;
+        // 铺砖
+        if (flag == FLAG_TILES) {
+            // 普通砖
+            if (currentLoadNode.getName().equals("换砖")) {
+                HashMap<String, String> params = new HashMap<>();
+                params.put("token", user.getToken());
+                params.put("pageIndex", "" + page);
+                params.put("pageSize", "" + pageSize);
+                params.put("materialTypeID", "" + currentLoadNode.getId());
+                OkHttpRequest request = OkHttpRequest.getInstance(mActivity.getApplicationContext());
+                request.requestAsyn(HttpsConfig.GET_DETAILE_NODE_DATAS, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+                    @Override
+                    public void onReqSuccess(Object result) {
+                        if (result != null) {
+                            try {
+                                ResponseEntity entity = new ResponseEntity(result);
+                                // 有数据时刷新
+                                if (entity.state == 1) {
+                                    JSONArray array = entity.getJSonArray("materialList");
+                                    ArrayList<TileDescription> pageTileDiscriptionsList = new ArrayList<>();
+                                    for (int i = 0; i < array.length(); i++) {
+                                        JSONObject object = array.getJSONObject(i);
+                                        TileDescription tileDescription = new Gson().fromJson(object.toString(), TileDescription.class);
+                                        pageTileDiscriptionsList.add(tileDescription);
+                                    }
+                                    tileDescriptionsList.addAll(pageTileDiscriptionsList);
+                                    // 默认装载第一页用于换砖的材质数据
+                                    OrderKingApplication app = ((OrderKingApplication) mActivity.getApplicationContext());
+                                    if (app.defaultTileDescriptionList != null && app.defaultTileDescriptionList.size() == 0) {
+                                        app.setDefaultTileDescriptionList(pageTileDiscriptionsList);
+                                    }
+                                    // 刷新列表显示
+                                    tilesPreviewAdapter.notifyDataSetChanged();
+                                }
+                                // 没有更多页数据，则返回最后一页
+                                else {
+                                    page--;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onReqFailed(String errorMsg) {
+                    }
+                });
+            }
+            // 样式砖
+            else if (currentLoadNode.getName().equals("样式")) {
+                HashMap<String, String> params = new HashMap<>();
+                params.put("token", user.getToken());
+                params.put("pageIndex", "" + page);
+                params.put("pageSize", "" + pageSize);
+                OkHttpRequest request = OkHttpRequest.getInstance(mActivity);
+                request.requestAsyn(HttpsConfig.GET_STYLIES_TILES_DATAS_LIST, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+                    @Override
+                    public void onReqSuccess(Object result) {
+                        if (result != null) {
+                            try {
+                                ResponseEntity entity = new ResponseEntity(result);
+                                // 请求数据
+                                if (entity.state == 1) {
+                                    JSONArray jsonArray = entity.getJSonArray("materialList");
+                                    ArrayList<TileDescription> pageTileDiscriptionsList = new ArrayList<>();
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject object = jsonArray.getJSONObject(i);
+                                        TileDescription tileDescription = new TileDescription();
+                                        tileDescription.id = object.getInt("id");
+                                        tileDescription.styleType = object.getInt("styleType");
+                                        tileDescription.previewImg = object.getString("previewImg");
+                                        tileDescription.styliesMaterialList = new ArrayList<>();
+                                        JSONArray tilesArray = object.getJSONArray("materialList");
+                                        if (tilesArray != null) {
+                                            for (int j = 0; j < tilesArray.length(); j++) {
+                                                JSONArray cellArray = tilesArray.getJSONArray(j);
+                                                ArrayList<Tile> tilesList = new ArrayList<>();
+                                                for (int k = 0; k < cellArray.length(); k++) {
+                                                    JSONObject cell = cellArray.getJSONObject(k);
+                                                    Tile tile = new Gson().fromJson(cell.toString(), Tile.class);
+                                                    tilesList.add(tile);
+                                                }
+                                                tileDescription.styliesMaterialList.add(tilesList);
+                                            }
+                                        }
+                                        pageTileDiscriptionsList.add(tileDescription);
+                                    }
+                                    tileDescriptionsList.addAll(pageTileDiscriptionsList);
+                                    tilesPreviewAdapter.notifyDataSetChanged();
+                                }
+                                // 无数据
+                                else {
+                                    page--;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onReqFailed(String errorMsg) {
+                    }
+                });
+            }
+        }
+        // 布置
+        else if (flag == FLAG_LAYOUTS) {
+            fetchFurnitureType(!showFurnitureBottomCatlogView);
+        }
+    }
+
+    /**
+     * 拉取模型数据
+     *
+     * @param top 顶部空间类型请求
+     */
+    private void fetchFurnitureType(boolean top) {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", user.getToken());
         params.put("pageIndex", "" + page);
         params.put("pageSize", "" + pageSize);
-        params.put("materialTypeID", "" + currentLoadNode.getId());
-        OkHttpRequest request = OkHttpRequest.getInstance(mActivity.getApplicationContext());
-        request.requestAsyn(HttpsConfig.GET_DETAILE_NODE_DATAS, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
+        if (top) {
+            params.put("roomTypeID", "" + currentLoadNode.getId());
+            params.put("typeID", "");
+        } else {
+            params.put("roomTypeID", "");
+            params.put("typeID", "" + currentLoadNode.getId());
+        }
+        OkHttpRequest request = OkHttpRequest.getInstance(mActivity);
+        request.requestAsyn(HttpsConfig.GET_FURNITURE_ID_DATAS_LIST, OkHttpRequest.TYPE_POST_JSON, params, new ReqCallBack<Object>() {
             @Override
             public void onReqSuccess(Object result) {
-                if (result != null) {
-                    try {
-                        ResponseEntity entity = new ResponseEntity(result);
-                        // 有数据时刷新
-                        if (entity.state == 1) {
-                            JSONArray array = entity.getJSonArray("materialList");
-                            ArrayList<TileDescription> pageTileDiscriptionsList = new ArrayList<>();
+                try {
+                    ResponseEntity entity = new ResponseEntity(result);
+                    // 包含数据
+                    if (entity.state == 1) {
+                        JSONArray array = entity.getJSonArray("modelMaterialList");
+                        if (array != null) {
+                            ArrayList<Furniture> pageFurnituresList = new ArrayList<>();
                             for (int i = 0; i < array.length(); i++) {
                                 JSONObject object = array.getJSONObject(i);
-                                TileDescription tileDescription = new Gson().fromJson(object.toString(), TileDescription.class);
-                                pageTileDiscriptionsList.add(tileDescription);
+                                Furniture furniture = new Gson().fromJson(object.toString(), Furniture.class);
+                                // 加载子件
+                                furniture.loadSubsets();
+                                pageFurnituresList.add(furniture);
                             }
-                            tileDescriptionsList.addAll(pageTileDiscriptionsList);
-                            // 默认装载第一页用于换砖的材质数据
-                            OrderKingApplication app = ((OrderKingApplication) mActivity.getApplicationContext());
-                            if (app.defaultTileDescriptionList != null && app.defaultTileDescriptionList.size() == 0) {
-                                app.setDefaultTileDescriptionList(pageTileDiscriptionsList);
-                            }
-                            // 刷新列表显示
-                            tilesPreviewAdapter.notifyDataSetChanged();
+                            furnituresList.addAll(pageFurnituresList);
                         }
-                        // 没有更多页数据，则返回最后一页
-                        else {
-                            page--;
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        furniturePreviewAdapter.notifyDataSetChanged();
                     }
+                    // 没有更多页数据，则返回最后一页
+                    else {
+                        page--;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -466,15 +705,42 @@ public class TilesManager {
     private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // 获取三维场景数据触摸管理对象
-            TouchSelectedManager touchSelectedManager = designer3DManager.getDesigner3DRender().getTouchSelectedManager();
-            if (touchSelectedManager != null) {
-                RendererObject selector = touchSelectedManager.getSelector();
-                if (selector != null && (selector instanceof Ground)) { // 选中对象为地面时
-                    Ground ground = (Ground) selector;
-                    ArrayList<TileDescription> useTileDescriptionsList = new ArrayList<>();
-                    useTileDescriptionsList.add(tileDescriptionsList.get(position));
-                    ground.setTileDescriptionsList(useTileDescriptionsList);
+            // 铺砖
+            if (flag == FLAG_TILES) {
+                // 获取三维场景数据触摸管理对象
+                TouchSelectedManager touchSelectedManager = designer3DManager.getDesigner3DRender().getTouchSelectedManager();
+                if (touchSelectedManager != null) {
+                    RendererObject selector = touchSelectedManager.getSelector();
+                    if (selector != null && (selector instanceof Ground)) { // 选中对象为地面时
+                        Ground ground = (Ground) selector;
+                        ArrayList<TileDescription> useTileDescriptionsList = new ArrayList<>();
+                        useTileDescriptionsList.add(tileDescriptionsList.get(position));
+                        ground.setTileDescriptionsList(useTileDescriptionsList);
+                    }
+                }
+            }
+            // 布置
+            else if (flag == FLAG_LAYOUTS) {
+                // 获取点击的家具对象
+                Furniture furniture = furnituresList.get(position);
+                // 获取三维数据管理对象
+                HouseDatasManager houseDatasManager = designer3DManager.getDesigner3DRender().getHouseDatasManager();
+                // 门窗数据特殊处理
+                if (showFurnitureBottomCatlogView) {
+                    String nodeName = currentLoadNode.getName();
+                    // 门窗
+                    if (nodeName.equals("门") || nodeName.equals("窗")) {
+                        houseDatasManager.addFurniture(CadFurnitureCreator.createDoorOrWindow(houseDatasManager, designer3DManager, furniture));
+                        return;
+                    }
+                    // 其他任何家具
+                    else {
+                        houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
+                    }
+                }
+                // 其他任何家具
+                else {
+                    houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
                 }
             }
         }

@@ -111,7 +111,7 @@ public class RoomNameBitmapFactory {
                 Bitmap bitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
                 Canvas canvas = new Canvas(bitmap);
                 bitmap.setHasAlpha(true);
-                // 绘制覆盖区域位图
+                /*// 绘制覆盖区域位图
                 if (overlapBitmap != null) {
                     RectD innerBox = pointList.getRectBox();
                     double transX = -innerBox.left;
@@ -123,7 +123,7 @@ public class RoomNameBitmapFactory {
                             (int) transBox.top, (int) (transBox.width() + 1.0d), (int) transBox.height());
                     canvas.drawBitmap(overlapAreaBitmap, 0, 0, null);
                     overlapAreaBitmap.recycle();
-                }
+                }*/
                 // 绘制内容
                 float y = 3 + (float) ((box.height() + height / 2) / 2);
                 paint.setColor(0xFF000000);

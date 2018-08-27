@@ -253,7 +253,6 @@ public class TouchManager {
             long time = checkUpTime - checkDownTime;
             // 短按
             if (time <= 350) {
-                designer3DRender.checkClickAtViews(x, y);
                 System.out.println("###### 短按 !");
             }
             // 长按

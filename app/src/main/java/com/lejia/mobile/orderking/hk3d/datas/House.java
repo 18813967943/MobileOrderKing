@@ -235,17 +235,23 @@ public abstract class House {
                     }
                 }
             }
-            if (selector != null && selected) {
-                selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-            }
-            if (isWallClosed && houseName != null) {
-                houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-            }
             if (ground != null) {
                 ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 渲染名称
+     */
+    public void renderName(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        if (houseName != null && isWallClosed) {
+            houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+        }
+        if (selector != null && selected) {
+            selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
         }
     }
 

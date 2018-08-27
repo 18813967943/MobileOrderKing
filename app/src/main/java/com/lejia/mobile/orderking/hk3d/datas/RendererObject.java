@@ -50,6 +50,20 @@ public abstract class RendererObject {
 
     public String uuid; // 唯一编码
 
+    public Selector selector; // 选中对象
+    public boolean selected; // 是否选中
+
+    // 判断模型是否选中
+    public boolean isSelected() {
+        return selected;
+    }
+
+    // 设置模型选中状态
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        refreshRender();
+    }
+
     /**
      * 基础渲染
      *
@@ -87,7 +101,7 @@ public abstract class RendererObject {
             GLES30.glGenTextures(1, textureId, 0);
             GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
-            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, bitmap, 0);
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);

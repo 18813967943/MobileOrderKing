@@ -16,6 +16,7 @@ import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
 import com.lejia.mobile.orderking.hk3d.datas.House;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
 
 import java.util.ArrayList;
 
@@ -93,6 +94,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         this.mContext = context;
         this.houseDatasManager = new HouseDatasManager(mContext);
         this.dummyGround = new DummyGround(mContext);
+        this.touchSelectedManager = new TouchSelectedManager(mContext, new ArrayList<RendererObject>());
         this.onRenderStatesListener = onRenderStatesListener;
     }
 
@@ -202,6 +204,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         GLES30.glDisable(GLES20.GL_CULL_FACE);
         //------------------------- render depth map --------------------------
         // shadow generation to avoid self shadowing
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         renderShadowMap();
 
         //------------------------- render scene ------------------------------
@@ -273,12 +276,27 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
         // Render all stationary shapes on scene
         if (houseDatasManager != null) {
-            ArrayList<House> housesList = houseDatasManager.getHousesList();
-            if (housesList != null && housesList.size() > 0) {
-                for (int i = housesList.size() - 1; i > -1; i--) {
-                    House house = housesList.get(i);
-                    house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+            try {
+                // 开启深度测试
+                GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+                // 绘制房间数据
+                ArrayList<House> housesList = houseDatasManager.getHousesList();
+                if (housesList != null && housesList.size() > 0) {
+                    for (int i = housesList.size() - 1; i > -1; i--) {
+                        House house = housesList.get(i);
+                        house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+                    }
                 }
+                // 绘制家具数据
+                ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
+                if (baseCadsList != null && baseCadsList.size() > 0) {
+                    for (int i = baseCadsList.size() - 1; i > -1; i--) {
+                        BaseCad baseCad = baseCadsList.get(i);
+                        baseCad.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -341,13 +359,37 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
         // draw all views
         if (houseDatasManager != null) {
-            ArrayList<House> housesList = houseDatasManager.getHousesList();
-            if (housesList != null && housesList.size() > 0) {
-                for (int i = housesList.size() - 1; i > -1; i--) {
-                    House house = housesList.get(i);
-                    house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                            , ViewingShader.scene_colorAttribute, false);
+            try {
+                // 绘制房间数据
+                GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+                ArrayList<House> housesList = houseDatasManager.getHousesList();
+                if (housesList != null && housesList.size() > 0) {
+                    for (int i = 0; i < housesList.size(); i++) {
+                        House house = housesList.get(i);
+                        house.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
+                    }
                 }
+                // 绘制家具数据
+                GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+                ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
+                if (baseCadsList != null && baseCadsList.size() > 0) {
+                    for (int i = baseCadsList.size() - 1; i > -1; i--) {
+                        BaseCad baseCad = baseCadsList.get(i);
+                        baseCad.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
+                    }
+                }
+                // 绘制房间名称
+                if (housesList != null && housesList.size() > 0) {
+                    for (int i = housesList.size() - 1; i > -1; i--) {
+                        House house = housesList.get(i);
+                        house.renderName(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -432,19 +474,22 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             // 求出相交对象
             ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
             ArrayList<House> housesList = houseDatasManager.getHousesList();
-            if (housesList != null && housesList.size() > 0) {
+            if (housesList != null && housesList.size() > 0) { // 房间
                 for (House house : housesList) {
                     rendererObjectsList.addAll(house.getTotalRendererObjectList());
                 }
             }
+            ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
+            if (baseCadsList != null && baseCadsList.size() > 0) { // 家具
+                rendererObjectsList.addAll(baseCadsList);
+            }
             object = LJ3DPoint.checkRayIntersectedObject(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
             if (object != null) {
-                if (touchSelectedManager == null)
-                    touchSelectedManager = new TouchSelectedManager(mContext, rendererObjectsList);
-                else
-                    touchSelectedManager.setRendererObjectsList(rendererObjectsList);
+                touchSelectedManager.setRendererObjectsList(rendererObjectsList);
                 touchSelectedManager.setSelector(object);
                 return true;
+            } else {
+                touchSelectedManager.setSelector(null);
             }
         }
         return false;
@@ -526,6 +571,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 }
             }
             houseDatasManager.laterClearWhen3DViewsClearFinished();
+            if (touchSelectedManager != null)
+                touchSelectedManager.clear();
         }
         resetScale();
         resetTranslate();

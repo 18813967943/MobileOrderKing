@@ -16,6 +16,7 @@ import android.widget.RelativeLayout;
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.FurnitureTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.MoreManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
@@ -77,6 +78,12 @@ public class HK3DDesignerActivity extends Activity {
     private TouchManager touchManager;
 
     /**
+     * 家具触摸管理对象
+     */
+    private FurnitureTouchManager furnitureTouchManager;
+    private boolean interruptTouch;
+
+    /**
      * 更多菜单栏操作
      */
     private MoreManager moreManager;
@@ -127,6 +134,24 @@ public class HK3DDesignerActivity extends Activity {
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        // 底部栏触摸照旧
+        float y = ev.getY();
+        float bottomBarHeight = getResources().getDimension(R.dimen.main_bottom_height);
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        if (y >= (screenHeight - bottomBarHeight)) {
+            interruptTouch = true;
+            return super.dispatchTouchEvent(ev);
+        }
+        // 优先检测模型点击操作事件
+        if (furnitureTouchManager == null) {
+            furnitureTouchManager = new FurnitureTouchManager(this, tilesManager, designer3DManager);
+        }
+        interruptTouch = furnitureTouchManager.canDrawCheck(ev);
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         // 底部栏触摸照旧
         float y = event.getY();
@@ -137,9 +162,13 @@ public class HK3DDesignerActivity extends Activity {
         }
         // 三维控件触摸处理
         else {
-            if (touchManager == null)
-                touchManager = new TouchManager(this, tilesManager, designer3DManager);
-            return touchManager.onTouchEvent(event);
+            if (!interruptTouch) {
+                if (touchManager == null)
+                    touchManager = new TouchManager(this, tilesManager, designer3DManager);
+                return touchManager.onTouchEvent(event);
+            } else {
+                return super.onTouchEvent(event);
+            }
         }
     }
 

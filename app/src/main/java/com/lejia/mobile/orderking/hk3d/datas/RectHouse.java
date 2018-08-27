@@ -49,28 +49,32 @@ public class RectHouse extends House {
      * TODO 创建围点信息
      */
     private void createLists() {
-        if (down == null || up == null)
-            return;
-        // 面积小于1个平方米，视为无效
-        double dist = up.dist(down);
-        if (dist < 1.414d)
-            return;
-        // 矩形画墙默认都为闭合
-        isWallClosed = true;
-        // 创建围点列表
-        double poorX = Math.abs(up.x - down.x);
-        double poorY = Math.abs(up.y - down.y);
-        width = poorX;
-        height = poorY;
-        Point center = new Point((down.x + up.x) / 2, (down.y + up.y) / 2);
-        ArrayList<Point> centerPointsList = PointList.getRotateVertexs(0d, poorY, poorX, center);
-        centerPointList = createList(centerPointList, centerPointsList);
-        // 内外围点列表
-        ArrayList<Point> innerPointsList = centerPointList.offsetList(false, 12);
-        innerPointList = createList(innerPointList, innerPointsList);
-        ArrayList<Point> outerPointsList = centerPointList.offsetList(true, 12);
-        outerPointList = createList(outerPointList, outerPointsList);
-        createRenderer();
+        try {
+            if (down == null || up == null)
+                return;
+            // 面积小于1个平方米，视为无效
+            double dist = up.dist(down);
+            if (dist < 1.414d)
+                return;
+            // 矩形画墙默认都为闭合
+            isWallClosed = true;
+            // 创建围点列表
+            double poorX = Math.abs(up.x - down.x);
+            double poorY = Math.abs(up.y - down.y);
+            width = poorX;
+            height = poorY;
+            Point center = new Point((down.x + up.x) / 2, (down.y + up.y) / 2);
+            ArrayList<Point> centerPointsList = PointList.getRotateVertexs(0d, poorY, poorX, center);
+            centerPointList = createList(centerPointList, centerPointsList);
+            // 内外围点列表
+            ArrayList<Point> innerPointsList = centerPointList.offsetList(false, 12);
+            innerPointList = createList(innerPointList, innerPointsList);
+            ArrayList<Point> outerPointsList = centerPointList.offsetList(true, 12);
+            outerPointList = createList(outerPointList, outerPointsList);
+            createRenderer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -78,8 +78,16 @@ public class HouseName extends RendererObject {
         if (indices == null) {
             loadDatas();
         }
-        needBindTextureId = true;
+        if (nameData != null)
+            needBindTextureId = true;
         refreshRender();
+    }
+
+    /**
+     * 房间名称数据对象
+     */
+    public NameData getNameData() {
+        return nameData;
     }
 
     @Override
@@ -89,6 +97,9 @@ public class HouseName extends RendererObject {
             textureId = createTextureIdAndCache(uuid, nameData.bitmap, true);
         } else {
             if (textureId != -1) {
+                // 开启混色
+                GLES30.glEnable(GLES30.GL_BLEND);
+                GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
                 // 顶点
                 GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
                 GLES30.glEnableVertexAttribArray(positionAttribute);
@@ -105,6 +116,8 @@ public class HouseName extends RendererObject {
                     GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
+                // 关闭混色
+                GLES30.glDisable(GLES30.GL_BLEND);
             }
         }
     }

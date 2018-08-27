@@ -23,7 +23,7 @@ public class Selector extends RendererObject {
     private float[] colors;
     private FloatBuffer colorsBuffer;
 
-    int size;
+    private int size;
 
     /**
      * 适用于正对面选中的构造函数
@@ -65,6 +65,13 @@ public class Selector extends RendererObject {
         colorsBuffer.put(colors).position(0);
     }
 
+    /**
+     * 刷新围点
+     */
+    public void refresh(PointList pointList) {
+        init2DSelector(pointList);
+    }
+
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         // Pass in the position information
@@ -80,7 +87,7 @@ public class Selector extends RendererObject {
             GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
         }
         // draw selector lines
-        GLES30.glLineWidth(8.0f);
+        GLES30.glLineWidth(4.0f);
         GLES30.glDrawArrays(GLES30.GL_LINE_STRIP, 0, size);
     }
 

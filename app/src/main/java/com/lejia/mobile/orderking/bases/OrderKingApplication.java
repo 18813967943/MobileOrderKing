@@ -31,6 +31,16 @@ public class OrderKingApplication extends Application {
      */
     public MaterialTypeList materialTypeList;
 
+    /**
+     * 当前用户企业信息模型数据节点列表
+     */
+    public MaterialTypeList furnitureMaterialTypeList;
+
+    /**
+     * 当前用户企业信息大类数据节点列表
+     */
+    public MaterialTypeList furnitureCatlogList;
+
     // 应用存储信息
     private SharedPreferences sp;
 
@@ -72,6 +82,15 @@ public class OrderKingApplication extends Application {
         if (mtl != null) {
             materialTypeList = new MaterialTypeList(mtl);
         }
+        String fmtl = sp.getString("FURNITURES_MATERIAL_TYPE_LIST", null);
+        if (fmtl != null) {
+            furnitureMaterialTypeList = new MaterialTypeList(fmtl);
+        }
+        String catlogmtl = sp.getString("FURNITURE_CATLOG_LIST", null);
+        if (catlogmtl != null) {
+            furnitureCatlogList = new MaterialTypeList(catlogmtl);
+            CatlogChecker.setFurnitureCatlogList(furnitureCatlogList);
+        }
     }
 
     /**
@@ -104,6 +123,32 @@ public class OrderKingApplication extends Application {
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("MATERIAL_TYPE_LIST", json);
         editor.commit();
+    }
+
+    /**
+     * 设置企业对应模型节点数据列表对象
+     */
+    public void setFurnitureMaterialTypeList(MaterialTypeList furnitureMaterialTypeList, String json) {
+        this.furnitureMaterialTypeList = furnitureMaterialTypeList;
+        // 缓存字典信息
+        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("FURNITURES_MATERIAL_TYPE_LIST", json);
+        editor.commit();
+    }
+
+    /**
+     * 设置企业对应模型大类节点数据列表对象
+     */
+    public void setFurnitureCatlogList(MaterialTypeList furnitureCatlogList, String json) {
+        this.furnitureCatlogList = furnitureCatlogList;
+        // 缓存字典信息
+        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("FURNITURE_CATLOG_LIST", json);
+        editor.commit();
+        // 绑定大类数据
+        CatlogChecker.setFurnitureCatlogList(this.furnitureCatlogList);
     }
 
     /**

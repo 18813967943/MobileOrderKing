@@ -31,4 +31,11 @@
     <string name="gaps_color">砖缝色</string>
     <string name="calculate_tiles_count">算砖</string>
     <string name="confirm">确定</string>
+    <string-array name="furniture_bottom_titles">
+        <item>门</item>
+        <item>窗</item>
+        <item>吊顶</item>
+        <item>配饰</item>
+        <item>方案</item>
+    </string-array>
 </resources>

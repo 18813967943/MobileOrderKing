@@ -15,6 +15,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.lejia.mobile.orderking.hk3d.classes.PolyUM;
 import com.lejia.mobile.orderking.hk3d.classes.UncloseCheckResult;
+import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.hk3d.factory.PointsSplitor;
 import com.seisw.util.geom.Poly;
 
@@ -31,9 +32,15 @@ public class HouseDatasManager {
     private Context mContext;
     private ArrayList<House> housesList; // 矩形房间
 
+    /**
+     * 所有家具列表
+     */
+    private ArrayList<BaseCad> furnituresList;
+
     public HouseDatasManager(Context context) {
         mContext = context;
         this.housesList = new ArrayList<>();
+        this.furnituresList = new ArrayList<>();
     }
 
     /**
@@ -721,7 +728,7 @@ public class HouseDatasManager {
             for (int i = 0; i < size; i++) {
                 if (i < housesList.size()) {
                     House house = housesList.get(i);
-                    if (house != null)
+                    if (house != null && house.centerPointList != null)
                         copyHouseList.add(house);
                 }
             }
@@ -729,6 +736,27 @@ public class HouseDatasManager {
             e.printStackTrace();
         }
         return copyHouseList;
+    }
+
+    /*******************************************************
+     * TODO 家具处理
+     * *****************************************************/
+
+    /**
+     * 增加
+     *
+     * @param furniture
+     */
+    public void addFurniture(BaseCad furniture) {
+        if (furniture == null)
+            return;
+        furnituresList.add(furniture);
+        refreshRender();
+    }
+
+    // 获取所有家具
+    public ArrayList<BaseCad> getFurnituresList() {
+        return furnituresList;
     }
 
     // 刷新画布
@@ -739,6 +767,7 @@ public class HouseDatasManager {
     // 清空房间数据列表
     public void laterClearWhen3DViewsClearFinished() {
         housesList.clear();
+        furnituresList.clear();
     }
 
     /**

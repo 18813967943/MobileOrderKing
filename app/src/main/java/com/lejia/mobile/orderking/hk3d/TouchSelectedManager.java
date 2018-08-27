@@ -40,27 +40,36 @@ public class TouchSelectedManager {
      * @param object
      */
     public void setSelector(RendererObject object) {
-        if (object == null)
-            return;
         selector = object;
-        if (object instanceof Ground) {
-            // 设置点中的房间为选中状态
-            Ground ground = (Ground) object;
-            House belong = ground.getHouse();
-            boolean flag = !belong.isSelected();
-            belong.setSelected(flag);
-            // 去除其他地面选中
-            for (RendererObject object1 : rendererObjectsList) {
-                if (!object.equals(object1)) {
-                    if (object1 instanceof Ground) {
-                        Ground ground1 = (Ground) object1;
-                        House belong1 = ground1.getHouse();
-                        belong1.setSelected(false);
+        // 未选中任何对象
+        if (selector == null) {
+            for (RendererObject rendererObject : rendererObjectsList) {
+                rendererObject.setSelected(false);
+                if (rendererObject instanceof Ground) { // 地面
+                    House house = ((Ground) rendererObject).getHouse();
+                    house.setSelected(false);
+                }
+            }
+        }
+        // 有选中内容
+        else {
+            if (rendererObjectsList != null && rendererObjectsList.size() > 0) {
+                for (RendererObject rendererObject : rendererObjectsList) {
+                    if (selector.equals(rendererObject)) {
+                        rendererObject.setSelected(true);
+                        if (rendererObject instanceof Ground) {  // 地面
+                            House house = ((Ground) rendererObject).getHouse();
+                            house.setSelected(!house.isSelected());
+                        }
+                    } else {
+                        rendererObject.setSelected(false);
+                        if (rendererObject instanceof Ground) { // 地面
+                            House house = ((Ground) rendererObject).getHouse();
+                            house.setSelected(false);
+                        }
                     }
                 }
             }
-            ground.refreshRender();
-            System.out.println("#### RendererObject : " + object.getClass().getSimpleName());
         }
     }
 
@@ -78,6 +87,14 @@ public class TouchSelectedManager {
         if (selector == null || !(selector instanceof Ground))
             return null;
         return (Ground) selector;
+    }
+
+    /**
+     * 清空数据
+     */
+    public void clear() {
+        if (rendererObjectsList != null)
+            rendererObjectsList.clear();
     }
 
 }

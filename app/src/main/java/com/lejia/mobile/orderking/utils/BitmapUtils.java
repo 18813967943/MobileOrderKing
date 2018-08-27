@@ -11,8 +11,6 @@ import android.graphics.Paint;
 import android.util.Base64;
 
 import com.lejia.mobile.orderking.hk3d.classes.Point;
-import com.lejia.mobile.orderking.hk3d.classes.PointList;
-import com.lejia.mobile.orderking.hk3d.classes.RectD;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -226,6 +224,7 @@ public class BitmapUtils {
         Matrix matrix = new Matrix();
         matrix.setScale(scaleWidth, scaleHeight);
         Bitmap ret = Bitmap.createBitmap(res, 0, 0, bmpWidth, bmpHeight, matrix, true);
+        ret.setHasAlpha(true);
         res.recycle();
         return ret;
     }

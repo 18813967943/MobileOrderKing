@@ -28,6 +28,12 @@ public class TilesRightIconsAdapter extends BaseAdapter {
         this.selectedIcons = selectedIcons;
     }
 
+    public void refreshDatas(int[] normalIcons, int[] selectedIcons) {
+        this.normalIcons = normalIcons;
+        this.selectedIcons = selectedIcons;
+        notifyDataSetChanged();
+    }
+
     public void setSelectePosition(int selectePosition) {
         this.selectePosition = selectePosition;
         notifyDataSetChanged();

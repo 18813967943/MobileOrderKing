@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.google.gson.Gson;
 import com.lejia.mobile.orderking.httpsResult.ResponseEntity;
+import com.lejia.mobile.orderking.utils.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,6 +89,25 @@ public class MaterialTypeList implements Parcelable {
         if (position < 0 || position >= materialTypeList.size())
             return null;
         return materialTypeList.get(position).getChildrenList();
+    }
+
+    /**
+     * 根据节点名称获取节点数据对象
+     *
+     * @param nodeName
+     * @return
+     */
+    public LJNodes getChildByName(String nodeName) {
+        if (TextUtils.isTextEmpity(nodeName))
+            return null;
+        if (materialTypeList == null || materialTypeList.size() == 0)
+            return null;
+        for (LJNodes nodes : materialTypeList) {
+            if (nodeName.equals(nodes.getName())) {
+                return nodes;
+            }
+        }
+        return null;
     }
 
     @Override

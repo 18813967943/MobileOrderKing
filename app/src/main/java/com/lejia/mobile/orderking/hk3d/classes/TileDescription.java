@@ -33,6 +33,11 @@ public class TileDescription implements Parcelable {
      */
     public ArrayList<Tile> materialList;
 
+    /**
+     * 样式砖，多层
+     */
+    public ArrayList<ArrayList<Tile>> styliesMaterialList;
+
     private int size; // 本层材质数量
     private int count; // 加载计数
     private OnTileDescriptionLoadListener onTileDescriptionLoadListener; // 回调接口
@@ -78,9 +83,25 @@ public class TileDescription implements Parcelable {
         this.materialList = materialList;
     }
 
+    public ArrayList<ArrayList<Tile>> getStyliesMaterialList() {
+        return styliesMaterialList;
+    }
+
+    public void setStyliesMaterialList(ArrayList<ArrayList<Tile>> styliesMaterialList) {
+        this.styliesMaterialList = styliesMaterialList;
+    }
+
     protected TileDescription(Parcel in) {
         styleType = in.readInt();
         materialList = in.createTypedArrayList(Tile.CREATOR);
+        int styleSize = in.readInt();
+        if (styleSize > 0) {
+            styliesMaterialList = new ArrayList<>();
+            for (int i = 0; i < styleSize; i++) {
+                ArrayList<Tile> tilesList = in.createTypedArrayList(Tile.CREATOR);
+                styliesMaterialList.add(tilesList);
+            }
+        }
     }
 
     /**
@@ -177,6 +198,14 @@ public class TileDescription implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(styleType);
         dest.writeTypedList(materialList);
+        if (styliesMaterialList == null)
+            dest.writeInt(0);
+        else {
+            dest.writeInt(styliesMaterialList.size());
+            for (int i = 0; i < styliesMaterialList.size(); i++) {
+                dest.writeTypedList(styliesMaterialList.get(i));
+            }
+        }
     }
 
     @Override

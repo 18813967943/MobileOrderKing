@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.SingleDoor;
 
 import java.util.ArrayList;
 
@@ -367,9 +368,24 @@ public class LJ3DPoint implements Parcelable {
         // 循环遍历面
         for (int i = 0; i < objectList.size(); i++) {
             RendererObject space = objectList.get(i);
-            short[] indices = space.indices;
+            short[] indices = null;
+            ArrayList<LJ3DPoint> l3dList = null;
+            String className = space.getClass().getSimpleName();
+            // 区分检测面类型，设定选中区域
+            // 单开门
+            if (className.equals("SingleDoor")) {
+                SingleDoor singleDoor = (SingleDoor) space;
+                indices = singleDoor.getRadianIndices();
+                l3dList = new PointList(singleDoor.getRadianList()).to3dList();
+            }
+            // 其他
+            else {
+                indices = space.indices;
+                l3dList = space.lj3DPointsList;
+            }
+            // 遍历求出相交点与相交面
             if (indices != null && indices.length > 0) {
-                ArrayList<LJ3DPoint> plist = space.lj3DPointsList;
+                ArrayList<LJ3DPoint> plist = l3dList;
                 for (int j = 0; j < indices.length / 3; j++) {
                     // 三角面顶点
                     int index = j * 3;
