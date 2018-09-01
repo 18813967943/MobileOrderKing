@@ -79,9 +79,13 @@ public class Furniture implements Parcelable {
      * 加载子件数据
      */
     public void loadSubsets() {
-        if (subset != null)
-            return;
-        subset = new Subset(materialCode, materialSubsetsJsonURL);
+        Subset cache = FurnitureCache.get(materialCode);
+        if (cache != null) {
+            subset = cache;
+        } else {
+            subset = new Subset(materialCode, materialSubsetsJsonURL);
+            FurnitureCache.put(materialCode, subset);
+        }
     }
 
     /**
@@ -110,8 +114,13 @@ public class Furniture implements Parcelable {
     public void putAll(ArrayList<FurnitureMatrixs> furnitureMatrixsList) {
         if (furnitureMatrixsList == null || furnitureMatrixsList.size() == 0)
             return;
-        for (FurnitureMatrixs furnitureMatrixs : furnitureMatrixsList) {
-            put(furnitureMatrixs);
+        try {
+            for (int i = 0; i < furnitureMatrixsList.size(); i++) {
+                FurnitureMatrixs furnitureMatrixs = furnitureMatrixsList.get(i);
+                put(furnitureMatrixs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

@@ -132,6 +132,36 @@ public class Line implements Parcelable {
     }
 
     /**
+     * 获取与该条线段内缩进一段距离的内部线段
+     *
+     * @param sideIndentationDist 端点内缩进距离
+     * @return 内缩进后的线段
+     */
+    public Line toIndentationLine(double sideIndentationDist) {
+        if (sideIndentationDist < 0)
+            return null;
+        double length = getLength();
+        if (length - 2 * sideIndentationDist <= 0) {
+            return null;
+        }
+        ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle(), length - 2 * sideIndentationDist, getCenter());
+        return new Line(lepsList.get(1), lepsList.get(0));
+    }
+
+    /**
+     * 获取线段维持中心点的情况下，向外延伸的线段
+     *
+     * @param extendDist
+     * @return 中心延长线段
+     */
+    public Line toExtendLine(double extendDist) {
+        if (extendDist < 0)
+            return null;
+        ArrayList<Point> lepsList = PointList.getRotateLEPS(getAngle(), getLength() + 2 * extendDist, getCenter());
+        return new Line(lepsList.get(1), lepsList.get(0));
+    }
+
+    /**
      * 复制线段
      */
     public Line copy() {

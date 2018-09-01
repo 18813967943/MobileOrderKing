@@ -1,5 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.datas.House;
 import com.seisw.util.geom.Poly;
 
@@ -121,12 +123,17 @@ public class PolyM {
         } else {
             poliesMap.put(index, poly);
         }
-        // 打印测试结果
+        // 打印测试结果，并生成立面墙体的外墙面
         if (poliesMap.size() > 0) {
             Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<Integer, Poly> entry = iterator.next();
                 System.out.println("#### Poly : " + entry.getKey() + "  V : " + PolyE.toPointList(entry.getValue()));
+                // 刷新房间外立面
+                Designer3DSurfaceView designer3DSurfaceView = ((OrderKingApplication) OrderKingApplication.getInstant()).getDesigner3DSurfaceView();
+                if (designer3DSurfaceView != null) {
+                    designer3DSurfaceView.getDesigner3DRender().getHouseDatasManager().initWallOuterFacades();
+                }
             }
         }
     }

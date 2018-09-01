@@ -120,8 +120,10 @@ public class HK3DDesignerActivity extends Activity {
             case R.id.jingzhun:
                 break;
             case R.id.zhouce:
+                designer3DManager.getDesigner3DRender().toAxisSideViews();
                 break;
             case R.id.threed:
+                designer3DManager.getDesigner3DRender().enterInner();
                 break;
             case R.id.more:
                 if (moreManager == null)
@@ -135,7 +137,7 @@ public class HK3DDesignerActivity extends Activity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        // 底部栏触摸照旧
+        // 底部栏触摸允许，并拦截后续触摸事件
         float y = ev.getY();
         float bottomBarHeight = getResources().getDimension(R.dimen.main_bottom_height);
         int screenHeight = getResources().getDisplayMetrics().heightPixels;
@@ -147,28 +149,24 @@ public class HK3DDesignerActivity extends Activity {
         if (furnitureTouchManager == null) {
             furnitureTouchManager = new FurnitureTouchManager(this, tilesManager, designer3DManager);
         }
-        interruptTouch = furnitureTouchManager.canDrawCheck(ev);
+        // 三维平面模型触摸操作
+        if (RendererState.isNot25D() && RendererState.isNot3D()) {
+            interruptTouch = furnitureTouchManager.canDrawCheck(ev);
+        } else {
+            interruptTouch = false;
+        }
         return super.dispatchTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // 底部栏触摸照旧
-        float y = event.getY();
-        float bottomBarHeight = getResources().getDimension(R.dimen.main_bottom_height);
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
-        if (y >= (screenHeight - bottomBarHeight)) {
+        // 三维平面控件触摸处理
+        if (!interruptTouch && RendererState.isNot25D() && RendererState.isNot3D()) {
+            if (touchManager == null)
+                touchManager = new TouchManager(this, tilesManager, designer3DManager);
+            return touchManager.onTouchEvent(event);
+        } else {
             return super.onTouchEvent(event);
-        }
-        // 三维控件触摸处理
-        else {
-            if (!interruptTouch) {
-                if (touchManager == null)
-                    touchManager = new TouchManager(this, tilesManager, designer3DManager);
-                return touchManager.onTouchEvent(event);
-            } else {
-                return super.onTouchEvent(event);
-            }
         }
     }
 

@@ -13,6 +13,7 @@ import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
+import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
 import com.lejia.mobile.orderking.hk3d.datas.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas.Selector;
@@ -57,7 +58,14 @@ public class GeneralFurniture extends BaseCad {
         LJ3DPoint normal = LJ3DPoint.spaceNormal(lj3DPointsList.get(indices[0]), lj3DPointsList.get(indices[1])
                 , lj3DPointsList.get(indices[2]));
         vertexs = createVertexsBuffer(thicknessPointsList, indices);
-        texcoord = createUvBuffer(thicknessPointsList, indices);
+        texcoord = createUvBufferByAngleOnlyRectangle(angle);
+        if (mirror) {
+            for (int i = 0; i < texcoord.length; i++) {
+                if (i % 2 == 0) {
+                    texcoord[i] = 1.0f - texcoord[i];
+                }
+            }
+        }
         normals = createNormalsBuffer(thicknessPointsList, indices, normal);
         vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         vertexsBuffer.put(vertexs).position(0);
@@ -67,8 +75,13 @@ public class GeneralFurniture extends BaseCad {
         normalsBuffer.put(normals).position(0);
         // 选中对象
         selector = new Selector(new PointList(thicknessPointsList));
-        // 加载贴图
-        if (bitmap == null) {
+        // 加载贴图，检测缓存
+        Texture texture = getTextureCache(furniture.materialCode);
+        if (texture != null) {
+            bitmap = texture.bitmap;
+            textureId = texture.textureId;
+        } else {
+            // 无缓存加载
             isLoadingBitmap = true;
             Glide.with(OrderKingApplication.getInstant()).asBitmap().load(furniture.topView).into(new SimpleTarget<Bitmap>() {
                 @SuppressLint("StaticFieldLeak")
@@ -97,6 +110,7 @@ public class GeneralFurniture extends BaseCad {
                 }
             });
         }
+        refreshRender();
     }
 
     @Override

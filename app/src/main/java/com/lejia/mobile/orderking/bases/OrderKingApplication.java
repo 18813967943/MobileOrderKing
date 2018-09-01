@@ -80,15 +80,15 @@ public class OrderKingApplication extends Application {
         }
         String mtl = sp.getString("MATERIAL_TYPE_LIST", null);
         if (mtl != null) {
-            materialTypeList = new MaterialTypeList(mtl);
+            materialTypeList = new MaterialTypeList(mtl, false);
         }
         String fmtl = sp.getString("FURNITURES_MATERIAL_TYPE_LIST", null);
         if (fmtl != null) {
-            furnitureMaterialTypeList = new MaterialTypeList(fmtl);
+            furnitureMaterialTypeList = new MaterialTypeList(fmtl, true);
         }
         String catlogmtl = sp.getString("FURNITURE_CATLOG_LIST", null);
         if (catlogmtl != null) {
-            furnitureCatlogList = new MaterialTypeList(catlogmtl);
+            furnitureCatlogList = new MaterialTypeList(catlogmtl, false);
             CatlogChecker.setFurnitureCatlogList(furnitureCatlogList);
         }
     }
@@ -177,6 +177,10 @@ public class OrderKingApplication extends Application {
      */
     public void setDesigner3DSurfaceView(Designer3DSurfaceView designer3DSurfaceView) {
         this.designer3DSurfaceView = designer3DSurfaceView;
+    }
+
+    public Designer3DSurfaceView getDesigner3DSurfaceView() {
+        return designer3DSurfaceView;
     }
 
     /**

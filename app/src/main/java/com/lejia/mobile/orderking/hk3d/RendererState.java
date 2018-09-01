@@ -33,6 +33,10 @@ public class RendererState {
         ((OrderKingApplication) OrderKingApplication.getInstant()).render();
     }
 
+    public static void setRenderStateWithNotRefresh(int renderState) {
+        RendererState.renderState = renderState;
+    }
+
     public static boolean isNot2D() {
         return renderState != STATE_2D;
     }

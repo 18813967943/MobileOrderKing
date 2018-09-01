@@ -49,6 +49,8 @@ public class SingleDoor extends BaseCad {
         vertexsBuffer.put(vertexs).position(0);
         colorsBuffer = ByteBuffer.allocateDirect(4 * colors.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         colorsBuffer.put(colors).position(0);
+        // 刷新
+        refreshRender();
     }
 
     public SingleDoor(FurTypes furTypes) {
@@ -104,14 +106,14 @@ public class SingleDoor extends BaseCad {
             // 根据线段长度、起始角度、每条半径之间的夹角，遍历循环求出四分之一圆的弧线点集合
             Line checkLine = new Line(validSidePoint, longsidePoint);
             double angle = line.getAngle();
-            double radianAngle = 9;
+            double radianAngle = 18;
             double radian = dist;
             // 主体区域
             radianList = new ArrayList<>();
             radianList.add(longsidePoint.copy());
             radianList.add(begain.copy());
             radianList.add(validSidePoint.copy());
-            for (int i = 1; i < 41; i++) {
+            for (int i = 1; i < 21; i++) {
                 double rAngle = angle + i * radianAngle;
                 ArrayList<Point> rlepsList = PointList.getRotateLEPS(rAngle, 2 * radian, begain);
                 Line rline = new Line(rlepsList.get(1), rlepsList.get(0));
@@ -216,6 +218,12 @@ public class SingleDoor extends BaseCad {
                     cadLine.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
                 }
             }
+            // 绘制选中
+            if (isSelected()) {
+                if (selector != null) {
+                    selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                }
+            }
             // 绘制厚度面
             GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
             GLES30.glEnableVertexAttribArray(positionAttribute);
@@ -237,12 +245,6 @@ public class SingleDoor extends BaseCad {
                     GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, radianIndices.length);
-            }
-            // 绘制选中
-            if (isSelected()) {
-                if (selector != null) {
-                    selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-                }
             }
             // 关闭混色
             GLES30.glDisable(GLES30.GL_BLEND);

@@ -5,13 +5,14 @@ import android.os.AsyncTask;
 import android.os.Environment;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.classes.NetByteArrayIntputStream;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * Author by HEKE
@@ -19,7 +20,7 @@ import java.io.InputStreamReader;
  * @time 2018/8/20 16:00
  * TODO: 模型渲染子件
  */
-public class Subset extends RendererObject {
+public class Subset {
 
     /**
      * 子件缓存根路径
@@ -34,10 +35,23 @@ public class Subset extends RendererObject {
      */
     private File datasFile;
 
+    /**
+     * 子件数据对象列表
+     */
+    private ArrayList<SubsetView> subsetViewsList;
+
     public Subset(String materialCode, String fileUrl) {
         this.materialCode = materialCode;
         this.fileUrl = fileUrl;
+        this.subsetViewsList = new ArrayList<>();
         load();
+    }
+
+    /**
+     * 当前模型子件的编码
+     */
+    public String getMaterialCode() {
+        return materialCode;
     }
 
     // 初步加载
@@ -58,6 +72,7 @@ public class Subset extends RendererObject {
         // 本地读取
         if (file.exists()) {
             datasFile = file;
+            parseFile(datasFile);
         }
         // 网络拉取
         else {
@@ -77,6 +92,12 @@ public class Subset extends RendererObject {
                     });
                     return null;
                 }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    super.onPostExecute(s);
+                    parseFile(datasFile);
+                }
             }.execute(cachePath);
         }
     }
@@ -87,7 +108,7 @@ public class Subset extends RendererObject {
 
     // TODO 解析文件
     @SuppressLint("StaticFieldLeak")
-    public void parseFile(File file) {
+    public void parseFile(final File file) {
         if (file == null)
             return;
         new AsyncTask<File, Integer, String>() {
@@ -97,25 +118,80 @@ public class Subset extends RendererObject {
                     return null;
                 try {
                     FileInputStream fis = new FileInputStream(files[0]);
-                    InputStreamReader isr = new InputStreamReader(fis);
-                    StringBuilder sb = new StringBuilder();
-                    int size = 4096;
-                    char[] buffer = null;
-
-                    isr.close();
+                    byte[] buffer = new byte[fis.available()];
+                    fis.read(buffer, 0, buffer.length);
+                    NetByteArrayIntputStream nbis = new NetByteArrayIntputStream(buffer);
                     fis.close();
-                    return null;
+                    // 读取子件数量
+                    int itemCount = nbis.ReadInt32();
+                    // 循环读取子件数据
+                    if (itemCount > 0) {
+                        subsetViewsList.clear();
+                        for (int i = 0; i < itemCount; i++) {
+                            // 子件编号
+                            int id = nbis.ReadInt32();
+                            // 材质编号类型
+                            int type = nbis.ReadInt32();
+                            // 顶点
+                            String vertexs = nbis.ReadString();
+                            // UV0纹理
+                            String uv0 = nbis.ReadString();
+                            // UV1纹理
+                            String uv1 = nbis.ReadString();
+                            // 光照贴图
+                            String texture0 = nbis.ReadString();
+                            // 法线贴图
+                            String texture1 = nbis.ReadString();
+                            // 法线
+                            String normals = nbis.ReadString();
+                            // 索引
+                            String indices = nbis.ReadString();
+                            // 创建子件对象
+                            subsetViewsList.add(new SubsetView(id, type, vertexs, uv0, uv1, texture0,
+                                    texture1, normals, indices, (materialCode + "Item" + i)));
+                        }
+                    }
+                    nbis.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                // 加载材质贴图
+                if (subsetViewsList != null && subsetViewsList.size() > 0) {
+                    for (SubsetView subsetView : subsetViewsList) {
+                        subsetView.loadTexture();
+                    }
+                }
+            }
         }.execute(file);
     }
 
-    @Override
-    public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+    /**
+     * 获取详细子件核心数据对象列表
+     */
+    public ArrayList<SubsetView> getSubsetViewsList() {
+        return subsetViewsList;
+    }
 
+    /**
+     * 渲染
+     *
+     * @param furnitureMatrixs 模型对应矩阵
+     */
+    public void render(FurnitureMatrixs furnitureMatrixs, int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        if (subsetViewsList != null && subsetViewsList.size() > 0) {
+            for (int i = 0; i < subsetViewsList.size(); i++) {
+                if (i < subsetViewsList.size()) {
+                    SubsetView subsetView = subsetViewsList.get(i);
+                    subsetView.render(furnitureMatrixs, positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                }
+            }
+        }
     }
 
 }

@@ -1,7 +1,6 @@
 package com.lejia.mobile.orderking.hk3d;
 
 import android.content.Context;
-import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -13,9 +12,14 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
+import com.lejia.mobile.orderking.hk3d.datas.Furniture;
+import com.lejia.mobile.orderking.hk3d.datas.FurnitureMatrixs;
+import com.lejia.mobile.orderking.hk3d.datas.Grassplot;
 import com.lejia.mobile.orderking.hk3d.datas.House;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas.Subset;
+import com.lejia.mobile.orderking.hk3d.datas.WallFacade;
 import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
 
 import java.util.ArrayList;
@@ -64,9 +68,16 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     /**
      * 摄像机等信息
      */
-    private float eyeX;
-    private float eyeY;
-    private float eyeZ = -far / 25;
+    public float eyesX;
+    public float eyesY;
+    public float eyesZ = far / 25;
+
+    /**
+     * 看向位置
+     */
+    public float lookX;
+    public float lookY;
+    public float lookZ;
 
     /***
      * 模型矩阵平移、旋转数值
@@ -74,8 +85,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     private float maxScale = 2.0f;
     private float minScale = 0.4f;
     private float scale = 1.0f; // 当前缩放数值
-    private float transX; // X轴平移总量
-    private float transY; // Y轴平移总量
+    public float transX; // X轴平移总量
+    public float transY; // Y轴平移总量
+    public float transZ; // Z轴平移总量
+
+    public float rotateX; // X轴旋转数值
+    public float rotateZ; // Z轴旋转数值
 
     /**
      * FBO
@@ -90,12 +105,18 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     // 当前渲染状态
     private int rendererState = RendererState.STATE_2D;
 
+    /**
+     * 房间外地面
+     */
+    private Grassplot grassplot;
+
     public Designer3DRender(Context context, OnRenderStatesListener onRenderStatesListener) {
         this.mContext = context;
         this.houseDatasManager = new HouseDatasManager(mContext);
         this.dummyGround = new DummyGround(mContext);
         this.touchSelectedManager = new TouchSelectedManager(mContext, new ArrayList<RendererObject>());
         this.onRenderStatesListener = onRenderStatesListener;
+        this.grassplot = new Grassplot();
     }
 
     // 获取所有数据管理对象
@@ -112,8 +133,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyeX, eyeY, eyeZ,
-                0, 0, 0, 0, 1, 0);
+        Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyesX, eyesY, eyesZ,
+                lookX, lookY, lookZ, 0, 1, 0);
         ViewingShader.loadShader(mContext);
         ViewingShader.loadShadowShader(mContext);
     }
@@ -184,11 +205,20 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        // 灯光位置
+        /*long elapsedMilliSec = SystemClock.elapsedRealtime();
+        long rotationCounter = elapsedMilliSec % 12000L;
+        float lightRotationDegree = (360.0f / 12000.0f) * ((int) rotationCounter);
+        float[] rotationMatrix = new float[16];
+        Matrix.setIdentityM(rotationMatrix, 0);
+        Matrix.rotateM(rotationMatrix, 0, lightRotationDegree, 0.0f, 1.0f, 0.0f);
+        Matrix.multiplyMV(LightMatrixs.mActualLightPosition, 0, rotationMatrix, 0, LightMatrixs.mLightPosModel, 0);
+        System.out.println("#### mActualLightPosition : " + LightMatrixs.mActualLightPosition[0] + " , "
+                + LightMatrixs.mActualLightPosition[1] + " , " + LightMatrixs.mActualLightPosition[2]);*/
         LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
         // set model view scale、translate、rotate，set the init matrixs
         setMineModelViews();
-        // scale 、translate 、rotate ModelMatrix
-        animationModelViews();
+        // 改变摄像机位置及状态
         //Set view matrix from light source position
         Matrix.setLookAtM(LightMatrixs.mLightViewMatrix, 0,
                 //lightX, lightY, lightZ,
@@ -198,13 +228,11 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 LightMatrixs.mActualLightPosition[0], -LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
                 //upX, upY, upZ
                 //up vector in the direction of axisY
-                -LightMatrixs.mActualLightPosition[0], 0, -LightMatrixs.mActualLightPosition[2]);
-
-        // 关闭剔除3.0不支持
-        GLES30.glDisable(GLES20.GL_CULL_FACE);
+                0, 1, 0);
+        Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyesX, eyesY, eyesZ,
+                lookX, lookY, lookZ, 0, 1, 0);
         //------------------------- render depth map --------------------------
         // shadow generation to avoid self shadowing
-        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         renderShadowMap();
 
         //------------------------- render scene ------------------------------
@@ -223,28 +251,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             String msg = "OpenGL error: " + debugInfo;
             Log.w(TAG, msg);
         }
-    }
-
-    /**
-     * 缩放、平移、旋转矩阵
-     */
-    private void setMineModelViews() {
-        // init matrix
-        Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
-        // scale
-        Matrix.scaleM(ViewingMatrixs.mModelMatrix, 0, scale, scale, 1.0f);
-        // translate
-        Matrix.translateM(ViewingMatrixs.mModelMatrix, 0, transX, transY, 0.0f);
-        // set the matrix to the phone or tablet align to left and top directions
-        Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
-    }
-
-    /**
-     * TODO 执行2D/25D/3D切换动画
-     */
-    private void animationModelViews() {
-        int setRendererState = RendererState.getRenderState();
-
     }
 
     /**
@@ -279,20 +285,42 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             try {
                 // 开启深度测试
                 GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+                boolean not2D = RendererState.isNot2D();
+                if (not2D) {
+                    if (grassplot != null) { // 草地
+                        grassplot.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+                    }
+                    ArrayList<WallFacade> wallOuterFacadeList = houseDatasManager.getWallOuterFacadesList();
+                    if (wallOuterFacadeList != null && wallOuterFacadeList.size() > 0) {
+                        for (int i = 0; i < wallOuterFacadeList.size(); i++) {
+                            WallFacade wallFacade = wallOuterFacadeList.get(i);
+                            wallFacade.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
+                        }
+                    }
+                    // 绘制模型
+                    ArrayList<Furniture> furnitureArrayList = houseDatasManager.getFurnitureArrayList();
+                    if (furnitureArrayList != null && furnitureArrayList.size() > 0) {
+                        for (int i = 0; i < furnitureArrayList.size(); i++) {
+                            Furniture furniture = furnitureArrayList.get(i);
+                            Subset subset = furniture.getSubset();
+                            ArrayList<FurnitureMatrixs> furnitureMatrixsList = furniture.getFurnitureMatrixsList();
+                            if (furnitureMatrixsList != null && furnitureMatrixsList.size() > 0) {
+                                for (int j = 0; j < furnitureMatrixsList.size(); j++) {
+                                    if (subset != null) {
+                                        subset.render(furnitureMatrixsList.get(j), ViewingShader.shadow_positionAttribute, 0,
+                                                0, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 // 绘制房间数据
                 ArrayList<House> housesList = houseDatasManager.getHousesList();
                 if (housesList != null && housesList.size() > 0) {
                     for (int i = housesList.size() - 1; i > -1; i--) {
                         House house = housesList.get(i);
                         house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
-                    }
-                }
-                // 绘制家具数据
-                ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
-                if (baseCadsList != null && baseCadsList.size() > 0) {
-                    for (int i = baseCadsList.size() - 1; i > -1; i--) {
-                        BaseCad baseCad = baseCadsList.get(i);
-                        baseCad.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
                     }
                 }
             } catch (Exception e) {
@@ -362,6 +390,21 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             try {
                 // 绘制房间数据
                 GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+                boolean isNot2D = RendererState.isNot2D();
+                if (isNot2D) {
+                    if (grassplot != null) { // 草地
+                        grassplot.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
+                    }
+                    ArrayList<WallFacade> wallOuterFacadeList = houseDatasManager.getWallOuterFacadesList();
+                    if (wallOuterFacadeList != null && wallOuterFacadeList.size() > 0) {
+                        for (int i = 0; i < wallOuterFacadeList.size(); i++) {
+                            WallFacade wallFacade = wallOuterFacadeList.get(i);
+                            wallFacade.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                    , ViewingShader.scene_colorAttribute, false);
+                        }
+                    }
+                }
                 ArrayList<House> housesList = houseDatasManager.getHousesList();
                 if (housesList != null && housesList.size() > 0) {
                     for (int i = 0; i < housesList.size(); i++) {
@@ -372,25 +415,95 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 }
                 // 绘制家具数据
                 GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-                ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
-                if (baseCadsList != null && baseCadsList.size() > 0) {
-                    for (int i = baseCadsList.size() - 1; i > -1; i--) {
-                        BaseCad baseCad = baseCadsList.get(i);
-                        baseCad.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                , ViewingShader.scene_colorAttribute, false);
+                if (!isNot2D) {
+                    ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
+                    if (baseCadsList != null && baseCadsList.size() > 0) {
+                        for (int i = baseCadsList.size() - 1; i > -1; i--) {
+                            BaseCad baseCad = baseCadsList.get(i);
+                            baseCad.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                    , ViewingShader.scene_colorAttribute, false);
+                        }
+                    }
+                    // 绘制房间名称
+                    if (housesList != null && housesList.size() > 0) {
+                        for (int i = housesList.size() - 1; i > -1; i--) {
+                            House house = housesList.get(i);
+                            house.renderName(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                    , ViewingShader.scene_colorAttribute, false);
+                        }
                     }
                 }
-                // 绘制房间名称
-                if (housesList != null && housesList.size() > 0) {
-                    for (int i = housesList.size() - 1; i > -1; i--) {
-                        House house = housesList.get(i);
-                        house.renderName(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                , ViewingShader.scene_colorAttribute, false);
+                // 非平面
+                else {
+                    // 绘制模型
+                    ArrayList<Furniture> furnitureArrayList = houseDatasManager.getFurnitureArrayList();
+                    if (furnitureArrayList != null && furnitureArrayList.size() > 0) {
+                        for (int i = 0; i < furnitureArrayList.size(); i++) {
+                            Furniture furniture = furnitureArrayList.get(i);
+                            Subset subset = furniture.getSubset();
+                            ArrayList<FurnitureMatrixs> furnitureMatrixsList = furniture.getFurnitureMatrixsList();
+                            if (furnitureMatrixsList != null && furnitureMatrixsList.size() > 0) {
+                                for (int j = 0; j < furnitureMatrixsList.size(); j++) {
+                                    if (subset != null) {
+                                        subset.render(furnitureMatrixsList.get(j), ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                                , ViewingShader.scene_colorAttribute, false);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * 缩放、平移、旋转矩阵
+     */
+    private void setMineModelViews() {
+        // init matrix
+        Matrix.setIdentityM(ViewingMatrixs.mModelMatrix, 0);
+        // scale
+        Matrix.scaleM(ViewingMatrixs.mModelMatrix, 0, scale, scale, 1.0f);
+        // translate
+        Matrix.translateM(ViewingMatrixs.mModelMatrix, 0, transX, transY, transZ);
+        // set the matrix to the phone or tablet align to left and top directions
+        Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, -180, 0.0f, 0.0f, 1.0f);
+        // rotate animation
+        if (rotateX != 0)
+            Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, rotateX, 1.0f, 0.0f, 0.0f);
+        if (rotateZ != 0)
+            Matrix.rotateM(ViewingMatrixs.mModelMatrix, 0, rotateZ, 0.0f, 0.0f, 1.0f);
+    }
+
+    /**
+     * 轴侧
+     */
+    public void toAxisSideViews() {
+        if (RendererState.isNot25D()) {
+            RendererState.setRenderState(RendererState.STATE_25D);
+            rotateX = 45;
+            rotateZ = 40;
+            eyesZ = far / 25 + 300f;
+        } else {
+            RendererState.setRenderState(RendererState.STATE_2D);
+            rotateX = 0;
+            rotateZ = 0;
+            eyesZ = far / 25;
+        }
+        refreshRenderer();
+    }
+
+    /**
+     * 进入房间
+     */
+    public void enterInner() {
+        if (RendererState.isNot3D()) {
+            RendererState.setRenderState(RendererState.STATE_3D);
+        } else {
+            RendererState.setRenderState(RendererState.STATE_2D);
         }
     }
 
@@ -483,13 +596,19 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             if (baseCadsList != null && baseCadsList.size() > 0) { // 家具
                 rendererObjectsList.addAll(baseCadsList);
             }
-            object = LJ3DPoint.checkRayIntersectedObject(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
+            object = LJ3DPoint.checkRayIntersectedObject(ray, rendererObjectsList, new LJ3DPoint(eyesX, eyesY, eyesZ));
             if (object != null) {
                 touchSelectedManager.setRendererObjectsList(rendererObjectsList);
                 touchSelectedManager.setSelector(object);
                 return true;
             } else {
-                touchSelectedManager.setSelector(null);
+                // 未选中任何数据，如果当前已有选中数据为家具模型，则取消家具模型的选中，其他照旧
+                RendererObject currentSelector = touchSelectedManager.getSelector();
+                if (currentSelector != null) {
+                    if (currentSelector instanceof BaseCad) {
+                        touchSelectedManager.setSelector(null);
+                    }
+                }
             }
         }
         return false;
@@ -527,7 +646,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             // 求出交点
             ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
             rendererObjectsList.add(dummyGround);
-            LJ3DPoint intersectedPoint = LJ3DPoint.checkRayIntersectedPoint(ray, rendererObjectsList, new LJ3DPoint(eyeX, eyeY, eyeZ));
+            LJ3DPoint intersectedPoint = LJ3DPoint.checkRayIntersectedPoint(ray, rendererObjectsList, new LJ3DPoint(eyesX, eyesY, eyesZ));
             if (intersectedPoint != null) {
                 if (needAdsorb) {
                     Point adsorb = houseDatasManager.checkAdsorb(intersectedPoint.off());

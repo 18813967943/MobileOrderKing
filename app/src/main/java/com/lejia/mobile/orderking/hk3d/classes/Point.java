@@ -102,6 +102,15 @@ public class Point implements Parcelable {
         return lj3DPoint;
     }
 
+    // 转三维点
+    public LJ3DPoint toLJ3DPoint(double z) {
+        LJ3DPoint lj3DPoint = new LJ3DPoint();
+        lj3DPoint.x = x;
+        lj3DPoint.y = y;
+        lj3DPoint.z = z;
+        return lj3DPoint;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeDouble(x);

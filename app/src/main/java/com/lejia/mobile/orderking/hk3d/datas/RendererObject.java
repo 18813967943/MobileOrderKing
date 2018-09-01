@@ -1,6 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
 import android.opengl.GLException;
 import android.opengl.GLUtils;
@@ -10,6 +11,7 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -34,6 +36,8 @@ public abstract class RendererObject {
 
     public short[] indices; // 索引
     public ShortBuffer indicesBuffer; // 索引字节缓存
+    public int[] bigIndices; // 大位数索引
+    public IntBuffer bigIndicesBuffer; // 大位数索引字节缓存
 
     public float[] normals; // 法线
     public FloatBuffer normalsBuffer; // 法线字节缓存
@@ -73,6 +77,16 @@ public abstract class RendererObject {
      * @param onlyPosition      是否阴影仅顶点着色
      */
     public abstract void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition);
+
+    /**
+     * 获取材质缓存
+     *
+     * @param key 对象唯一编码(UUID或模型材质编码)
+     * @return 返回缓存对象
+     */
+    public Texture getTextureCache(String key) {
+        return TexturesCache.get(key);
+    }
 
     /**
      * 创建材质纹理对应编号及缓存
@@ -151,10 +165,37 @@ public abstract class RendererObject {
     }
 
     /**
+     * 从资源中获取贴图
+     *
+     * @param path
+     * @return
+     */
+    public Bitmap createTextureWithAssets(String path) {
+        if (path == null)
+            return null;
+        Bitmap bitmap = null;
+        try {
+            InputStream fis = OrderKingApplication.getInstant().getAssets().open(path);
+            bitmap = BitmapFactory.decodeStream(fis);
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
      * 刷新画布
      */
     public void refreshRender() {
         ((OrderKingApplication) OrderKingApplication.getInstant()).render();
+    }
+
+    /**
+     * 获取渲染数据管理对象
+     */
+    public HouseDatasManager getHouseDatasManager() {
+        return ((OrderKingApplication) OrderKingApplication.getInstant()).getDesigner3DSurfaceView().getDesigner3DRender().getHouseDatasManager();
     }
 
     /**

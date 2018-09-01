@@ -60,7 +60,7 @@ public class CadFurnitureCreator {
             } else {
                 // 无选中房间，随机一个房间位置
                 ArrayList<House> housesList = houseDatasManager.getHousesList();
-                if (housesList != null) {
+                if (housesList != null && housesList.size() > 0) {
                     int randomHouse = (int) (Math.random() * housesList.size());
                     House house = housesList.get(randomHouse);
                     ArrayList<Line> linesList = house.isWallClosed ? house.centerPointList.toLineList() : house.centerPointList.toNotClosedLineList();
@@ -120,7 +120,7 @@ public class CadFurnitureCreator {
         if (pointAt == null) {
             // 无选中房间，随机一个房间位置
             ArrayList<House> housesList = houseDatasManager.getHousesList();
-            if (housesList != null) {
+            if (housesList != null && housesList.size() > 0) {
                 int randomHouse = (int) (Math.random() * housesList.size());
                 House house = housesList.get(randomHouse);
                 pointAt = house.centerPointList.getInnerValidPoint(false);

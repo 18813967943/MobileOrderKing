@@ -18,7 +18,7 @@ public class FurnitureMatrixs implements Parcelable {
     /**
      * 用于渲染的矩阵
      */
-    public float[] mmvMatrixs = new float[16];
+    public float[] mmvpMatrixs = new float[16];
 
     /**
      * 吸附位置
@@ -66,7 +66,7 @@ public class FurnitureMatrixs implements Parcelable {
     }
 
     protected FurnitureMatrixs(Parcel in) {
-        mmvMatrixs = in.createFloatArray();
+        mmvpMatrixs = in.createFloatArray();
         point = in.readParcelable(Point.class.getClassLoader());
         rotateX = in.readFloat();
         rotateY = in.readFloat();
@@ -84,26 +84,29 @@ public class FurnitureMatrixs implements Parcelable {
      */
     public void initMatrix() {
         // 设置自身矩阵
-        Matrix.setIdentityM(mmvMatrixs, 0);
-        Matrix.translateM(mmvMatrixs, 0, transX, transY, transZ);
-        Matrix.scaleM(mmvMatrixs, 0, scaleX, scaleY, scaleZ);
+        Matrix.setIdentityM(mmvpMatrixs, 0);
+        Matrix.translateM(mmvpMatrixs, 0, transX, transY, transZ);
+        Matrix.scaleM(mmvpMatrixs, 0, scaleX, scaleY, scaleZ);
         if (rotateX != 0)
-            Matrix.rotateM(mmvMatrixs, 0, rotateX, 1.0f, 0.0f, 0.0f);
+            Matrix.rotateM(mmvpMatrixs, 0, rotateX, 1.0f, 0.0f, 0.0f);
         if (rotateY != 0)
-            Matrix.rotateM(mmvMatrixs, 0, rotateY, 0.0f, 1.0f, 0.0f);
+            Matrix.rotateM(mmvpMatrixs, 0, rotateY, 0.0f, 1.0f, 0.0f);
         if (rotateZ != 0)
-            Matrix.rotateM(mmvMatrixs, 0, rotateZ, 0.0f, 0.0f, 1.0f);
+            Matrix.rotateM(mmvpMatrixs, 0, rotateZ, 0.0f, 0.0f, 1.0f);
         // 复制当前矩阵
         float[] rendererModelView = ViewingMatrixs.mModelMatrix.clone();
+        float[] rendererProjectView = ViewingMatrixs.mProjectionMatrix.clone();
         // 组合矩阵
-        Matrix.multiplyMM(mmvMatrixs, 0, mmvMatrixs, 0, rendererModelView, 0);
+        float[] tempViews = new float[16];
+        Matrix.multiplyMM(tempViews, 0, rendererProjectView, 0, rendererModelView, 0);
+        Matrix.multiplyMM(mmvpMatrixs, 0, tempViews, 0, mmvpMatrixs, 0);
     }
 
     /**
      * 获取模型所用矩阵
      */
-    public float[] getMmvMatrixs() {
-        return mmvMatrixs;
+    public float[] getMmvpMatrixs() {
+        return mmvpMatrixs;
     }
 
     /**
@@ -116,7 +119,7 @@ public class FurnitureMatrixs implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeFloatArray(mmvMatrixs);
+        dest.writeFloatArray(mmvpMatrixs);
         dest.writeParcelable(point, flags);
         dest.writeFloat(rotateX);
         dest.writeFloat(rotateY);

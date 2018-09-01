@@ -155,6 +155,12 @@ public class TilesManager {
     // 当前登入用户
     private User user;
 
+    /**
+     * 是否来自于替换操作
+     */
+    private boolean fromReplace;
+    private OnReplaceFurnitureListener onReplaceFurnitureListener;
+
     private void init() {
         // 菜单图标资源设定
         tilesNormalTopIcons = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.fangan, R.mipmap.wode};
@@ -260,6 +266,18 @@ public class TilesManager {
         return drawState;
     }
 
+    public boolean isFromReplace() {
+        return fromReplace;
+    }
+
+    /**
+     * 绑定替换操作
+     */
+    public void setFromReplace(boolean fromReplace, OnReplaceFurnitureListener onReplaceFurnitureListener) {
+        this.fromReplace = fromReplace;
+        this.onReplaceFurnitureListener = onReplaceFurnitureListener;
+    }
+
     // 底部菜单栏点击操作监听接口
     private TitlesView.OnTitlesStatusListener onTitlesStatusListener = new TitlesView.OnTitlesStatusListener() {
         @Override
@@ -316,6 +334,7 @@ public class TilesManager {
         if (!visiable) {
             titlesView.setPosition(-1);
             drawState = DRAW_RECT;
+            fromReplace = false;
         }
     }
 
@@ -666,8 +685,6 @@ public class TilesManager {
                             for (int i = 0; i < array.length(); i++) {
                                 JSONObject object = array.getJSONObject(i);
                                 Furniture furniture = new Gson().fromJson(object.toString(), Furniture.class);
-                                // 加载子件
-                                furniture.loadSubsets();
                                 pageFurnituresList.add(furniture);
                             }
                             furnituresList.addAll(pageFurnituresList);
@@ -723,27 +740,46 @@ public class TilesManager {
             else if (flag == FLAG_LAYOUTS) {
                 // 获取点击的家具对象
                 Furniture furniture = furnituresList.get(position);
-                // 获取三维数据管理对象
-                HouseDatasManager houseDatasManager = designer3DManager.getDesigner3DRender().getHouseDatasManager();
-                // 门窗数据特殊处理
-                if (showFurnitureBottomCatlogView) {
-                    String nodeName = currentLoadNode.getName();
-                    // 门窗
-                    if (nodeName.equals("门") || nodeName.equals("窗")) {
-                        houseDatasManager.addFurniture(CadFurnitureCreator.createDoorOrWindow(houseDatasManager, designer3DManager, furniture));
-                        return;
+                furniture.loadSubsets();
+                // 来自于模型替换
+                if (fromReplace) {
+                    if (onReplaceFurnitureListener != null)
+                        onReplaceFurnitureListener.replaced(furniture);
+                    fromReplace = false;
+                    setTilesMenuLayoutShowFromNewCreate(false);
+                } else {
+                    // 获取三维数据管理对象
+                    HouseDatasManager houseDatasManager = designer3DManager.getDesigner3DRender().getHouseDatasManager();
+                    // 门窗数据特殊处理
+                    if (showFurnitureBottomCatlogView) {
+                        String nodeName = currentLoadNode.getName();
+                        // 门窗
+                        if (nodeName.equals("门") || nodeName.equals("窗")) {
+                            houseDatasManager.addFurniture(CadFurnitureCreator.createDoorOrWindow(houseDatasManager, designer3DManager, furniture));
+                            return;
+                        }
+                        // 其他任何家具
+                        else {
+                            houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
+                        }
                     }
                     // 其他任何家具
                     else {
                         houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
                     }
                 }
-                // 其他任何家具
-                else {
-                    houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
-                }
             }
         }
     };
+
+    /**
+     * Author by HEKE
+     *
+     * @time 2018/8/29 12:15
+     * TODO: 模型替换回调接口
+     */
+    public interface OnReplaceFurnitureListener {
+        void replaced(Furniture furniture);
+    }
 
 }

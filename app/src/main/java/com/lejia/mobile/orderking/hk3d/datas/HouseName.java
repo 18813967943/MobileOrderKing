@@ -50,7 +50,7 @@ public class HouseName extends RendererObject {
             vertexs[index + 1] = (float) point.y;
             vertexs[index + 2] = (float) point.z;
             int uvIndex = 2 * i;
-            texcoord[uvIndex] = (float) (Math.abs(point.x - box.left) / box.width());
+            texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
             texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(point.y - box.bottom) / box.height());
         }
         vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();

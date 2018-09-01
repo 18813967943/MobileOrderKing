@@ -27,11 +27,16 @@ public class MaterialTypeList implements Parcelable {
         this.materialTypeList = new ArrayList<>();
     }
 
-    public MaterialTypeList(String json) {
+    public MaterialTypeList(String json, boolean models) {
         this.materialTypeList = new ArrayList<>();
         try {
             ResponseEntity entity = new ResponseEntity(json);
-            JSONArray array = entity.getJSonArray("materialTypeList");
+            JSONArray array = null;
+            if (models) {
+                array = entity.getJSonArray("modelMaterialRoomTypeList");
+            } else {
+                array = entity.getJSonArray("materialTypeList");
+            }
             if (array != null && array.length() > 0) {
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.getJSONObject(i);

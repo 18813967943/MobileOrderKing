@@ -26,7 +26,7 @@ void main()
             lightVec = normalize(lightVec);
             // 镜面光环境光
             float diffuseComponent = max(0.0,dot(lightVec, vNormal));
-            float ambientComponent = 0.7;
+            float ambientComponent = 0.6;
             // 阴影处理
             float shadow = 1.0;
             if(vShadowCoord.w > 0.0){

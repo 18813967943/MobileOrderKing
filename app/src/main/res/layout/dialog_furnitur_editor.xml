@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#A0FFFFFC"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="4dp">
+
+    <ImageView
+        android:id="@+id/copy"
+        android:layout_width="@dimen/d25dp"
+        android:layout_height="@dimen/d25dp"
+        android:layout_margin="@dimen/small"
+        android:background="@mipmap/vlj_copy" />
+
+    <ImageView
+        android:id="@+id/mirror"
+        android:layout_width="@dimen/d25dp"
+        android:layout_height="@dimen/d25dp"
+        android:layout_margin="@dimen/small"
+        android:background="@mipmap/vlj_mirror" />
+
+    <ImageView
+        android:id="@+id/replace"
+        android:layout_width="@dimen/d25dp"
+        android:layout_height="@dimen/d25dp"
+        android:layout_margin="@dimen/small"
+        android:background="@mipmap/vlj_repleace" />
+
+    <ImageView
+        android:id="@+id/delete"
+        android:layout_width="@dimen/d25dp"
+        android:layout_height="@dimen/d25dp"
+        android:layout_margin="@dimen/small"
+        android:background="@mipmap/vlj_delete" />
+
+    <ImageView
+        android:id="@+id/singleProduct"
+        android:layout_width="@dimen/d25dp"
+        android:layout_height="@dimen/d25dp"
+        android:layout_margin="@dimen/small"
+        android:background="@mipmap/yulan" />
+</LinearLayout>

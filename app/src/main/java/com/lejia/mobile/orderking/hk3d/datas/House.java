@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.datas;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -58,6 +59,11 @@ public abstract class House {
     public ArrayList<Wall> wallsList;
 
     /**
+     * 房间立面
+     */
+    public ArrayList<WallFacade> wallFacadesList;
+
+    /**
      * 渲染地面对象
      */
     public Ground ground;
@@ -90,12 +96,14 @@ public abstract class House {
     public House(Context context) {
         this.mContext = context;
         this.wallsList = new ArrayList<>();
+        this.wallFacadesList = new ArrayList<>();
     }
 
     public House(Context context, boolean isLineSeg) {
         this.mContext = context;
         this.isLineSeg = isLineSeg;
         this.wallsList = new ArrayList<>();
+        this.wallFacadesList = new ArrayList<>();
     }
 
     /**
@@ -219,19 +227,31 @@ public abstract class House {
      */
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         try {
-            // 线建墙
-            if (isLineSeg) {
-                if (lineSeg != null) {
-                    lineSeg.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            boolean isNot2D = RendererState.isNot2D();
+            if (!isNot2D) { // 三维平面绘制内容
+                // 线建墙
+                if (isLineSeg) {
+                    if (lineSeg != null) {
+                        lineSeg.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                    }
                 }
-            }
-            // 非线建墙
-            else {
-                if (wallsList.size() > 0) {
-                    for (int i = 0; i < wallsList.size(); i++) { // 不使用迭代操作
-                        Wall wall = wallsList.get(i);
-                        if (wall != null)
-                            wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                // 非线建墙
+                else {
+                    if (wallsList.size() > 0) {
+                        for (int i = 0; i < wallsList.size(); i++) { // 不使用迭代操作
+                            Wall wall = wallsList.get(i);
+                            if (wall != null)
+                                wall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                        }
+                    }
+                }
+            } else { // 三维立面
+                if (wallFacadesList != null) {
+                    for (int i = 0; i < wallFacadesList.size(); i++) {
+                        WallFacade wallFacade = wallFacadesList.get(i);
+                        if (wallFacade != null) {
+                            wallFacade.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                        }
                     }
                 }
             }
@@ -247,11 +267,14 @@ public abstract class House {
      * 渲染名称
      */
     public void renderName(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        if (houseName != null && isWallClosed) {
-            houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-        }
-        if (selector != null && selected) {
-            selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+        boolean isNot2D = RendererState.isNot2D();
+        if (!isNot2D) {
+            if (houseName != null && isWallClosed) {
+                houseName.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
+            if (selector != null && selected) {
+                selector.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+            }
         }
     }
 
@@ -261,6 +284,10 @@ public abstract class House {
     public void createRenderer() {
         try {
             wallsList.clear();
+            if (wallFacadesList == null) {
+                wallFacadesList = new ArrayList<>();
+            }
+            wallFacadesList.clear();
             int size = innerPointList.size();
             for (int i = 0; i < size; i++) {
                 Point inow = innerPointList.getIndexAt(i);
@@ -292,8 +319,25 @@ public abstract class House {
                 PointList pointList = new PointList(pointsList);
                 pointsList = pointList.antiClockwise();
                 if (pointsList != null && pointsList.size() > 0) {
-                    Wall wall = new Wall(pointsList);
+                    Wall wall = new Wall(pointsList, this);
                     wallsList.add(wall);
+                }
+                // 三维墙面
+                // 内墙面
+                ArrayList<Point> innerList = new ArrayList<>();
+                innerList.add(inow.copy());
+                innerList.add(inext.copy());
+                wallFacadesList.add(new WallFacade(WallFacade.FLAG_INTER, 1, innerList, this));
+                // 非闭合房间外墙面直接绘制
+                if (!isWallClosed) {
+                    ArrayList<Point> outerList = new ArrayList<>();
+                    outerList.add(onow.copy());
+                    outerList.add(onext.copy());
+                    wallFacadesList.add(new WallFacade(WallFacade.FLAG_OUTER, 1, outerList, this));
+                }
+                // 墙顶部厚度面
+                if (pointsList != null && pointsList.size() > 0) {
+                    wallFacadesList.add(new WallFacade(WallFacade.FLAG_TOP_THICKNESS, 1, new PointList(pointsList).copy(), this));
                 }
             }
         } catch (Exception e) {
@@ -366,14 +410,24 @@ public abstract class House {
      */
     public ArrayList<RendererObject> getTotalRendererObjectList() {
         ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
-        if (wallsList != null && wallsList.size() > 0) {
-            rendererObjectsList.addAll(wallsList);
-        }
-        if (ground != null) {
-            rendererObjectsList.add(ground);
-        }
-        if (houseName != null) {
-            rendererObjectsList.add(houseName);
+        boolean isNot2D = RendererState.isNot2D();
+        if (isNot2D) {
+            if (ground != null) {
+                rendererObjectsList.add(ground);
+            }
+            if (wallFacadesList != null) {
+                rendererObjectsList.addAll(wallFacadesList);
+            }
+        } else {
+            if (wallsList != null && wallsList.size() > 0) {
+                rendererObjectsList.addAll(wallsList);
+            }
+            if (ground != null) {
+                rendererObjectsList.add(ground);
+            }
+            if (houseName != null) {
+                rendererObjectsList.add(houseName);
+            }
         }
         return rendererObjectsList;
     }

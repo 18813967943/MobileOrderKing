@@ -1,10 +1,12 @@
 package com.lejia.mobile.orderking.hk3d.datas.cadwidgets;
 
+import com.lejia.mobile.orderking.hk3d.classes.L3DMatrix;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.datas.Furniture;
+import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
 
 import java.nio.FloatBuffer;
@@ -53,6 +55,11 @@ public abstract class BaseCad extends RendererObject {
      */
     public Furniture furniture;
 
+    /**
+     * 镜像
+     */
+    public boolean mirror;
+
     public BaseCad(FurTypes furTypes) {
         this.furTypes = furTypes;
     }
@@ -95,6 +102,30 @@ public abstract class BaseCad extends RendererObject {
     // 设置吸附点
     public void setPoint(Point point) {
         this.point = point;
+        initDatas();
+    }
+
+    // 设置围点平移数据
+    public void translate(double tx, double ty) {
+        if (point != null) {
+            point.x += tx;
+            point.y += ty;
+            initDatas();
+        }
+    }
+
+    /**
+     * 设置拖拽结果
+     *
+     * @param dragResult
+     */
+    public void setDragResult(HouseDatasManager.DragAdsorbRet dragResult) {
+        if (dragResult == null)
+            return;
+        if (dragResult.adsorbLine != null) {
+            angle = dragResult.adsorbLine.getAngle();
+        }
+        this.point = dragResult.point;
         initDatas();
     }
 
@@ -146,6 +177,11 @@ public abstract class BaseCad extends RendererObject {
         }
     }
 
+    // 判断是否是镜像
+    public boolean isMirror() {
+        return mirror;
+    }
+
     /**
      * 初始化加载数据
      */
@@ -160,6 +196,14 @@ public abstract class BaseCad extends RendererObject {
      * @param onlyPosition      是否阴影仅顶点着色
      */
     public abstract void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition);
+
+    /**
+     * 镜像
+     */
+    public void mirror() {
+        mirror = !mirror;
+        initDatas();
+    }
 
     /**
      * 围点数据转换
@@ -224,6 +268,26 @@ public abstract class BaseCad extends RendererObject {
             int index = 2 * i;
             array[index] = (float) (Math.abs(point.x - box.left) / box.width());
             array[index + 1] = (float) (Math.abs(point.y - box.top) / box.height());
+        }
+        return array;
+    }
+
+    /**
+     * 家具模型顶视图UV纹理转换生成
+     *
+     * @param angle
+     * @return
+     */
+    public float[] createUvBufferByAngleOnlyRectangle(double angle) {
+        if (indices == null)
+            return null;
+        float[] array = new float[]{0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+        if (angle > 0 && angle <= 90) {
+            array = L3DMatrix.rotateUVArray(array, 90);
+        } else if (angle > 180 && angle <= 270) {
+            array = L3DMatrix.rotateUVArray(array, -90);
+        } else if (angle == 0 || (angle > 270 && angle <= 360)) {
+            array = L3DMatrix.rotateUVArray(array, -180);
         }
         return array;
     }

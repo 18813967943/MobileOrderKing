@@ -79,8 +79,6 @@ public class Ground extends RendererObject {
         normalsBuffer.put(normals).position(0);
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
-        indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
-        indicesBuffer.put(indices).position(0);
     }
 
     public Ground(PointList pointList, House house) {

@@ -466,4 +466,53 @@ public class L3DMatrix {
         }
         return vertexs;
     }
+
+    /**
+     * 旋转纹理
+     *
+     * @param uvArray 当前纹理
+     * @param angle   角度
+     * @return 返回旋转后纹理数组
+     */
+    public static float[] rotateUVArray(float[] uvArray, float angle) {
+        // 空数据返回
+        if (uvArray == null)
+            return null;
+        // 无旋转返回原数据
+        if (angle % 360 == 0) {
+            return uvArray;
+        }
+        float[] rotateArray = null;
+        try {
+            // 转化为点列表
+            int size = uvArray.length / 2;
+            ArrayList<Point> pointsList = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                int index = 2 * i;
+                pointsList.add(new Point(uvArray[index], uvArray[index + 1]));
+            }
+            Point centerPoint = new Point(0.5f, 0.5f);
+            // 转变向量围点
+            ArrayList<Point> vectorList = new ArrayList<>();
+            for (int i = 0; i < pointsList.size(); i++) {
+                Point p = pointsList.get(i);
+                vectorList.add(new Point(p.x - centerPoint.x, p.y - centerPoint.y));
+            }
+            // 旋转
+            ArrayList<Point> rotateList = L3DMatrix.rotate(vectorList, angle, centerPoint);
+            if (rotateList != null) {
+                // 赋值
+                rotateArray = new float[2 * rotateList.size()];
+                for (int i = 0; i < rotateList.size(); i++) {
+                    Point p = rotateList.get(i);
+                    int index = 2 * i;
+                    rotateArray[index] = (float) p.x;
+                    rotateArray[index + 1] = (float) p.y;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rotateArray;
+    }
 }
