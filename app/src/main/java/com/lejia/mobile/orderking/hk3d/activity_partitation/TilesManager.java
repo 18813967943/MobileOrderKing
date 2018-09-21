@@ -26,6 +26,7 @@ import com.lejia.mobile.orderking.hk3d.datas.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas.Ground;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.hk3d.factory.CadFurnitureCreator;
 import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
@@ -740,7 +741,6 @@ public class TilesManager {
             else if (flag == FLAG_LAYOUTS) {
                 // 获取点击的家具对象
                 Furniture furniture = furnituresList.get(position);
-                furniture.loadSubsets();
                 // 来自于模型替换
                 if (fromReplace) {
                     if (onReplaceFurnitureListener != null)
@@ -755,8 +755,9 @@ public class TilesManager {
                         String nodeName = currentLoadNode.getName();
                         // 门窗
                         if (nodeName.equals("门") || nodeName.equals("窗")) {
-                            houseDatasManager.addFurniture(CadFurnitureCreator.createDoorOrWindow(houseDatasManager, designer3DManager, furniture));
-                            return;
+                            BaseCad wd = CadFurnitureCreator.createDoorOrWindow(houseDatasManager, designer3DManager, furniture);
+                            houseDatasManager.addFurniture(wd);
+                            houseDatasManager.punchWallFacedes(wd);
                         }
                         // 其他任何家具
                         else {
@@ -768,6 +769,8 @@ public class TilesManager {
                         houseDatasManager.addFurniture(CadFurnitureCreator.createGeneralFurniture(houseDatasManager, designer3DManager, furniture));
                     }
                 }
+                // 加载同步三维数据
+                furniture.loadSubsets();
             }
         }
     };

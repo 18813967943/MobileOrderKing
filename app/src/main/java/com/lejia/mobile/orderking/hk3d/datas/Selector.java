@@ -3,12 +3,14 @@ package com.lejia.mobile.orderking.hk3d.datas;
 import android.opengl.GLES30;
 
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
+import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 /**
  * Author by HEKE
@@ -66,10 +68,56 @@ public class Selector extends RendererObject {
     }
 
     /**
+     * 适用于三维模型的构造函数
+     *
+     * @param lj3DPointArrayList 选中区域
+     */
+    public Selector(ArrayList<LJ3DPoint> lj3DPointArrayList) {
+        init3DSelector(lj3DPointArrayList);
+    }
+
+    // 加载三维选中数据
+    private void init3DSelector(ArrayList<LJ3DPoint> lj3DPointArrayList) {
+        indices = new short[]{0, 1, 2, 0, 2, 3};
+        size = lj3DPointArrayList.size();
+        vertexs = new float[3 * size];
+        colors = new float[4 * size];
+        for (int i = 0; i < size; i++) {
+            LJ3DPoint point = null;
+            if (i == size - 1) {
+                point = lj3DPointArrayList.get(0);
+            } else {
+                point = lj3DPointArrayList.get(i);
+            }
+            int index = 3 * i;
+            vertexs[index] = (float) point.x;
+            vertexs[index + 1] = (float) point.y;
+            vertexs[index + 2] = (float) point.z;
+            int colorIndex = 4 * i;
+            colors[colorIndex] = color[0];
+            colors[colorIndex + 1] = color[1];
+            colors[colorIndex + 2] = color[2];
+            colors[colorIndex + 3] = color[3];
+        }
+        // 存入字节缓存
+        vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        vertexsBuffer.put(vertexs).position(0);
+        colorsBuffer = ByteBuffer.allocateDirect(4 * colors.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        colorsBuffer.put(colors).position(0);
+    }
+
+    /**
      * 刷新围点
      */
     public void refresh(PointList pointList) {
         init2DSelector(pointList);
+    }
+
+    /**
+     * 刷新围点
+     */
+    public void refresh3D(ArrayList<LJ3DPoint> lj3DPointArrayList) {
+        init3DSelector(lj3DPointArrayList);
     }
 
     @Override
@@ -89,6 +137,16 @@ public class Selector extends RendererObject {
         // draw selector lines
         GLES30.glLineWidth(4.0f);
         GLES30.glDrawArrays(GLES30.GL_LINE_STRIP, 0, size);
+    }
+
+    /**
+     * 释放数据
+     */
+    public void releaseDatas() {
+        vertexs = null;
+        vertexsBuffer = null;
+        colors = null;
+        colorsBuffer = null;
     }
 
 }

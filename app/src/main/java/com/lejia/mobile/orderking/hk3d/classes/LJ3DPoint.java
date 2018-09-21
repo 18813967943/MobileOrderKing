@@ -174,6 +174,13 @@ public class LJ3DPoint implements Parcelable {
     }
 
     /**
+     * 数值
+     */
+    public float[] toFloatValues() {
+        return new float[]{(float) x, (float) y, (float) z};
+    }
+
+    /**
      * 转换为1个单位
      *
      * @param a

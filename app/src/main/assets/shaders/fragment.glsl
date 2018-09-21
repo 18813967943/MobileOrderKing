@@ -26,20 +26,23 @@ void main()
             lightVec = normalize(lightVec);
             // 镜面光环境光
             float diffuseComponent = max(0.0,dot(lightVec, vNormal));
-            float ambientComponent = 0.6;
+            float ambientComponent = 0.3;
             // 阴影处理
             float shadow = 1.0;
             if(vShadowCoord.w > 0.0){
                vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
                float distanceFromLight = texture(uShadowTexture, shadowMapPosition.st).z;
+               //add bias to reduce shadow acne (error margin)
                float bias = 0.0005;
                //1.0 = not in shadow (fragmant is closer to light than the value stored in shadow map)
                //0.0 = in shadow
                shadow = float(distanceFromLight > shadowMapPosition.z - bias);
+               //scale 0.0-1.0 to 0.2-1.0
+               //otherways everything in shadow would be black
                shadow = (shadow * 0.8) + 0.2;
             }
             // 返回即时光影效果
-            outColor = (outColor * (diffuseComponent + ambientComponent) * shadow);
+            outColor = (outColor*(diffuseComponent + ambientComponent) * shadow);
          }
      }
 }

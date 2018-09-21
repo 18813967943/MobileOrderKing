@@ -6,6 +6,7 @@ import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.datas.Furniture;
+import com.lejia.mobile.orderking.hk3d.datas.FurnitureMatrixs;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
 
@@ -59,6 +60,11 @@ public abstract class BaseCad extends RendererObject {
      * 镜像
      */
     public boolean mirror;
+
+    /**
+     * 模型对应的矩阵数据对象
+     */
+    public FurnitureMatrixs furnitureMatrixs;
 
     public BaseCad(FurTypes furTypes) {
         this.furTypes = furTypes;
@@ -129,6 +135,38 @@ public abstract class BaseCad extends RendererObject {
         initDatas();
     }
 
+    // 移除矩阵
+    public void removeOldMatrixs() {
+        if (furnitureMatrixs != null) {
+            // 存储至渲染数据管理对象
+            HouseDatasManager houseDatasManager = getHouseDatasManager();
+            if (houseDatasManager != null) {
+                houseDatasManager.deleteFurniture(this, furnitureMatrixs);
+            }
+            furnitureMatrixs = null;
+        }
+    }
+
+    // 更新
+
+    // 刷新同模型的矩阵信息
+    public void refreshMatrixs() {
+        // 刷新家具矩阵信息
+        furnitureMatrixs = new FurnitureMatrixs(point, 0, 0, (float) angle
+                , 0.1f, 0.1f, 0.1f, (float) point.x, (float) point.y,
+                furniture.groundHeight * 0.1f, mirror);
+        // 存储至渲染数据管理对象
+        HouseDatasManager houseDatasManager = getHouseDatasManager();
+        if (houseDatasManager != null) {
+            houseDatasManager.putFurniture(this, furnitureMatrixs);
+        }
+    }
+
+    // 设置模型对应三维矩阵信息对象
+    public void setFurnitureMatrixs(FurnitureMatrixs furnitureMatrixs) {
+        this.furnitureMatrixs = furnitureMatrixs;
+    }
+
     // 获取门窗类型
     public FurTypes getFurTypes() {
         return furTypes;
@@ -174,6 +212,8 @@ public abstract class BaseCad extends RendererObject {
             thickness = this.furniture.width / 10;
             xlong = this.furniture.xLong / 10;
             initDatas();
+            // 刷新模型的矩阵信息
+            refreshMatrixs();
         }
     }
 
@@ -203,6 +243,9 @@ public abstract class BaseCad extends RendererObject {
     public void mirror() {
         mirror = !mirror;
         initDatas();
+        // 刷新镜像信息
+        if (furnitureMatrixs != null)
+            furnitureMatrixs.setMirror(mirror);
     }
 
     /**

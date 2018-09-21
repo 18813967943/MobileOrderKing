@@ -408,7 +408,7 @@ public abstract class House {
     /**
      * 获取房间所有可触摸渲染数据
      */
-    public ArrayList<RendererObject> getTotalRendererObjectList() {
+    public ArrayList<RendererObject> getCurrentTotalRendererObjectList() {
         ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
         boolean isNot2D = RendererState.isNot2D();
         if (isNot2D) {
@@ -430,6 +430,41 @@ public abstract class House {
             }
         }
         return rendererObjectsList;
+    }
+
+    /**
+     * 获取房间所有可触摸渲染数据
+     */
+    public ArrayList<RendererObject> getTotalRendererObjectList() {
+        ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
+        if (wallFacadesList != null) {
+            rendererObjectsList.addAll(wallFacadesList);
+        }
+        if (wallsList != null && wallsList.size() > 0) {
+            rendererObjectsList.addAll(wallsList);
+        }
+        if (ground != null) {
+            rendererObjectsList.add(ground);
+        }
+        if (houseName != null) {
+            rendererObjectsList.add(houseName);
+        }
+        return rendererObjectsList;
+    }
+
+    /**
+     * 获取所有内外立面
+     */
+    public ArrayList<WallFacade> getCanDigholeList() {
+        if (wallFacadesList == null || wallFacadesList.size() == 0)
+            return null;
+        ArrayList<WallFacade> list = new ArrayList<>();
+        for (WallFacade wallFacade : wallFacadesList) {
+            if (wallFacade.getFlag() != WallFacade.FLAG_TOP_THICKNESS) {
+                list.add(wallFacade);
+            }
+        }
+        return list;
     }
 
     /**

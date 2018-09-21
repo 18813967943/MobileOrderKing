@@ -22,6 +22,13 @@ public class RectHouse extends House {
         super(context);
     }
 
+    @Override
+    public boolean isInvalid() {
+        if (width == 0 && height == 0)
+            return true;
+        return super.isInvalid();
+    }
+
     public Point getDown() {
         return down;
     }
@@ -96,6 +103,33 @@ public class RectHouse extends House {
         else
             pointList.setPointsList(cententList);
         return pointList;
+    }
+
+    /**
+     * 矩形精准设置宽高，方向只遵循按下点至弹起点的方向延伸
+     *
+     * @param width
+     * @param height
+     */
+    public void accurateSet(int width, int height) {
+        if (down == null || width < 75 || height < 75)
+            return;
+        // 创建新起点
+        Point newUp = new Point();
+        if (up.x < down.x) {
+            newUp.x = down.x - width - thickness;
+        } else {
+            newUp.x = down.x + width + thickness;
+        }
+        if (up.y < down.y) {
+            newUp.y = down.y - height - thickness;
+        } else {
+            newUp.y = down.y + height + thickness;
+        }
+        up = newUp;
+        // 刷新创建
+        createLists();
+        refreshRenderer();
     }
 
 }

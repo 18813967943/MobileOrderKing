@@ -18,6 +18,7 @@ import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.FurnitureTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.MoreManager;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.On3DTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
@@ -88,6 +89,11 @@ public class HK3DDesignerActivity extends Activity {
      */
     private MoreManager moreManager;
 
+    /**
+     * 三维触摸管理
+     */
+    private On3DTouchManager on3DTouchManager;
+
     private void initViews() {
         designer3DManager = new Designer3DManager(this, designer3dLayout);
         tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
@@ -118,6 +124,9 @@ public class HK3DDesignerActivity extends Activity {
             case R.id.forward:
                 break;
             case R.id.jingzhun:
+                boolean isAccurate = !RendererState.isIsAccurate();
+                RendererState.setAccurate(isAccurate);
+                jingzhun.setSelected(isAccurate);
                 break;
             case R.id.zhouce:
                 designer3DManager.getDesigner3DRender().toAxisSideViews();
@@ -154,6 +163,11 @@ public class HK3DDesignerActivity extends Activity {
             interruptTouch = furnitureTouchManager.canDrawCheck(ev);
         } else {
             interruptTouch = false;
+            // 三维手势触摸管理
+            if (on3DTouchManager == null) {
+                on3DTouchManager = new On3DTouchManager(this, tilesManager, designer3DManager);
+            }
+            on3DTouchManager.touch(ev);
         }
         return super.dispatchTouchEvent(ev);
     }

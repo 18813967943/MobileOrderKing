@@ -146,6 +146,44 @@ public class NormalHouse extends House {
     }
 
     /**
+     * 获取当前墙体线段的长度
+     */
+    public double getCurrentWallLength() {
+        if (currentLine == null)
+            return 0;
+        return currentLine.getLength();
+    }
+
+    /**
+     * 矩形精准设置宽高，方向只遵循按下点至弹起点的方向延伸
+     *
+     * @param xlong
+     */
+    public void accurateSet(int xlong) {
+        if (down == null)
+            return;
+        // 检测获取起点
+        Line line = new Line(down.copy(), up.copy());
+        int distLength = xlong + thickness;
+        ArrayList<Point> lepsList = PointList.getRotateLEPS(line.getAngle(), 2 * distLength, down.copy());
+        Point newUp = null;
+        for (int i = 0; i < lepsList.size(); i++) {
+            Point point = lepsList.get(i);
+            Line testLine = new Line(down.copy(), point);
+            // 判断该点是否在原线段上或者原起点在该线段上
+            if (testLine.getAdsorbPoint(up.x, up.y, 1d) != null || line.getAdsorbPoint(point.x, point.y, 1d) != null) {
+                newUp = point;
+                break;
+            }
+        }
+        if (newUp == null)
+            return;
+        up = newUp;
+        // 刷新数据显示
+        setUp(up);
+    }
+
+    /**
      * 检测自身线段画墙是否无效
      *
      * @return true 无效去除

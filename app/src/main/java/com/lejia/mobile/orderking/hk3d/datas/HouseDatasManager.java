@@ -822,26 +822,33 @@ public class HouseDatasManager {
             Point check = furniture.point;
             boolean isDoorOrWindow = (furTypes.ordinal() < FurTypes.GENERAL_L3D.ordinal());
             for (House house : housesList) {
-                ArrayList<Line> linesList = null;
-                if (isDoorOrWindow) {
-                    linesList = house.isWallClosed ? house.centerPointList.toLineList() : house.centerPointList.toNotClosedLineList();
-                } else {
-                    if (house.isWallClosed) {
-                        linesList = new PointList(house.innerPointList.offsetList(false, 1.0d)).toLineList();
-                    }
+                boolean rectInvalid = false;
+                if (house instanceof RectHouse) {
+                    RectHouse rectHouse = (RectHouse) house;
+                    rectInvalid = rectHouse.isInvalid();
                 }
-                if (linesList != null) { // 非门窗家具断墙不需要吸附操作
-                    for (Line line : linesList) {
-                        Line intentation = line.toIndentationLine(24);
-                        if (intentation != null) {
-                            Point adsorb = intentation.getAdsorbPoint(check.x, check.y, 50);
-                            if (adsorb != null) {
-                                if (isDoorOrWindow) { // 门窗类吸附
-                                    return new DragAdsorbRet(house, line, intentation, adsorb);
-                                } else { // 家具吸附，根据线段角度
-                                    adsorb = checkFurnitureOffsetPosition(house, intentation, adsorb, furniture);
-                                    if (adsorb != null)
+                if (!rectInvalid) {
+                    ArrayList<Line> linesList = null;
+                    if (isDoorOrWindow) {
+                        linesList = house.isWallClosed ? house.centerPointList.toLineList() : house.centerPointList.toNotClosedLineList();
+                    } else {
+                        if (house.isWallClosed) {
+                            linesList = new PointList(house.innerPointList.offsetList(false, 1.0d)).toLineList();
+                        }
+                    }
+                    if (linesList != null) { // 非门窗家具断墙不需要吸附操作
+                        for (Line line : linesList) {
+                            Line intentation = line.toIndentationLine(24);
+                            if (intentation != null) {
+                                Point adsorb = intentation.getAdsorbPoint(check.x, check.y, 50);
+                                if (adsorb != null) {
+                                    if (isDoorOrWindow) { // 门窗类吸附
                                         return new DragAdsorbRet(house, line, intentation, adsorb);
+                                    } else { // 家具吸附，根据线段角度
+                                        adsorb = checkFurnitureOffsetPosition(house, intentation, adsorb, furniture);
+                                        if (adsorb != null)
+                                            return new DragAdsorbRet(house, line, intentation, adsorb);
+                                    }
                                 }
                             }
                         }
@@ -888,6 +895,50 @@ public class HouseDatasManager {
         return ret;
     }
 
+    /**
+     * TODO 切割三维立面墙体
+     *
+     * @param wd 门窗类
+     */
+    public void punchWallFacedes(BaseCad wd) {
+        if (wd == null)
+            return;
+        // 获取该模型的非厚度两边
+        double offground = wd.furniture.getGroundHeight() / 10;
+        ArrayList<Point> pointsList = wd.thicknessPointsList;
+        ArrayList<Line> linesList = new PointList(pointsList).toLineList();
+        ArrayList<Line> digholeLineList = new ArrayList<>();
+        for (Line line : linesList) {
+            if (line.getLength() - 24 >= 0.5f) {
+                digholeLineList.add(line);
+            }
+        }
+        // 遍历查询所有所在的立面墙体
+        ArrayList<WallFacade> interWallFacadesList = new ArrayList<>();
+        if (housesList != null && housesList.size() > 0) {
+            for (House house : housesList) {
+                ArrayList<WallFacade> wallFacadesList = house.getCanDigholeList();
+                if (wallFacadesList != null && wallFacadesList.size() > 0)
+                    interWallFacadesList.addAll(wallFacadesList);
+            }
+        }
+        if (wallOuterFacadesList != null && wallOuterFacadesList.size() > 0) {
+            interWallFacadesList.addAll(wallOuterFacadesList);
+        }
+        // 检测并开启切割
+        if (interWallFacadesList != null && interWallFacadesList.size() > 0) {
+            for (Line line : digholeLineList) {
+                Point center = line.getCenter();
+                for (WallFacade wallFacade : interWallFacadesList) {
+                    if (wallFacade.checkInnerSelf(center)) {
+                        wallFacade.punch(line, wd.furniture.height / 10, wd.furniture.groundHeight / 10);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     /*******************************************************
      * TODO 家具处理
      * *****************************************************/
@@ -924,7 +975,9 @@ public class HouseDatasManager {
         double angle = furniture.angle;
         double width = furniture.thickness;
         double xlong = furniture.xlong;
-        Point point = furniture.point.copy();
+        Point op = furniture.point.copy();
+        boolean evenNumber = (int) (Math.random() * 100) % 2 == 0;
+        Point point = new Point(evenNumber ? (op.x + xlong + 3) : (op.x - xlong - 3), op.y);
         BaseCad copy = null;
         // 窗
         if (furTypes == FurTypes.SIMPLE_WINDOW) {
@@ -961,7 +1014,14 @@ public class HouseDatasManager {
     public void relace(BaseCad furniture, Furniture fur) {
         if (furniture == null)
             return;
+        // 先删除之前的模型矩阵
+        deleteFurniture(furniture, furniture.furnitureMatrixs);
+        // 设置新模型
         furniture.setFurniture(fur);
+        // 门窗类，刷新墙洞
+        if (furniture.furTypes.ordinal() < FurTypes.GENERAL_L3D.ordinal()) {
+            punchWallFacedes(furniture);
+        }
     }
 
     /**
@@ -971,6 +1031,7 @@ public class HouseDatasManager {
      */
     public void delete(BaseCad furniture) {
         remove(furniture);
+        furniture.removeOldMatrixs();
     }
 
     /**
@@ -984,10 +1045,13 @@ public class HouseDatasManager {
         // 增加渲染模型对象
         furnituresList.add(furniture);
         // 创建模型所在位置数据对象
-        furniture.furniture.put(new FurnitureMatrixs(furniture.point, 0, 0, (float) furniture.angle
-                , 0.1f, 0.1f, 0.1f, (float) furniture.point.x, (float) furniture.point.y, 0.0f));
+        FurnitureMatrixs furnitureMatrixs = new FurnitureMatrixs(furniture.point, 0, 0, (float) furniture.angle
+                , 0.1f, 0.1f, 0.1f, (float) furniture.point.x, (float) furniture.point.y,
+                furniture.furniture.groundHeight * 0.1f, furniture.mirror);
+        furniture.setFurnitureMatrixs(furnitureMatrixs);
+        furniture.furniture.put(furnitureMatrixs);
         // 保存至总数据列表
-        putFurniture(furniture);
+        putFurniture(furniture, furnitureMatrixs);
         refreshRender();
     }
 
@@ -997,11 +1061,13 @@ public class HouseDatasManager {
     private ArrayList<Furniture> furnitureArrayList;
 
     /**
-     * 存入家具信息
+     * 存入家具信息。由于相同的家具使用的是同一个Furniture对象，
+     * 为了避免唯一的家具数据对象的矩阵列表不被修改，则增加该方法。
      *
      * @param baseCad
+     * @param furnitureMatrixs
      */
-    private void putFurniture(BaseCad baseCad) {
+    public void putFurniture(BaseCad baseCad, FurnitureMatrixs furnitureMatrixs) {
         Furniture save = baseCad.furniture;
         Furniture existedFur = null;
         for (int i = 0; i < furnitureArrayList.size(); i++) {
@@ -1012,10 +1078,45 @@ public class HouseDatasManager {
             }
         }
         if (existedFur == null) {
+            // 检测模型的对应矩阵是否为空，并新增模型对应项至渲染列表
+            ArrayList<FurnitureMatrixs> furnitureMatrixsArrayList = save.getFurnitureMatrixsList();
+            if (furnitureMatrixsArrayList != null && furnitureMatrixsArrayList.size() == 0) {
+                save.put(baseCad.furnitureMatrixs);
+            }
             furnitureArrayList.add(save);
         } else {
-            if (!existedFur.equals(save)) {
-                existedFur.putAll(save.getFurnitureMatrixsList());
+            existedFur.put(furnitureMatrixs);
+        }
+    }
+
+    /**
+     * 删除对应模型的指定位置的矩阵数据
+     *
+     * @param baseCad
+     * @param furnitureMatrixs
+     */
+    public void deleteFurniture(BaseCad baseCad, FurnitureMatrixs furnitureMatrixs) {
+        Furniture save = baseCad.furniture;
+        Furniture existedFur = null;
+        for (int i = 0; i < furnitureArrayList.size(); i++) {
+            Furniture furniture = furnitureArrayList.get(i);
+            if (save.materialCode.equals(furniture.materialCode)) {
+                existedFur = furniture;
+                break;
+            }
+        }
+        if (existedFur != null) {
+            ArrayList<FurnitureMatrixs> furnitureMatrixsArrayList = new ArrayList<>();
+            ArrayList<FurnitureMatrixs> currentMatrixsList = existedFur.getFurnitureMatrixsList();
+            if (currentMatrixsList != null && currentMatrixsList.size() > 0) {
+                int size = currentMatrixsList.size();
+                for (int i = 0; i < size; i++) {
+                    FurnitureMatrixs fm = currentMatrixsList.get(i);
+                    if (!fm.equals(furnitureMatrixs)) {
+                        furnitureMatrixsArrayList.add(fm);
+                    }
+                }
+                existedFur.setFurnitureMatrixsList(furnitureMatrixsArrayList);
             }
         }
     }

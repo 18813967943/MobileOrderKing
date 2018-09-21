@@ -49,4 +49,17 @@ public class RendererState {
         return renderState != STATE_3D;
     }
 
+    /**
+     * 精准画墙模式标志
+     */
+    public static boolean isAccurate = false;
+
+    public static boolean isIsAccurate() {
+        return isAccurate;
+    }
+
+    public static void setAccurate(boolean isAccurate) {
+        RendererState.isAccurate = isAccurate;
+    }
+
 }

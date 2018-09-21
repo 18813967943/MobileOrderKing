@@ -51,33 +51,35 @@ public class SubsetView extends RendererObject {
         String[] vertexArray = vertexsStr.split("[,]");
         vertexs = new float[vertexArray.length];
         for (int i = 0; i < vertexArray.length; i++) {
-            vertexs[i] = Float.parseFloat(vertexArray[i]) * 0.1f;
+            vertexs[i] = Float.parseFloat(vertexArray[i]);
         }
         String[] uvArray = uv0Str.split("[,]");
         texcoord = new float[uvArray.length];
         for (int i = 0; i < uvArray.length; i++) {
-            texcoord[i] = Float.parseFloat(uvArray[i]);
+            if (i % 2 == 1) {
+                texcoord[i] = 1.0f - Float.parseFloat(uvArray[i]);
+            } else {
+                texcoord[i] = Float.parseFloat(uvArray[i]);
+            }
         }
-        String[] normalsArray = normalsStr.split("[,]");
-        normals = new float[normalsArray.length];
-        for (int i = 0; i < normalsArray.length; i++) {
-            normals[i] = Float.parseFloat(normalsArray[i]);
+        if (!TextUtils.isTextEmpity(normalsStr)) {
+            String[] normalsArray = normalsStr.split("[,]");
+            normals = new float[normalsArray.length];
+            for (int i = 0; i < normalsArray.length; i++) {
+                normals[i] = Float.parseFloat(normalsArray[i]);
+            }
+            normalsBuffer = ByteBuffer.allocateDirect(4 * normals.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            normalsBuffer.put(normals).position(0);
         }
         String[] indicesArray = indicesStr.split("[,]");
-        bigIndices = new int[indicesArray.length];
         indices = new short[indicesArray.length];
         for (int i = 0; i < indicesArray.length; i++) {
             indices[i] = Short.parseShort(indicesArray[i]);
-            bigIndices[i] = Integer.parseInt(indicesArray[i]);
         }
         vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         vertexsBuffer.put(vertexs).position(0);
-        normalsBuffer = ByteBuffer.allocateDirect(4 * normals.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        normalsBuffer.put(normals).position(0);
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
-        bigIndicesBuffer = ByteBuffer.allocateDirect(4 * bigIndices.length).order(ByteOrder.nativeOrder()).asIntBuffer();
-        bigIndicesBuffer.put(bigIndices).position(0);
         indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
         indicesBuffer.put(indices).position(0);
     }
@@ -107,7 +109,7 @@ public class SubsetView extends RendererObject {
         if (texture != null) {
             textureBitmap = texture.bitmap;
             textureId = texture.textureId;
-            return;
+            refreshRender();
         } else {
             if (!TextUtils.isTextEmpity(texture0Str)) {
                 Glide.with(OrderKingApplication.getInstant()).asBitmap().load(texture0Str).into(new SimpleTarget<Bitmap>() {
@@ -128,6 +130,7 @@ public class SubsetView extends RendererObject {
                                 textureBitmap = bitmap;
                                 // 开启加载贴图
                                 needLoadTexture = true;
+                                refreshRender();
                             }
                         }.execute(bitmap);
                     }
@@ -145,10 +148,9 @@ public class SubsetView extends RendererObject {
             textureId = createTextureIdAndCache(uuid, textureBitmap, false);
             refreshRender();
         }
-        if (textureId != -1) {
+        if (textureId != -1 && (!TextUtils.isTextEmpity(normalsStr))) {
             // 关闭混色
             GLES30.glDisable(GLES30.GL_BLEND);
-            //GLES30.glUniformMatrix4fv(ViewingShader.scene_mvpMatrixUniform, 1, false, furnitureMatrixs.mmvpMatrixs, 0);
             // 顶点
             GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
             GLES30.glEnableVertexAttribArray(positionAttribute);
@@ -162,15 +164,16 @@ public class SubsetView extends RendererObject {
                 // 贴图
                 GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
                 GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
                 GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
                 // 着色器使用标志
                 GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
                 GLES30.glUniform1f(ViewingShader.scene_use_light, 1.0f);
             }
-            GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.length, GLES30.GL_UNSIGNED_SHORT,indicesBuffer);
-            //GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
-            // 恢复其他数据的渲染矩阵
-            //GLES30.glUniformMatrix4fv(ViewingShader.scene_mvpMatrixUniform, 1, false, ViewingMatrixs.mMVPMatrix, 0);
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.length, GLES30.GL_UNSIGNED_SHORT, indicesBuffer);
         }
     }
 

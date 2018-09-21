@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.MotionEvent;
 
+import com.lejia.mobile.orderking.dialogs.AccurateInputDialog;
 import com.lejia.mobile.orderking.hk3d.Designer3DRender;
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
@@ -299,8 +301,29 @@ public class TouchManager {
                 break;
             case MotionEvent.ACTION_UP:
                 setCheckUp(event.getX(), event.getY());
-                if (!openedTranslate)
-                    houseDatasManager.gpcClosedCheck(rectHouse);
+                if (!openedTranslate) {
+                    // 精准模式
+                    if (RendererState.isIsAccurate() && rectHouse != null && !rectHouse.isSizeInvalid()) {
+                        // 弹出精准输入窗口
+                        new AccurateInputDialog(mContext, rectHouse, AccurateInputDialog.RECT, new AccurateInputDialog.OnAccurateInputListener() {
+                            @Override
+                            public void onInputed(int xlong, int width, int height, int flag) {
+                                rectHouse.accurateSet(width/ 10, height / 10);
+                                // 检测闭合房间切割组合
+                                houseDatasManager.gpcClosedCheck(rectHouse);
+                            }
+
+                            @Override
+                            public void cancel() {
+                                // 检测闭合房间切割组合
+                                houseDatasManager.gpcClosedCheck(rectHouse);
+                            }
+                        }).show();
+                    } else {
+                        // 检测闭合房间切割组合
+                        houseDatasManager.gpcClosedCheck(rectHouse);
+                    }
+                }
                 openedTranslate = false; // 关闭平移
                 isMoveMaxMinDist = false;
                 break;
@@ -348,8 +371,28 @@ public class TouchManager {
                     boolean invalid = normalHouse.checkInvalid();
                     if (invalid)
                         houseDatasManager.remove(normalHouse);
-                    else
-                        houseDatasManager.gpcUncloseCheck(normalHouse);
+                    else {
+                        // 精准模式
+                        if (RendererState.isIsAccurate()) {
+                            new AccurateInputDialog(mContext, normalHouse, AccurateInputDialog.USUALLY, new AccurateInputDialog.OnAccurateInputListener() {
+                                @Override
+                                public void onInputed(int xlong, int width, int height, int flag) {
+                                    normalHouse.accurateSet(xlong / 10);
+                                    // 非闭合线段检测组合切割操作
+                                    houseDatasManager.gpcUncloseCheck(normalHouse);
+                                }
+
+                                @Override
+                                public void cancel() {
+                                    // 非闭合线段检测组合切割操作
+                                    houseDatasManager.gpcUncloseCheck(normalHouse);
+                                }
+                            }).show();
+                        } else {
+                            // 非闭合线段检测组合切割操作
+                            houseDatasManager.gpcUncloseCheck(normalHouse);
+                        }
+                    }
                 }
                 openedTranslate = false; // 关闭平移
                 isMoveMaxMinDist = false;

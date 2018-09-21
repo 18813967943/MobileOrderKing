@@ -76,29 +76,18 @@ public class Subset {
         }
         // 网络拉取
         else {
-            new AsyncTask<String, Integer, String>() {
+            OkHttpRequest request = OkHttpRequest.getInstance(OrderKingApplication.getInstant());
+            request.downLoadFile(fileUrl, cachePath, new ReqCallBack<File>() {
                 @Override
-                protected String doInBackground(String... strings) {
-                    OkHttpRequest request = OkHttpRequest.getInstance(OrderKingApplication.getInstant());
-                    request.downLoadFile(fileUrl, strings[0], new ReqCallBack<File>() {
-                        @Override
-                        public void onReqSuccess(File result) {
-                            datasFile = result;
-                        }
-
-                        @Override
-                        public void onReqFailed(String errorMsg) {
-                        }
-                    });
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(String s) {
-                    super.onPostExecute(s);
+                public void onReqSuccess(File result) {
+                    datasFile = result;
                     parseFile(datasFile);
                 }
-            }.execute(cachePath);
+
+                @Override
+                public void onReqFailed(String errorMsg) {
+                }
+            });
         }
     }
 
@@ -111,11 +100,13 @@ public class Subset {
     public void parseFile(final File file) {
         if (file == null)
             return;
-        new AsyncTask<File, Integer, String>() {
+        new AsyncTask<File, Integer, ArrayList<SubsetView>>() {
             @Override
-            protected String doInBackground(File... files) {
+            protected ArrayList<SubsetView> doInBackground(File... files) {
                 if (files == null)
                     return null;
+                subsetViewsList.clear();
+                ArrayList<SubsetView> subsetViews = new ArrayList<>();
                 try {
                     FileInputStream fis = new FileInputStream(files[0]);
                     byte[] buffer = new byte[fis.available()];
@@ -126,7 +117,6 @@ public class Subset {
                     int itemCount = nbis.ReadInt32();
                     // 循环读取子件数据
                     if (itemCount > 0) {
-                        subsetViewsList.clear();
                         for (int i = 0; i < itemCount; i++) {
                             // 子件编号
                             int id = nbis.ReadInt32();
@@ -147,7 +137,7 @@ public class Subset {
                             // 索引
                             String indices = nbis.ReadString();
                             // 创建子件对象
-                            subsetViewsList.add(new SubsetView(id, type, vertexs, uv0, uv1, texture0,
+                            subsetViews.add(new SubsetView(id, type, vertexs, uv0, uv1, texture0,
                                     texture1, normals, indices, (materialCode + "Item" + i)));
                         }
                     }
@@ -155,13 +145,16 @@ public class Subset {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return null;
+                return subsetViews;
             }
 
             @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
+            protected void onPostExecute(ArrayList<SubsetView> ret) {
+                super.onPostExecute(ret);
                 // 加载材质贴图
+                if (ret != null && ret.size() > 0) {
+                    subsetViewsList.addAll(ret);
+                }
                 if (subsetViewsList != null && subsetViewsList.size() > 0) {
                     for (SubsetView subsetView : subsetViewsList) {
                         subsetView.loadTexture();

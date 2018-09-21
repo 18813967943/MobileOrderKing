@@ -484,7 +484,7 @@ public class OkHttpRequest {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 InputStream is = null;
-                byte[] buf = new byte[1048576]; // 1M的读取、写入速度
+                byte[] buf = new byte[4096];
                 int len = 0;
                 FileOutputStream fos = null;
                 try {

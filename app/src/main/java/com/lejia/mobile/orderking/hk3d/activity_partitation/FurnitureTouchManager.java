@@ -11,6 +11,7 @@ import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
 import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
+import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.FurTypes;
 
 /**
  * Author by HEKE
@@ -118,6 +119,8 @@ public class FurnitureTouchManager {
                         double poorX = tm.x - d3Down.x;
                         double poorY = tm.y - d3Down.y;
                         if (selectFur != null) {
+                            // 先进行移除操作
+                            selectFur.removeOldMatrixs();
                             // 设置偏置
                             selectFur.translate(poorX, poorY);
                             // 根据类型做出处理
@@ -134,6 +137,15 @@ public class FurnitureTouchManager {
                     checkUp = new Point(event.getX(), event.getY());
                     if (selectFur != null) {
                         selectFur.setSelected(false);
+                        // 刷新选中对象的矩阵对象信息
+                        if (hadMove)
+                            selectFur.refreshMatrixs();
+                    }
+                    // 门窗检测拆立面墙
+                    if (selectFur != null) {
+                        if (selectFur.furTypes.ordinal() < FurTypes.GENERAL_L3D.ordinal()) {
+                            houseDatasManager.punchWallFacedes(selectFur);
+                        }
                     }
                     upCheck();
                     break;

@@ -39,7 +39,7 @@ public class Designer3DSurfaceView extends GLSurfaceView {
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
             designer3DRender = new Designer3DRender(getContext(), onRenderStatesListener);
             setRenderer(designer3DRender);
-            setRenderMode(RENDERMODE_WHEN_DIRTY);
+            setRenderMode(RENDERMODE_CONTINUOUSLY);
             // 绑定刷新机制
             OrderKingApplication application = (OrderKingApplication) getContext().getApplicationContext();
             if (application != null)

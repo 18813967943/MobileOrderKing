@@ -49,6 +49,9 @@ public class WallFacade extends RendererObject {
      */
     private int cell;
 
+    // 法线点
+    private LJ3DPoint normal;
+
     /**
      * 墙体原始围点
      */
@@ -72,6 +75,12 @@ public class WallFacade extends RendererObject {
     private Bitmap textureBitmap; // 贴图
     private boolean needBindTexture;
 
+    /**
+     * 切割面
+     */
+    private boolean havaPunched;
+    private ArrayList<PunchFragmentFacade> punchFragmentFacadeArrayList;
+
     private void initDatas() {
         if (flag == FLAG_INTER || flag == FLAG_OUTER) {
             Line line = new Line(pointsList.get(0), pointsList.get(1));
@@ -87,6 +96,7 @@ public class WallFacade extends RendererObject {
         this.cell = cell;
         this.pointsList = pointsList;
         this.house = house;
+        this.punchFragmentFacadeArrayList = new ArrayList<>();
         initDatas();
     }
 
@@ -96,6 +106,7 @@ public class WallFacade extends RendererObject {
         this.pointsList = pointsList;
         this.house = null;
         this.uuid = uuid;
+        this.punchFragmentFacadeArrayList = new ArrayList<>();
         initDatas();
     }
 
@@ -121,7 +132,7 @@ public class WallFacade extends RendererObject {
         vertexs = new float[3 * size];
         texcoord = new float[]{0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
         normals = new float[3 * size];
-        LJ3DPoint normal = LJ3DPoint.spaceNormal(lj3DPointsList.get(indices[0]), lj3DPointsList.get(indices[1])
+        normal = LJ3DPoint.spaceNormal(lj3DPointsList.get(indices[0]), lj3DPointsList.get(indices[1])
                 , lj3DPointsList.get(indices[2]));
         for (int i = 0; i < size; i++) {
             LJ3DPoint point = lj3DPointsList.get(indices[i]);
@@ -140,6 +151,7 @@ public class WallFacade extends RendererObject {
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
         if (isDefaultWallTexture) {
+            //uuid = "wall_texture";
             uuid = "milk_wall";
             //uuid = "cyan_wall";
         } else {
@@ -153,7 +165,7 @@ public class WallFacade extends RendererObject {
             textureBitmap = texture.bitmap;
             textureId = texture.textureId;
         } else {
-            textureBitmap = createTextureWithAssets("textures/milk_wall.jpg");
+            textureBitmap = createTextureWithAssets("textures/" + uuid + ".jpg");
             needBindTexture = true;
         }
     }
@@ -173,6 +185,47 @@ public class WallFacade extends RendererObject {
         return isDefaultWallTexture;
     }
 
+    // 获取墙体类型
+    public int getFlag() {
+        return flag;
+    }
+
+    /**
+     * 检测点是否在面上
+     *
+     * @param center
+     */
+    public boolean checkInnerSelf(Point center) {
+        if (center == null)
+            return false;
+        if (flag == FLAG_INTER || flag == FLAG_OUTER) {
+            Line line = new Line(pointsList.get(0).copy(), pointsList.get(1).copy());
+            return line.getAdsorbPoint(center.x, center.y, 4d) != null;
+        } else if (flag == FLAG_TOP_THICKNESS) {
+            return PointList.pointRelationToPolygon(pointsList, center) != -1;
+        }
+        return false;
+    }
+
+    /**
+     * 切割立面
+     *
+     * @param line      切割线段
+     * @param height    切割高度
+     * @param offground 切割离地高
+     */
+    public void punch(Line line, double height, double offground) {
+        if (line == null)
+            return;
+        new DigHoleTool(cell, 280, line, height, offground, normal.toFloatValues(), pointsList, punchFragmentFacadeArrayList, new DigHoleTool.OnDigHoleListener() {
+            @Override
+            public void digged(ArrayList<PunchFragmentFacade> punchFragmentFacadeArrayList) {
+                WallFacade.this.punchFragmentFacadeArrayList = punchFragmentFacadeArrayList;
+                refreshRender();
+            }
+        });
+    }
+
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         if (needBindTexture) {
@@ -181,6 +234,18 @@ public class WallFacade extends RendererObject {
             refreshRender();
         }
         if (textureId != -1) {
+            /**
+             * 渲染切割面
+             * */
+            if (punchFragmentFacadeArrayList != null && punchFragmentFacadeArrayList.size() > 0) {
+                for (int i = 0; i < punchFragmentFacadeArrayList.size(); i++) {
+                    if (i < punchFragmentFacadeArrayList.size()) {
+                        punchFragmentFacadeArrayList.get(i).render(textureId, positionAttribute, normalAttribute, colorAttribute, onlyPosition);
+                    }
+                }
+                return;
+            }
+            // 渲染整个立面
             // 顶点
             GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
             GLES30.glEnableVertexAttribArray(positionAttribute);

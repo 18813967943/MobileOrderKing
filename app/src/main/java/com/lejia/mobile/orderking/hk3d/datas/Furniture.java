@@ -1,5 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.datas;
 
+import android.annotation.SuppressLint;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -78,14 +80,22 @@ public class Furniture implements Parcelable {
     /**
      * 加载子件数据
      */
+    @SuppressLint("StaticFieldLeak")
     public void loadSubsets() {
-        Subset cache = FurnitureCache.get(materialCode);
-        if (cache != null) {
-            subset = cache;
-        } else {
-            subset = new Subset(materialCode, materialSubsetsJsonURL);
-            FurnitureCache.put(materialCode, subset);
-        }
+        // 使用异步加载
+        new AsyncTask<String, Integer, String>() {
+            @Override
+            protected String doInBackground(String... strings) {
+                Subset cache = FurnitureCache.get(materialCode);
+                if (cache != null) {
+                    subset = cache;
+                } else {
+                    subset = new Subset(materialCode, materialSubsetsJsonURL);
+                    FurnitureCache.put(materialCode, subset);
+                }
+                return null;
+            }
+        }.execute();
     }
 
     /**
@@ -104,6 +114,8 @@ public class Furniture implements Parcelable {
         if (furnitureMatrixs == null)
             return;
         furnitureMatrixsList.add(furnitureMatrixs);
+        // 增加选中对象数据
+        furnitureMatrixs.initSelector(xLong, width, height, groundHeight);
     }
 
     /**
@@ -115,7 +127,8 @@ public class Furniture implements Parcelable {
         if (furnitureMatrixsList == null || furnitureMatrixsList.size() == 0)
             return;
         try {
-            for (int i = 0; i < furnitureMatrixsList.size(); i++) {
+            int size = furnitureMatrixsList.size();
+            for (int i = 0; i < size; i++) {
                 FurnitureMatrixs furnitureMatrixs = furnitureMatrixsList.get(i);
                 put(furnitureMatrixs);
             }
@@ -129,6 +142,13 @@ public class Furniture implements Parcelable {
      */
     public ArrayList<FurnitureMatrixs> getFurnitureMatrixsList() {
         return furnitureMatrixsList;
+    }
+
+    /**
+     * 直接替换矩阵列表
+     */
+    public void setFurnitureMatrixsList(ArrayList<FurnitureMatrixs> furnitureMatrixsList) {
+        this.furnitureMatrixsList = furnitureMatrixsList;
     }
 
     public int getMaterialID() {
