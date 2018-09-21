@@ -65,9 +65,10 @@ public class Grassplot extends RendererObject {
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
         // 贴图
-        uuid = "grass_plot";
+        String[] rdUuid = new String[]{"normal_plot", "normal_plot", "normal_plot", "normal_plot"};
+        uuid = rdUuid[(int) (Math.random() * rdUuid.length)];
         if (textureBitmap == null) {
-            textureBitmap = createTextureWithAssets("textures/grass_plot.jpg");
+            textureBitmap = createTextureWithAssets("textures/" + uuid + ".jpg");
             needBindTexture = true;
         }
     }
