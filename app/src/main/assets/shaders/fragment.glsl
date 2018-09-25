@@ -10,6 +10,10 @@ uniform sampler2D uShadowTexture; // 阴影纹理通道编号
 uniform sampler2D s_baseMap; // 正常模型或面的材质纹理通道编号
 uniform float s_flags; // 颜色使用标志
 uniform float l_flags; // 光照使用标志
+// This define the value to move one pixel left or right
+uniform float uxPixelOffset;
+// This define the value to move one pixel up or down
+uniform float uyPixelOffset;
 out vec4 outColor;
 void main()
 {

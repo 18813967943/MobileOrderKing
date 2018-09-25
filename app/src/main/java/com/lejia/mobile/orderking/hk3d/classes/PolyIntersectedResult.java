@@ -3,7 +3,7 @@ package com.lejia.mobile.orderking.hk3d.classes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.lejia.mobile.orderking.hk3d.datas.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package com.lejia.mobile.orderking.hk3d.classes;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
-import com.lejia.mobile.orderking.hk3d.datas.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;

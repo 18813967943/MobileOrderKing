@@ -30,6 +30,8 @@ public class ViewingShader {
     public static int scene_s_baseMap; // 材质贴图通道
     public static int scene_only_color; // 仅仅使用颜色渲染标志
     public static int scene_use_light; // 使用光照渲染标志
+    public static int scene_mapStepXUniform;
+    public static int scene_mapStepYUniform;
 
     // 加载着色器
     public static void loadShader(Context context) {
@@ -48,6 +50,8 @@ public class ViewingShader {
         scene_uv0 = GLES30.glGetAttribLocation(mProgram, "a_texCoord");
         scene_only_color = GLES30.glGetUniformLocation(mProgram, "s_flags");
         scene_use_light = GLES30.glGetUniformLocation(mProgram, "l_flags");
+        scene_mapStepXUniform = GLES30.glGetUniformLocation(mProgram, "uxPixelOffset");
+        scene_mapStepYUniform = GLES30.glGetUniformLocation(mProgram, "uyPixelOffset");
     }
 
     /**

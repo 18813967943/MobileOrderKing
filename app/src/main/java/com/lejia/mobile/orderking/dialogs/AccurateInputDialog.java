@@ -14,9 +14,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.lejia.mobile.orderking.R;
-import com.lejia.mobile.orderking.hk3d.datas.House;
-import com.lejia.mobile.orderking.hk3d.datas.NormalHouse;
-import com.lejia.mobile.orderking.hk3d.datas.RectHouse;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.NormalHouse;
+import com.lejia.mobile.orderking.hk3d.datas_2d.RectHouse;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import butterknife.BindView;

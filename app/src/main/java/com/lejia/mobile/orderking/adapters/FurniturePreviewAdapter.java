@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.lejia.mobile.orderking.R;
-import com.lejia.mobile.orderking.hk3d.datas.Furniture;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
 
 import java.util.ArrayList;
 

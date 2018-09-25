@@ -36,7 +36,7 @@ public class LightMatrixs {
      * Light source position in model space
      */
     public static final float[] mLightPosModel = new float[]
-            {-5.0f, 0.0f, 9.0f, 1.0f};
+            {-10000.0f, 10000.0f, 10000.0f, 1.0f};
 
     /**
      * 灯光调整后的最终位置

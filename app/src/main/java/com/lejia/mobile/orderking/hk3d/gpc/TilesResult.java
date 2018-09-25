@@ -8,7 +8,7 @@ import android.graphics.Path;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
-import com.lejia.mobile.orderking.hk3d.datas.Area3D;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Area3D;
 import com.lejia.mobile.orderking.utils.BitmapUtils;
 
 import java.util.ArrayList;

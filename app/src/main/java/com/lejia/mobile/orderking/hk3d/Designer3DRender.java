@@ -5,22 +5,23 @@ import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
-import com.lejia.mobile.orderking.hk3d.datas.DummyGround;
-import com.lejia.mobile.orderking.hk3d.datas.Furniture;
-import com.lejia.mobile.orderking.hk3d.datas.FurnitureMatrixs;
-import com.lejia.mobile.orderking.hk3d.datas.Grassplot;
-import com.lejia.mobile.orderking.hk3d.datas.House;
-import com.lejia.mobile.orderking.hk3d.datas.HouseDatasManager;
-import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
-import com.lejia.mobile.orderking.hk3d.datas.Subset;
-import com.lejia.mobile.orderking.hk3d.datas.WallFacade;
-import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.BaseCad;
+import com.lejia.mobile.orderking.hk3d.datas_2d.DummyGround;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
+import com.lejia.mobile.orderking.hk3d.datas_2d.FurnitureMatrixs;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Grassplot;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Subset;
+import com.lejia.mobile.orderking.hk3d.datas_2d.WallFacade;
+import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 
 import java.util.ArrayList;
 
@@ -206,7 +207,14 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         // 根据旋转数值，旋转光的位置
-        LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
+        long elapsedMilliSec = SystemClock.elapsedRealtime();
+        long rotationCounter = elapsedMilliSec % 12000L;
+        float lightRotationDegree = (360.0f / 12000.0f) * ((int) rotationCounter);
+        float[] rotationMatrix = new float[16];
+        Matrix.setIdentityM(rotationMatrix, 0);
+        Matrix.rotateM(rotationMatrix, 0, lightRotationDegree, 0.0f, 0.0f, 1.0f);
+        Matrix.multiplyMV(LightMatrixs.mActualLightPosition, 0, rotationMatrix, 0, LightMatrixs.mLightPosModel, 0);
+       // LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
         // set model view scale、translate、rotate，set the init matrixs
         setMineModelViews();
         // 改变摄像机位置及状态
@@ -216,15 +224,15 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                 LightMatrixs.mActualLightPosition[0], LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
                 //lookX, lookY, lookZ,
                 //look in direction -y
-                LightMatrixs.mActualLightPosition[0], LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
+                LightMatrixs.mActualLightPosition[0], -LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
                 //upX, upY, upZ
                 //up vector in the direction of axisY
-                LightMatrixs.mActualLightPosition[0], 0, LightMatrixs.mActualLightPosition[2]);
+                0, 1, 0);
         Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyesX, eyesY, eyesZ,
                 lookX, lookY, lookZ, 0, 1, 0);
         //------------------------- render depth map --------------------------
         // shadow generation to avoid self shadowing
-        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+        //GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         renderShadowMap();
 
         //------------------------- render scene ------------------------------
@@ -328,15 +336,17 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
     // 实景常态渲染矩阵
     private void sencesMatrixs() {
+        //pass stepsize to map nearby points properly to depth map texture - used in PCF algorithm
+        GLES30.glUniform1f(ViewingShader.scene_mapStepXUniform, (float) (1.0 / mShadowMapWidth));
+        GLES30.glUniform1f(ViewingShader.scene_mapStepYUniform, (float) (1.0 / mShadowMapHeight));
+
         float[] tempResultMatrix = new float[16];
         float bias[] = new float[]{
                 0.5f, 0.0f, 0.0f, 0.0f,
                 0.0f, 0.5f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.5f, 0.0f,
                 0.5f, 0.5f, 0.5f, 1.0f};
-
         float[] depthBiasMVP = new float[16];
-
         //calculate MV matrix
         Matrix.multiplyMM(tempResultMatrix, 0, ViewingMatrixs.mViewMatrix, 0, ViewingMatrixs.mModelMatrix, 0);
         System.arraycopy(tempResultMatrix, 0, ViewingMatrixs.mMVMatrix, 0, 16);
@@ -383,9 +393,9 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
         sencesMatrixs();
         //pass in texture where depth map is stored
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, renderTextureId[0]);
-        GLES30.glUniform1i(ViewingShader.scene_textureUniform, 0);
+        GLES30.glUniform1i(ViewingShader.scene_textureUniform, 1);
 
         // draw all views
         if (houseDatasManager != null) {
@@ -497,8 +507,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     public void toAxisSideViews() {
         if (RendererState.isNot25D()) {
             RendererState.setRenderState(RendererState.STATE_25D);
-            rotateX = 0;
-            rotateZ = 0;
+            rotateX = 45;
+            rotateZ = 40;
             eyesZ = far / 25 + 300f;
             lookZ = -3000;
         } else {

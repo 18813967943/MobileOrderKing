@@ -5,7 +5,7 @@ import android.content.Context;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
-import com.lejia.mobile.orderking.hk3d.datas.Area3D;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Area3D;
 
 import java.util.ArrayList;
 

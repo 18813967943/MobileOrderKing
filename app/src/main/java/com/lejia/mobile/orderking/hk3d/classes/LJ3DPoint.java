@@ -3,8 +3,8 @@ package com.lejia.mobile.orderking.hk3d.classes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.lejia.mobile.orderking.hk3d.datas.RendererObject;
-import com.lejia.mobile.orderking.hk3d.datas.cadwidgets.SingleDoor;
+import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SingleDoor;
 
 import java.util.ArrayList;
 

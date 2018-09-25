@@ -1,6 +1,6 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
-import com.lejia.mobile.orderking.hk3d.datas.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 
 import java.util.ArrayList;
 

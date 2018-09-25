@@ -8,7 +8,7 @@ import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
-import com.lejia.mobile.orderking.hk3d.datas.Ground;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 
 import java.util.ArrayList;
 
