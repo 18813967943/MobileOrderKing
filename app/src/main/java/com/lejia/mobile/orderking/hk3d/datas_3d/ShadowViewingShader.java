@@ -8,7 +8,7 @@ import android.opengl.GLES30;
  * @time 2018/7/14 16:13
  * TODO: 可见数据的着色器
  */
-public class ViewingShader {
+public class ShadowViewingShader {
 
     /**
      * 可是三维空间使用着色器

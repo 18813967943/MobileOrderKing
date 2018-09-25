@@ -89,8 +89,8 @@ public class ShadowRenderer implements GLSurfaceView.Renderer {
                 R.raw.depth_tex_f_with_simple_shadow, mContext);  // TODO 着色器
         mDepthMapProgram = new RenderProgram(R.raw.depth_tex_v_depth_map,
                 R.raw.depth_tex_f_depth_map, mContext); // TODO 阴影着色器
-        ViewingShader.loadShader(mSimpleShadowProgram.getProgram());
-        ViewingShader.loadShadowShader(mDepthMapProgram.getProgram());
+        ShadowViewingShader.loadShader(mSimpleShadowProgram.getProgram());
+        ShadowViewingShader.loadShadowShader(mDepthMapProgram.getProgram());
     }
 
     @Override
@@ -244,7 +244,7 @@ public class ShadowRenderer implements GLSurfaceView.Renderer {
         System.arraycopy(tempResultMatrix, 0, mLightMvpMatrix_staticShapes, 0, 16);
 
         // Pass in the combined matrix.
-        GLES30.glUniformMatrix4fv(ViewingShader.shadow_mvpMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
+        GLES30.glUniformMatrix4fv(ShadowViewingShader.shadow_mvpMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
 
         // Render all stationary shapes on scene
         //mPlane.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
@@ -261,8 +261,8 @@ public class ShadowRenderer implements GLSurfaceView.Renderer {
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
 
         //pass stepsize to map nearby points properly to depth map texture - used in PCF algorithm
-        GLES30.glUniform1f(ViewingShader.scene_mapStepXUniform, (float) (1.0 / mShadowMapWidth));
-        GLES30.glUniform1f(ViewingShader.scene_mapStepYUniform, (float) (1.0 / mShadowMapHeight));
+        GLES30.glUniform1f(ShadowViewingShader.scene_mapStepXUniform, (float) (1.0 / mShadowMapWidth));
+        GLES30.glUniform1f(ShadowViewingShader.scene_mapStepYUniform, (float) (1.0 / mShadowMapHeight));
 
         float[] tempResultMatrix = new float[16];
 
@@ -279,36 +279,36 @@ public class ShadowRenderer implements GLSurfaceView.Renderer {
         System.arraycopy(tempResultMatrix, 0, mMVMatrix, 0, 16);
 
         //pass in MV Matrix as uniform
-        GLES30.glUniformMatrix4fv(ViewingShader.scene_mvMatrixUniform, 1, false, mMVMatrix, 0);
+        GLES30.glUniformMatrix4fv(ShadowViewingShader.scene_mvMatrixUniform, 1, false, mMVMatrix, 0);
 
         //calculate Normal Matrix as uniform (invert transpose MV)
         Matrix.invertM(tempResultMatrix, 0, mMVMatrix, 0);
         Matrix.transposeM(mNormalMatrix, 0, tempResultMatrix, 0);
 
         //pass in Normal Matrix as uniform
-        GLES30.glUniformMatrix4fv(ViewingShader.scene_normalMatrixUniform, 1, false, mNormalMatrix, 0);
+        GLES30.glUniformMatrix4fv(ShadowViewingShader.scene_normalMatrixUniform, 1, false, mNormalMatrix, 0);
 
         //calculate MVP matrix
         Matrix.multiplyMM(tempResultMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
         System.arraycopy(tempResultMatrix, 0, mMVPMatrix, 0, 16);
 
         //pass in MVP Matrix as uniform
-        GLES30.glUniformMatrix4fv(ViewingShader.scene_mvpMatrixUniform, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(ShadowViewingShader.scene_mvpMatrixUniform, 1, false, mMVPMatrix, 0);
 
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mActualLightPosition, 0);
         //pass in light source position
-        GLES30.glUniform3f(ViewingShader.scene_lightPosUniform, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+        GLES30.glUniform3f(ShadowViewingShader.scene_lightPosUniform, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
         Matrix.multiplyMM(depthBiasMVP, 0, bias, 0, mLightMvpMatrix_staticShapes, 0);
         System.arraycopy(depthBiasMVP, 0, mLightMvpMatrix_staticShapes, 0, 16);
 
         //MVP matrix that was used during depth map render
-        GLES30.glUniformMatrix4fv(ViewingShader.scene_schadowProjMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
+        GLES30.glUniformMatrix4fv(ShadowViewingShader.scene_schadowProjMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
 
         //pass in texture where depth map is stored
         GLES30.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES30.glBindTexture(GLES20.GL_TEXTURE_2D, renderTextureId[0]);
-        GLES30.glUniform1i(ViewingShader.scene_textureUniform, 1);
+        GLES30.glUniform1i(ShadowViewingShader.scene_textureUniform, 1);
 
         // mSmallCube0.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute, ViewingShader.scene_colorAttribute, false);
     }
