@@ -26,12 +26,12 @@ public class SingleTilePave {
     private TileDescription tileDescription; // 铺砖材质，必须为单张
     private boolean skewTile; // 是否斜铺
     private int direction; // 铺砖起始方向
-    private double gap; // 砖缝厚度
+    private float gap; // 砖缝厚度
     private TilesResult tilesResult; // 保存结果对象
     private NSGPCManager nsGpcManager; // 铺砖管理对象
 
     public SingleTilePave(Context context, ArrayList<Point> pointsList, TileDescription tileDescription
-            , boolean skewTile, int direction, double gap, NSGPCManager nsGpcManager, TilesResult tilesResult) {
+            , boolean skewTile, int direction, float gap, NSGPCManager nsGpcManager, TilesResult tilesResult) {
         this.mContext = context;
         this.pointsList = pointsList;
         this.tileDescription = tileDescription;
@@ -53,7 +53,7 @@ public class SingleTilePave {
         int tileWidth = tileDescription.getTileWidth(0);
         int tileHeight = tileDescription.getTileHeight(0);
         ArrayList<geom.Point> geomList = pointList.toGeomPointList();
-        GPCManager gpcManager = new GPCManager(geomList, tileWidth, tileHeight, (float) gap, (float) gap,
+        GPCManager gpcManager = new GPCManager(geomList, tileWidth, tileHeight, gap, gap,
                 direction, skewTile ? GPCConfig.TILT : GPCConfig.STRAIGHT);
         // 实质砖
         TileInfoList mTileInfoList = gpcManager.getTileInfoList();

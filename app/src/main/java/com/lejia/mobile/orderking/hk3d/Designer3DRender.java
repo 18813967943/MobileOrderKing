@@ -5,7 +5,6 @@ import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 import android.util.Log;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
@@ -13,14 +12,9 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas_2d.DummyGround;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
-import com.lejia.mobile.orderking.hk3d.datas_2d.FurnitureMatrixs;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Grassplot;
 import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Subset;
-import com.lejia.mobile.orderking.hk3d.datas_2d.WallFacade;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 
 import java.util.ArrayList;
@@ -55,12 +49,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
      */
     private int mDisplayWidth;
     private int mDisplayHeight;
-
-    /**
-     * 阴影视图宽高
-     */
-    private int mShadowMapWidth;
-    private int mShadowMapHeight;
 
     // 深度
     private float near = 1.0f;
@@ -106,18 +94,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
     // 当前渲染状态
     private int rendererState = RendererState.STATE_2D;
 
-    /**
-     * 房间外地面
-     */
-    private Grassplot grassplot;
-
     public Designer3DRender(Context context, OnRenderStatesListener onRenderStatesListener) {
         this.mContext = context;
         this.houseDatasManager = new HouseDatasManager(mContext);
         this.dummyGround = new DummyGround(mContext);
         this.touchSelectedManager = new TouchSelectedManager(mContext, new ArrayList<RendererObject>());
         this.onRenderStatesListener = onRenderStatesListener;
-        this.grassplot = new Grassplot();
     }
 
     // 获取所有数据管理对象
@@ -140,57 +122,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         ViewingShader.loadShadowShader(mContext);
     }
 
-    /**
-     * Sets up the framebuffer and renderbuffer to render to texture
-     */
-    public void generateShadowFBO() {
-        mShadowMapWidth = Math.round(mDisplayWidth);
-        mShadowMapHeight = Math.round(mDisplayHeight);
-
-        fboId = new int[1];
-        depthTextureId = new int[1];
-        renderTextureId = new int[1];
-
-        // create a framebuffer object
-        GLES30.glGenFramebuffers(1, fboId, 0);
-
-        // create render buffer and bind 16-bit depth buffer
-        GLES30.glGenRenderbuffers(1, depthTextureId, 0);
-        GLES30.glBindRenderbuffer(GLES30.GL_RENDERBUFFER, depthTextureId[0]);
-        GLES30.glRenderbufferStorage(GLES30.GL_RENDERBUFFER, GLES30.GL_DEPTH_COMPONENT16, mShadowMapWidth, mShadowMapHeight);
-
-        // Try to use a texture depth component
-        GLES30.glGenTextures(1, renderTextureId, 0);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, renderTextureId[0]);
-
-        // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF. Using GL_NEAREST
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_NEAREST);
-
-        // Remove artifact on the edges of the shadowmap
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
-
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fboId[0]);
-        // Use a depth texture
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_DEPTH_COMPONENT, mShadowMapWidth, mShadowMapHeight,
-                0, GLES30.GL_DEPTH_COMPONENT, GLES30.GL_UNSIGNED_INT, null);
-        // Attach the depth texture to FBO depth attachment point
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_DEPTH_ATTACHMENT, GLES30.GL_TEXTURE_2D, renderTextureId[0], 0);
-        // check FBO status
-        int FBOstatus = GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER);
-        if (FBOstatus != GLES30.GL_FRAMEBUFFER_COMPLETE) {
-            Log.e(TAG, "GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO");
-            throw new RuntimeException("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO");
-        }
-    }
-
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mDisplayWidth = width;
         mDisplayHeight = height;
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-        generateShadowFBO();
+        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         if (mDisplayHeight == 0)
             mDisplayHeight = 1;
         float ratio = (float) mDisplayWidth / mDisplayHeight;
@@ -206,45 +143,20 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        // 根据旋转数值，旋转光的位置
-        long elapsedMilliSec = SystemClock.elapsedRealtime();
-        long rotationCounter = elapsedMilliSec % 12000L;
-        float lightRotationDegree = (360.0f / 12000.0f) * ((int) rotationCounter);
-        float[] rotationMatrix = new float[16];
-        Matrix.setIdentityM(rotationMatrix, 0);
-        Matrix.rotateM(rotationMatrix, 0, lightRotationDegree, 0.0f, 0.0f, 1.0f);
-        Matrix.multiplyMV(LightMatrixs.mActualLightPosition, 0, rotationMatrix, 0, LightMatrixs.mLightPosModel, 0);
-       // LightMatrixs.mActualLightPosition = LightMatrixs.mLightPosModel.clone();
         // set model view scale、translate、rotate，set the init matrixs
         setMineModelViews();
         // 改变摄像机位置及状态
         //Set view matrix from light source position
-        Matrix.setLookAtM(LightMatrixs.mLightViewMatrix, 0,
-                //lightX, lightY, lightZ,
-                LightMatrixs.mActualLightPosition[0], LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
-                //lookX, lookY, lookZ,
-                //look in direction -y
-                LightMatrixs.mActualLightPosition[0], -LightMatrixs.mActualLightPosition[1], LightMatrixs.mActualLightPosition[2],
-                //upX, upY, upZ
-                //up vector in the direction of axisY
-                0, 1, 0);
         Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyesX, eyesY, eyesZ,
                 lookX, lookY, lookZ, 0, 1, 0);
-        //------------------------- render depth map --------------------------
-        // shadow generation to avoid self shadowing
-        //GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        renderShadowMap();
-
         //------------------------- render scene ------------------------------
         // normal render
         renderScene();
-
         // release datas
         if (release) {
             release = false;
             release();
         }
-
         // Print openGL errors to console
         int debugInfo = GLES30.glGetError();
         if (debugInfo != GLES30.GL_NO_ERROR) {
@@ -253,93 +165,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         }
     }
 
-    // 默认的阴影渲染矩阵内容
-    private void shadowMatrixs() {
-        float[] tempResultMatrix = new float[16];
-        // View matrix * Model matrix value is stored
-        Matrix.multiplyMM(LightMatrixs.mLightMvpMatrix_staticShapes, 0, LightMatrixs.mLightViewMatrix
-                , 0, ViewingMatrixs.mModelMatrix, 0);
-        // Model * view * projection matrix stored and copied for use at rendering from camera point of view
-        Matrix.multiplyMM(tempResultMatrix, 0, LightMatrixs.mLightProjectionMatrix, 0,
-                LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-        System.arraycopy(tempResultMatrix, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0, 16);
-        // Pass in the combined matrix.
-        GLES30.glUniformMatrix4fv(ViewingShader.shadow_mvpMatrixUniform, 1, false, LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-    }
-
-    /**
-     * TODO 阴影渲染
-     */
-    private void renderShadowMap() {
-        // bind the generated framebuffer
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fboId[0]);
-        GLES30.glViewport(0, 0, mShadowMapWidth, mShadowMapHeight);
-        // Clear color and buffers
-        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT | GLES30.GL_COLOR_BUFFER_BIT);
-        // Start using the shader
-        GLES30.glUseProgram(ViewingShader.shadowProgram);
-        shadowMatrixs();
-        // Render all stationary shapes on scene
-        if (houseDatasManager != null) {
-            try {
-                boolean not2D = RendererState.isNot2D();
-                if (not2D) {
-                    if (grassplot != null) { // 草地
-                        grassplot.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
-                    }
-                    ArrayList<WallFacade> wallOuterFacadeList = houseDatasManager.getWallOuterFacadesList();
-                    if (wallOuterFacadeList != null && wallOuterFacadeList.size() > 0) {
-                        for (int i = 0; i < wallOuterFacadeList.size(); i++) {
-                            WallFacade wallFacade = wallOuterFacadeList.get(i);
-                            wallFacade.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
-                        }
-                    }
-                }
-                // 绘制房间数据
-                ArrayList<House> housesList = houseDatasManager.getHousesList();
-                if (housesList != null && housesList.size() > 0) {
-                    for (int i = housesList.size() - 1; i > -1; i--) {
-                        House house = housesList.get(i);
-                        house.render(ViewingShader.shadow_positionAttribute, 0, 0, true);
-                    }
-                }
-                // 绘制模型
-                if (not2D) {
-                    // 绘制模型
-                    ArrayList<Furniture> furnitureArrayList = houseDatasManager.getFurnitureArrayList();
-                    if (furnitureArrayList != null && furnitureArrayList.size() > 0) {
-                        for (int i = 0; i < furnitureArrayList.size(); i++) {
-                            Furniture furniture = furnitureArrayList.get(i);
-                            Subset subset = furniture.getSubset();
-                            ArrayList<FurnitureMatrixs> furnitureMatrixsList = furniture.getFurnitureMatrixsList();
-                            if (furnitureMatrixsList != null && furnitureMatrixsList.size() > 0) {
-                                for (int j = 0; j < furnitureMatrixsList.size(); j++) {
-                                    if (subset != null) {
-                                        FurnitureMatrixs furnitureMatrixs = furnitureMatrixsList.get(j);
-                                        furnitureMatrixs.initMatrix(true, renderTextureId[0]);
-                                        subset.render(furnitureMatrixs, ViewingShader.shadow_positionAttribute, 0,
-                                                0, true);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // 结束恢复矩阵
-                shadowMatrixs();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     // 实景常态渲染矩阵
     private void sencesMatrixs() {
-        //pass stepsize to map nearby points properly to depth map texture - used in PCF algorithm
-        GLES30.glUniform1f(ViewingShader.scene_mapStepXUniform, (float) (1.0 / mShadowMapWidth));
-        GLES30.glUniform1f(ViewingShader.scene_mapStepYUniform, (float) (1.0 / mShadowMapHeight));
-
         float[] tempResultMatrix = new float[16];
         float bias[] = new float[]{
                 0.5f, 0.0f, 0.0f, 0.0f,
@@ -389,14 +216,10 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         // bind default framebuffer
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES30.glUseProgram(ViewingShader.mProgram);
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
         sencesMatrixs();
-        //pass in texture where depth map is stored
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, renderTextureId[0]);
-        GLES30.glUniform1i(ViewingShader.scene_textureUniform, 1);
-
         // draw all views
         if (houseDatasManager != null) {
             try {
@@ -408,20 +231,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     GLES30.glEnable(GLES30.GL_DEPTH_TEST);
                 }
                 boolean isNot2D = RendererState.isNot2D();
-                if (isNot2D) {
-                    if (grassplot != null) { // 草地
-                        grassplot.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                , ViewingShader.scene_colorAttribute, false);
-                    }
-                    ArrayList<WallFacade> wallOuterFacadeList = houseDatasManager.getWallOuterFacadesList();
-                    if (wallOuterFacadeList != null && wallOuterFacadeList.size() > 0) {
-                        for (int i = 0; i < wallOuterFacadeList.size(); i++) {
-                            WallFacade wallFacade = wallOuterFacadeList.get(i);
-                            wallFacade.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                    , ViewingShader.scene_colorAttribute, false);
-                        }
-                    }
-                }
                 ArrayList<House> housesList = houseDatasManager.getHousesList();
                 if (housesList != null && housesList.size() > 0) {
                     for (int i = 0; i < housesList.size(); i++) {
@@ -452,32 +261,6 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                         }
                     }
                 }
-                // 非平面
-                else {
-                    // 绘制模型
-                    ArrayList<Furniture> furnitureArrayList = houseDatasManager.getFurnitureArrayList();
-                    if (furnitureArrayList != null && furnitureArrayList.size() > 0) {
-                        for (int i = 0; i < furnitureArrayList.size(); i++) {
-                            Furniture furniture = furnitureArrayList.get(i);
-                            Subset subset = furniture.getSubset();
-                            ArrayList<FurnitureMatrixs> furnitureMatrixsList = furniture.getFurnitureMatrixsList();
-                            if (furnitureMatrixsList != null && furnitureMatrixsList.size() > 0) {
-                                for (int j = 0; j < furnitureMatrixsList.size(); j++) {
-                                    if (subset != null) {
-                                        FurnitureMatrixs furnitureMatrixs = furnitureMatrixsList.get(j);
-                                        furnitureMatrixs.initMatrix(false, renderTextureId[0]);
-                                        subset.render(furnitureMatrixs, ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                                , ViewingShader.scene_colorAttribute, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // 结束恢复矩阵
-                sencesMatrixs();
-                // 绘制模型选中效果
-
             } catch (Exception e) {
                 e.printStackTrace();
             }

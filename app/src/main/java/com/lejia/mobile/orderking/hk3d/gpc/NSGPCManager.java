@@ -45,7 +45,7 @@ public class NSGPCManager {
     /**
      * 砖缝厚度
      */
-    private int brickGap = 2;
+    private float brickGap = 0.2f;
 
     /**
      * 铺砖结果对象
@@ -122,12 +122,12 @@ public class NSGPCManager {
      *
      * @param brickGap
      */
-    public void setBrickGap(int brickGap) {
+    public void setBrickGap(float brickGap) {
         this.brickGap = brickGap;
         tile();
     }
 
-    public int getBrickGap() {
+    public float getBrickGap() {
         return brickGap;
     }
 

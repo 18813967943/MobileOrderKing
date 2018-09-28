@@ -1,5 +1,6 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
@@ -9,6 +10,7 @@ import android.opengl.GLUtils;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Texture;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.TexturesCache3D;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.io.InputStream;
@@ -33,6 +35,9 @@ public abstract class RendererObject {
 
     public float[] normalTexcoord; // 法线纹理uv
     public FloatBuffer normalTexcoordBuffer; // 法线纹理uv字节缓存
+
+    public float[] colors; // 颜色
+    public FloatBuffer colorsBuffer; // 颜色字节缓存
 
     public short[] indices; // 索引
     public ShortBuffer indicesBuffer; // 索引字节缓存
@@ -89,6 +94,16 @@ public abstract class RendererObject {
     }
 
     /**
+     * 获取材质缓存
+     *
+     * @param key 对象唯一编码(UUID或模型材质编码)
+     * @return 返回缓存对象
+     */
+    public Texture getTexture3DCache(String key) {
+        return TexturesCache3D.get(key);
+    }
+
+    /**
      * 创建材质纹理对应编号及缓存
      *
      * @param key              唯一身份证
@@ -122,6 +137,46 @@ public abstract class RendererObject {
             GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
             // 刷新缓存
             TexturesCache.put(key, textureId[0], bitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return textureId[0];
+    }
+
+    /**
+     * 创建材质纹理对应编号及缓存
+     *
+     * @param key              唯一身份证
+     * @param bitmap           对应贴图
+     * @param fromReplaceTiles 是否来自于材质替换
+     * @return 返回材质纹理对应渲染编号
+     */
+    public int createTexture3DIdAndCache(String key, Bitmap bitmap, boolean fromReplaceTiles) {
+        if (TextUtils.isTextEmpity(key) || bitmap == null || bitmap.isRecycled())
+            return -1;
+        int[] textureId = new int[1];
+        try {
+            Texture texture = TexturesCache3D.get(key);
+            if (texture != null) {
+                // 无替换铺砖操作
+                if (!fromReplaceTiles) {
+                    return texture.textureId;
+                }
+                // 刷新铺砖材质，先删除当前铺砖材质
+                else {
+                    GLES30.glDeleteTextures(1, new int[]{texture.textureId}, 0);
+                }
+            }
+            GLES30.glGenTextures(1, textureId, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId[0]);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, bitmap, 0);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+            GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
+            // 刷新缓存
+            TexturesCache3D.put(key, textureId[0], bitmap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -175,7 +230,7 @@ public abstract class RendererObject {
             return null;
         Bitmap bitmap = null;
         try {
-            InputStream fis = OrderKingApplication.getInstant().getAssets().open(path);
+            InputStream fis = getContext().getAssets().open(path);
             bitmap = BitmapFactory.decodeStream(fis);
             fis.close();
         } catch (Exception e) {
@@ -192,10 +247,24 @@ public abstract class RendererObject {
     }
 
     /**
+     * 刷新三维实景画布
+     */
+    public void refreshShadowRender() {
+        ((OrderKingApplication) OrderKingApplication.getInstant()).render3D();
+    }
+
+    /**
      * 获取渲染数据管理对象
      */
     public HouseDatasManager getHouseDatasManager() {
         return ((OrderKingApplication) OrderKingApplication.getInstant()).getDesigner3DSurfaceView().getDesigner3DRender().getHouseDatasManager();
+    }
+
+    /**
+     * 获取上下文
+     */
+    public Context getContext() {
+        return OrderKingApplication.getInstant();
     }
 
     /**

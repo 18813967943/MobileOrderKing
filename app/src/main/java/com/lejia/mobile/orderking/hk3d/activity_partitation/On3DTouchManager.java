@@ -3,9 +3,10 @@ package com.lejia.mobile.orderking.hk3d.activity_partitation;
 import android.content.Context;
 import android.view.MotionEvent;
 
-import com.lejia.mobile.orderking.hk3d.Designer3DRender;
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowRenderer;
 
 /**
  * Author by HEKE
@@ -18,15 +19,15 @@ public class On3DTouchManager {
     private Context mContext;
     private TilesManager tilesManager;
     private Designer3DManager designer3DManager;
-    private Designer3DRender designer3DRender;
+    private ShadowRenderer shadowRenderer;
     private TouchSelectedManager touchSelectedManager;
 
     public On3DTouchManager(Context context, TilesManager tilesManager, Designer3DManager designer3DManager) {
         this.mContext = context;
         this.tilesManager = tilesManager;
         this.designer3DManager = designer3DManager;
-        this.designer3DRender = this.designer3DManager.getDesigner3DRender();
-        this.touchSelectedManager = this.designer3DRender.getTouchSelectedManager();
+        this.shadowRenderer = this.designer3DManager.getT3dLayout().getDesignerShadow3DSurfaceView().getDesignerShadow3DRender();
+        this.touchSelectedManager = this.designer3DManager.getDesigner3DRender().getTouchSelectedManager();
     }
 
     // 按下点
@@ -69,66 +70,81 @@ public class On3DTouchManager {
      * @param event
      */
     public void touch(MotionEvent event) {
-        int fc = event.getPointerCount();
-        if (fc == 1) {
-            if (muchFCT) {
-                muchFCT = false;
-                return;
-            }
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    singleFCT = true;
-                    if (down == null) {
-                        down = new Point(event.getX(), event.getY());
-                    } else {
-                        down.setXY(event.getX(), event.getY());
-                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (move == null) {
-                        move = new Point(event.getX(), event.getY());
-                    } else {
-                        move.setXY(event.getX(), event.getY());
-                    }
-                    double dist = move.dist(down);
-                    if (dist > 24 && singleFCT) {
-                        float x = (float) (move.x - down.x);
-                        float y = (float) (move.y - down.y);
-                        if (Math.abs(x) > Math.abs(y)) {
-                            designer3DRender.setTransLate(x, 0);
+        try {
+            int fc = event.getPointerCount();
+            if (fc == 1) {
+                if (muchFCT) {
+                    muchFCT = false;
+                    return;
+                }
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        singleFCT = true;
+                        if (down == null) {
+                            down = new Point(event.getX(), event.getY());
                         } else {
-                            designer3DRender.setTransLate(0, -y);
+                            down.setXY(event.getX(), event.getY());
                         }
-                        down.setXY(move.x, move.y);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    singleFCT = false;
-                    break;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        if (move == null) {
+                            move = new Point(event.getX(), event.getY());
+                        } else {
+                            move.setXY(event.getX(), event.getY());
+                        }
+                        double dist = move.dist(down);
+                        if (dist > 24 && singleFCT) {
+                            float x = (float) (move.x - down.x);
+                            float y = (float) (move.y - down.y);
+                            // 轴侧
+                            boolean axis = !RendererState.isNot25D();
+                            if (axis) {
+                                if (Math.abs(x) > Math.abs(y)) {
+                                    shadowRenderer.setTransLate(x, 0);
+                                } else {
+                                    shadowRenderer.setTransLate(0, -y);
+                                }
+                            }
+                            // 进入房间
+                            boolean gotoHouse = !RendererState.isNot3D();
+                            if (gotoHouse) {
+                                if (Math.abs(x) > Math.abs(y)) {
+                                    shadowRenderer.turnAround(x < 0);
+                                }
+                            }
+                            down.setXY(move.x, move.y);
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        singleFCT = false;
+                        break;
+                }
+            } else if (fc > 1) {
+                muchFCT = true;
+                switch (event.getAction() & event.getActionMasked()) {
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        downDist = getTwoFinggerDistance(event);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        moveDist = getTwoFinggerDistance(event);
+                        // 有效变化距离
+                        if (Math.abs(moveDist - downDist) > 24) {
+                            double poor = moveDist - downDist;
+                            // 缩小
+                            if (poor < 0) {
+                                shadowRenderer.move(false, 0.05f);
+                            }
+                            // 放大
+                            else if (poor > 0) {
+                                shadowRenderer.move(true, 0.05f);
+                            }
+                            downDist = moveDist; // 重置操作
+                        }
+                        break;
+                }
             }
-        } else if (fc > 1) {
-            muchFCT = true;
-            switch (event.getAction() & event.getActionMasked()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    downDist = getTwoFinggerDistance(event);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    moveDist = getTwoFinggerDistance(event);
-                    // 有效变化距离
-                    if (Math.abs(moveDist - downDist) > 24) {
-                        double poor = moveDist - downDist;
-                        // 缩小
-                        if (poor < 0) {
-                            designer3DRender.move(false, 0.005f);
-                        }
-                        // 放大
-                        else if (poor > 0) {
-                            designer3DRender.move(true, 0.005f);
-                        }
-                        downDist = moveDist; // 重置操作
-                    }
-                    break;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

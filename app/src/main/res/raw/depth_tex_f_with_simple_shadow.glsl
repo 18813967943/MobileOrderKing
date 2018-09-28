@@ -18,6 +18,7 @@ uniform float uyPixelOffset;
 
 uniform sampler2D s_baseMap; // 正常模型或面的材质纹理通道编号
 uniform float texture_flags; // 颜色使用标志
+uniform float room_light; // 室内灯光标志
   
 // from vertex shader - values get interpolated
 in vec3 vPosition;
@@ -26,23 +27,33 @@ in vec3 vNormal;
   
 // shadow coordinates
 in vec4 vShadowCoord;
-
 in vec2 texcoord0;
 
 out vec4 outColor;
 
 void main()                    		
-{        
+{
+    bool roomLisght = (room_light == 1.0);
 	vec3 lightVec = uLightPos - vPosition;
 	lightVec = normalize(lightVec);
-   	
    	// Phong shading with diffuse and ambient component
-	float diffuseComponent = max(0.0,dot(lightVec, vNormal) );
-	float ambientComponent = 0.3;
-
+	float diffuseComponent = max(0.0,dot(lightVec, vNormal));
+	vec4 diffuseIntensity; // 散射光强度
+	vec4 ambientIntensity; // 环境光强度
+	vec4 diffuseV = vec4(1.0,1.0,1.0,1.0);
+	vec4 ambientV = vec4(1.0,1.0,1.0,1.0);
+	if(roomLisght){ // 室内散射光强度调整
+	   diffuseIntensity = vec4(0.6,0.6,0.6,1.0);
+	   ambientIntensity = vec4(0.35,0.35,0.35,1.0);
+	}else{
+	   diffuseIntensity = vec4(1.0,1.0,1.0,1.0);
+	   ambientIntensity = vec4(0.5,0.5,0.5,1.0);
+	}
+	diffuseV = diffuseComponent*diffuseIntensity; // 散射光
+	ambientV = ambientIntensity*ambientV; // 环境光
+	vec4 specularV = vec4(0.2,0.2,0.2,1.0); // 镜面光
  	// Shadow
    	float shadow = 1.0;
-
 	//if the fragment is not behind light view frustum
 	if (vShadowCoord.w > 0.0) {
 
@@ -62,14 +73,12 @@ void main()
 		 shadow = (shadow * 0.8) + 0.2;
 	}
 	// Final output color with shadow and lighting
-	bool use_texture = (texture_flags==1.0);
+	bool use_texture = (texture_flags == 1.0);
 	if(use_texture){
 	  vec4 toutColor = texture(s_baseMap,texcoord0);
-	   // outColor = (vColor * (diffuseComponent + ambientComponent) * shadow);
-	  // outColor = toutColor*outColor;
-	  outColor = toutColor*(diffuseComponent + ambientComponent)*shadow;
+	  outColor = toutColor*diffuseV*shadow + toutColor*ambientV + toutColor*specularV;
 	}else{
-       outColor = (vColor * (diffuseComponent + ambientComponent) * shadow);
+       outColor = (vColor * diffuseComponent + vColor*ambientV) * shadow;
     }
 
 }                                                                     	

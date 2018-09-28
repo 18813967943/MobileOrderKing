@@ -93,8 +93,6 @@ public class Wall extends RendererObject {
                 GLES30.glUniform1f(ViewingShader.scene_use_light, 0);
             }
             GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
-        } else { // 绘制三维墙体
-
         }
     }
 

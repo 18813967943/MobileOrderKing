@@ -8,6 +8,7 @@ import android.view.WindowManager;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
+import com.lejia.mobile.orderking.hk3d.datas_3d.DesignerShadow3DSurfaceView;
 import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
 
@@ -45,9 +46,14 @@ public class OrderKingApplication extends Application {
     private SharedPreferences sp;
 
     /**
-     * 三维渲染控件
+     * 三维平面数据渲染控件
      */
     private Designer3DSurfaceView designer3DSurfaceView;
+
+    /**
+     * 三维3D数据渲染控件
+     */
+    private DesignerShadow3DSurfaceView designerShadow3DSurfaceView;
 
     /**
      * 单例程序上下文内容
@@ -199,6 +205,31 @@ public class OrderKingApplication extends Application {
         if (designer3DSurfaceView == null)
             return;
         designer3DSurfaceView.getDesigner3DRender().requestRelease();
+    }
+
+    /**
+     * 获取三维3D数据渲染对象控件
+     */
+    public DesignerShadow3DSurfaceView getDesignerShadow3DSurfaceView() {
+        return designerShadow3DSurfaceView;
+    }
+
+    /**
+     * 绑定三维3D数据渲染对象控件
+     *
+     * @param designerShadow3DSurfaceView
+     */
+    public void setDesignerShadow3DSurfaceView(DesignerShadow3DSurfaceView designerShadow3DSurfaceView) {
+        this.designerShadow3DSurfaceView = designerShadow3DSurfaceView;
+    }
+
+    /**
+     * 渲染刷新渲染控件
+     */
+    public void render3D() {
+        if (designerShadow3DSurfaceView == null)
+            return;
+        designerShadow3DSurfaceView.requestRender();
     }
 
     /**

@@ -380,7 +380,7 @@ public class TilesManager {
                             NSGPCManager nsgpcManager = gapsSelectedGround.getGpcManager();
                             if (nsgpcManager != null) {
                                 tileGapsSettingDialog.setGapsColor(nsgpcManager.getGapsColor());
-                                tileGapsSettingDialog.setGapsSize(nsgpcManager.getBrickGap());
+                                tileGapsSettingDialog.setGapsSize((int) (nsgpcManager.getBrickGap() * 10));
                             }
                         }
                         tileGapsSettingDialog.autoShowOrHide();
@@ -434,7 +434,7 @@ public class TilesManager {
             if (ground != null) {
                 NSGPCManager nsgpcManager = ground.getGpcManager();
                 if (nsgpcManager != null) {
-                    nsgpcManager.setBrickGap(size);
+                    nsgpcManager.setBrickGap(size * 0.1f);
                 }
             }
         }

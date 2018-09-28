@@ -9,6 +9,8 @@ import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
 import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.Ground3D;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.WallSpace;
 import com.seisw.util.geom.Poly;
 import com.seisw.util.geom.PolyDefault;
 
@@ -61,12 +63,17 @@ public abstract class House {
     /**
      * 房间立面
      */
-    public ArrayList<WallFacade> wallFacadesList;
+    public ArrayList<WallSpace> wallSpacesList;
 
     /**
      * 渲染地面对象
      */
     public Ground ground;
+
+    /**
+     * 对应三维地面渲染对象
+     */
+    public Ground3D ground3D;
 
     /**
      * 选中区域
@@ -96,14 +103,14 @@ public abstract class House {
     public House(Context context) {
         this.mContext = context;
         this.wallsList = new ArrayList<>();
-        this.wallFacadesList = new ArrayList<>();
+        this.wallSpacesList = new ArrayList<>();
     }
 
     public House(Context context, boolean isLineSeg) {
         this.mContext = context;
         this.isLineSeg = isLineSeg;
         this.wallsList = new ArrayList<>();
-        this.wallFacadesList = new ArrayList<>();
+        this.wallSpacesList = new ArrayList<>();
     }
 
     /**
@@ -245,15 +252,6 @@ public abstract class House {
                         }
                     }
                 }
-            } else { // 三维立面
-                if (wallFacadesList != null) {
-                    for (int i = 0; i < wallFacadesList.size(); i++) {
-                        WallFacade wallFacade = wallFacadesList.get(i);
-                        if (wallFacade != null) {
-                            wallFacade.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
-                        }
-                    }
-                }
             }
             if (ground != null) {
                 ground.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition);
@@ -284,11 +282,14 @@ public abstract class House {
     public void createRenderer() {
         try {
             wallsList.clear();
-            if (wallFacadesList == null) {
-                wallFacadesList = new ArrayList<>();
+            if (wallSpacesList == null) {
+                wallSpacesList = new ArrayList<>();
             }
-            wallFacadesList.clear();
+            wallSpacesList.clear();
             int size = innerPointList.size();
+            int hashCode = hashCode();
+            int cellHeight = 280;
+            int index = 0;
             for (int i = 0; i < size; i++) {
                 Point inow = innerPointList.getIndexAt(i);
                 Point onow = outerPointList.getIndexAt(i);
@@ -327,18 +328,22 @@ public abstract class House {
                 ArrayList<Point> innerList = new ArrayList<>();
                 innerList.add(inow.copy());
                 innerList.add(inext.copy());
-                wallFacadesList.add(new WallFacade(WallFacade.FLAG_INTER, 1, innerList, this));
+                wallSpacesList.add(new WallSpace(WallSpace.FLAG_INNER, 1, cellHeight, innerList, hashCode, index++));
                 // 非闭合房间外墙面直接绘制
                 if (!isWallClosed) {
                     ArrayList<Point> outerList = new ArrayList<>();
                     outerList.add(onow.copy());
                     outerList.add(onext.copy());
-                    wallFacadesList.add(new WallFacade(WallFacade.FLAG_OUTER, 1, outerList, this));
+                    wallSpacesList.add(new WallSpace(WallSpace.FLAG_OUTER, 1, cellHeight, outerList, hashCode, index++));
                 }
                 // 墙顶部厚度面
                 if (pointsList != null && pointsList.size() > 0) {
-                    wallFacadesList.add(new WallFacade(WallFacade.FLAG_TOP_THICKNESS, 1, new PointList(pointsList).copy(), this));
+                    wallSpacesList.add(new WallSpace(WallSpace.FLAG_PLY, 1, cellHeight, new PointList(pointsList).copy(), hashCode, index++));
                 }
+            }
+            // 闭合房间，增加房间顶面
+            if (isWallClosed) {
+                wallSpacesList.add(new WallSpace(WallSpace.FLAG_ROOF, 1, cellHeight, innerPointList.copy(), hashCode, index++));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -354,6 +359,9 @@ public abstract class House {
         ground = new Ground(innerPointList, this); // 地面
         selector = new Selector(innerPointList); // 选中框
         houseName = new HouseName(innerPointList); // 房间名称
+        // 创建对应三维的地面
+        ground3D = new Ground3D(ground);
+        ground.setGround3D(ground3D);
     }
 
     /**
@@ -415,8 +423,8 @@ public abstract class House {
             if (ground != null) {
                 rendererObjectsList.add(ground);
             }
-            if (wallFacadesList != null) {
-                rendererObjectsList.addAll(wallFacadesList);
+            if (wallSpacesList != null) {
+                rendererObjectsList.addAll(wallSpacesList);
             }
         } else {
             if (wallsList != null && wallsList.size() > 0) {
@@ -437,9 +445,6 @@ public abstract class House {
      */
     public ArrayList<RendererObject> getTotalRendererObjectList() {
         ArrayList<RendererObject> rendererObjectsList = new ArrayList<>();
-        if (wallFacadesList != null) {
-            rendererObjectsList.addAll(wallFacadesList);
-        }
         if (wallsList != null && wallsList.size() > 0) {
             rendererObjectsList.addAll(wallsList);
         }
@@ -455,12 +460,12 @@ public abstract class House {
     /**
      * 获取所有内外立面
      */
-    public ArrayList<WallFacade> getCanDigholeList() {
-        if (wallFacadesList == null || wallFacadesList.size() == 0)
+    public ArrayList<WallSpace> getCanDigholeList() {
+        if (wallSpacesList == null || wallSpacesList.size() == 0)
             return null;
-        ArrayList<WallFacade> list = new ArrayList<>();
-        for (WallFacade wallFacade : wallFacadesList) {
-            if (wallFacade.getFlag() != WallFacade.FLAG_TOP_THICKNESS) {
+        ArrayList<WallSpace> list = new ArrayList<>();
+        for (WallSpace wallFacade : wallSpacesList) {
+            if (wallFacade.getFlag() != WallSpace.FLAG_PLY) {
                 list.add(wallFacade);
             }
         }

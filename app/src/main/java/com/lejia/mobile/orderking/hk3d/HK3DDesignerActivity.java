@@ -129,10 +129,18 @@ public class HK3DDesignerActivity extends Activity {
                 jingzhun.setSelected(isAccurate);
                 break;
             case R.id.zhouce:
-                designer3DManager.getDesigner3DRender().toAxisSideViews();
+                if (RendererState.isNot25D()) {
+                    designer3DManager.getT3dLayout().show(RendererState.STATE_25D);
+                } else {
+                    designer3DManager.getT3dLayout().show(RendererState.STATE_2D);
+                }
                 break;
             case R.id.threed:
-                designer3DManager.getDesigner3DRender().enterInner();
+                if (RendererState.isNot3D()) {
+                    designer3DManager.getT3dLayout().show(RendererState.STATE_3D);
+                } else {
+                    designer3DManager.getT3dLayout().show(RendererState.STATE_2D);
+                }
                 break;
             case R.id.more:
                 if (moreManager == null)

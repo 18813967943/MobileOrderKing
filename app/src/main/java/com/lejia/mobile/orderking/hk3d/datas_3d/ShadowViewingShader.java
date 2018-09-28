@@ -27,7 +27,8 @@ public class ShadowViewingShader {
     public static int scene_mapStepYUniform;
     public static int scene_baseMap; // 贴图编号
     public static int scene_texture_flags; // 是否使用贴图
-    public static int scene_uv0;
+    public static int scene_uv0; // 贴图纹理
+    public static int scene_room_light; // 室内灯光
 
     // 加载着色器
     public static void loadShader(int program) {
@@ -46,6 +47,7 @@ public class ShadowViewingShader {
         scene_baseMap = GLES30.glGetUniformLocation(mProgram, "s_baseMap");
         scene_texture_flags = GLES30.glGetUniformLocation(mProgram, "texture_flags");
         scene_uv0 = GLES30.glGetAttribLocation(mProgram, "a_texCoord");
+        scene_room_light = GLES30.glGetUniformLocation(mProgram, "room_light");
     }
 
     /**

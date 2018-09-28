@@ -53,7 +53,7 @@
             android:name=".hk3d.HK3DDesignerActivity"
             android:hardwareAccelerated="true"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />

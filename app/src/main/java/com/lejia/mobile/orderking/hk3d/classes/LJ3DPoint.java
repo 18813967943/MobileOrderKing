@@ -181,6 +181,13 @@ public class LJ3DPoint implements Parcelable {
     }
 
     /**
+     * 取反数值
+     */
+    public float[] toMinusFloatValues() {
+        return new float[]{-(float) x, -(float) y, -(float) z};
+    }
+
+    /**
      * 转换为1个单位
      *
      * @param a

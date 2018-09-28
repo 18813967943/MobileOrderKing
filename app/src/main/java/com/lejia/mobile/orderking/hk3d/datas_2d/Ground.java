@@ -11,6 +11,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.Ground3D;
 import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
 import com.lejia.mobile.orderking.utils.TextUtils;
@@ -44,6 +45,9 @@ public class Ground extends RendererObject {
     private int cellSize; // 层数
     private int cellCount; // 层加载计数
     private Bitmap bitmap; // 组成位图
+
+    // 对应兼容三维地面
+    private Ground3D ground3D;
 
     private void initDatas() {
         if (pointList == null || pointList.invalid())
@@ -86,6 +90,10 @@ public class Ground extends RendererObject {
         this.house = house;
         initDatas();
         defaultLoadGroundTile();
+    }
+
+    public void setGround3D(Ground3D ground3D) {
+        this.ground3D = ground3D;
     }
 
     // 默认加载地砖
@@ -151,7 +159,6 @@ public class Ground extends RendererObject {
         }
         // 样式砖
         else {
-
         }
         // 方案砖
         return bmp;
@@ -186,6 +193,41 @@ public class Ground extends RendererObject {
         }
     };
 
+    /**
+     * 获取贴图
+     */
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    /**
+     * 获取围点
+     */
+    public float[] getVertexs() {
+        return vertexs;
+    }
+
+    /**
+     * 获取UV
+     */
+    public float[] getUV() {
+        return texcoord;
+    }
+
+    /**
+     * 获取地面编号
+     */
+    public String getUUID() {
+        return uuid;
+    }
+
+    /**
+     * 获取索引
+     */
+    public short[] getIndices() {
+        return indices;
+    }
+
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
         // 进行切割
@@ -204,6 +246,9 @@ public class Ground extends RendererObject {
                 textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
                 canDraw = true;
                 needRefreshNameTexture = true;
+                if (ground3D != null && fromReplaceTiles) {
+                    ground3D.setNeedBindTexture(true);
+                }
                 refreshRender();
             }
             // 材质贴图不为空

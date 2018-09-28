@@ -21,6 +21,7 @@ import java.util.ArrayList;
  * @time 2018/8/29 18:04
  * TODO:
  */
+@Deprecated
 public class Grassplot extends RendererObject {
 
     private ArrayList<Point> pointsList; // 原始围点

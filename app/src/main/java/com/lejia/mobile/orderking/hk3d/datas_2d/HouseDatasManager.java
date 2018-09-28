@@ -20,6 +20,7 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.FurTypes;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.GeneralFurniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SimpleWindow;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SingleDoor;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.WallSpace;
 import com.lejia.mobile.orderking.hk3d.factory.PointsSplitor;
 import com.seisw.util.geom.Poly;
 
@@ -50,7 +51,7 @@ public class HouseDatasManager {
         this.housesList = new ArrayList<>();
         this.furnituresList = new ArrayList<>();
         this.furnitureArrayList = new ArrayList<>();
-        this.wallOuterFacadesList = new ArrayList<>();
+        this.wallOuterSpacesList = new ArrayList<>();
     }
 
     /**
@@ -754,13 +755,14 @@ public class HouseDatasManager {
     /*****************************************
      *  房间外立面处理
      * ***************************************/
-    private ArrayList<WallFacade> wallOuterFacadesList;
+    private ArrayList<WallSpace> wallOuterSpacesList;
 
     public void initWallOuterFacades() {
-        wallOuterFacadesList.clear();
+        wallOuterSpacesList.clear();
         HashMap<Integer, Poly> closeMaps = PolyM.getPoliesMap();
         if (closeMaps != null && closeMaps.size() > 0) {
             Iterator<Map.Entry<Integer, Poly>> iterator = closeMaps.entrySet().iterator();
+            int index = 0;
             while (iterator.hasNext()) {
                 Map.Entry<Integer, Poly> entry = iterator.next();
                 String uuid = UUID.randomUUID().toString();
@@ -768,15 +770,16 @@ public class HouseDatasManager {
                 ArrayList<Line> linesList = new PointList(outerList).toLineList();
                 if (linesList != null && linesList.size() > 0) {
                     for (Line line : linesList) {
-                        wallOuterFacadesList.add(new WallFacade(WallFacade.FLAG_OUTER, 1, line.toPointList(), uuid));
+                        wallOuterSpacesList.add(new WallSpace(WallSpace.FLAG_OUTER, 1,
+                                280, line.toPointList(), -2, index++));
                     }
                 }
             }
         }
     }
 
-    public ArrayList<WallFacade> getWallOuterFacadesList() {
-        return wallOuterFacadesList;
+    public ArrayList<WallSpace> getWallOuterSpacesList() {
+        return wallOuterSpacesList;
     }
 
     /*****************************************
@@ -900,43 +903,8 @@ public class HouseDatasManager {
      *
      * @param wd 门窗类
      */
+    @Deprecated
     public void punchWallFacedes(BaseCad wd) {
-        if (wd == null)
-            return;
-        // 获取该模型的非厚度两边
-        double offground = wd.furniture.getGroundHeight() / 10;
-        ArrayList<Point> pointsList = wd.thicknessPointsList;
-        ArrayList<Line> linesList = new PointList(pointsList).toLineList();
-        ArrayList<Line> digholeLineList = new ArrayList<>();
-        for (Line line : linesList) {
-            if (line.getLength() - 24 >= 0.5f) {
-                digholeLineList.add(line);
-            }
-        }
-        // 遍历查询所有所在的立面墙体
-        ArrayList<WallFacade> interWallFacadesList = new ArrayList<>();
-        if (housesList != null && housesList.size() > 0) {
-            for (House house : housesList) {
-                ArrayList<WallFacade> wallFacadesList = house.getCanDigholeList();
-                if (wallFacadesList != null && wallFacadesList.size() > 0)
-                    interWallFacadesList.addAll(wallFacadesList);
-            }
-        }
-        if (wallOuterFacadesList != null && wallOuterFacadesList.size() > 0) {
-            interWallFacadesList.addAll(wallOuterFacadesList);
-        }
-        // 检测并开启切割
-        if (interWallFacadesList != null && interWallFacadesList.size() > 0) {
-            for (Line line : digholeLineList) {
-                Point center = line.getCenter();
-                for (WallFacade wallFacade : interWallFacadesList) {
-                    if (wallFacade.checkInnerSelf(center)) {
-                        wallFacade.punch(line, wd.furniture.height / 10, wd.furniture.groundHeight / 10);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     /*******************************************************
@@ -1166,7 +1134,7 @@ public class HouseDatasManager {
         housesList.clear();
         furnituresList.clear();
         furnitureArrayList.clear();
-        wallOuterFacadesList.clear();
+        wallOuterSpacesList.clear();
     }
 
     /**

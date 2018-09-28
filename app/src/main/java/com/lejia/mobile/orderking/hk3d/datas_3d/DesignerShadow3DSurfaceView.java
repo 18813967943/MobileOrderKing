@@ -6,6 +6,8 @@ import android.content.pm.ConfigurationInfo;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -18,7 +20,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
  */
 public class DesignerShadow3DSurfaceView extends GLSurfaceView {
 
-    private ShadowRenderer designer3DRender; // 渲染管理对象
+    private ShadowRenderer designerShadow3DRender; // 渲染管理对象
 
     // 初始化配置
     private void init() {
@@ -34,9 +36,11 @@ public class DesignerShadow3DSurfaceView extends GLSurfaceView {
             setEGLConfigChooser(new MyEGLConfigChooser());
             setZOrderMediaOverlay(true);
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
-            designer3DRender = new ShadowRenderer(getContext());
-            setRenderer(designer3DRender);
-            setRenderMode(RENDERMODE_CONTINUOUSLY);
+            designerShadow3DRender = new ShadowRenderer(getContext());
+            setRenderer(designerShadow3DRender);
+            setRenderMode(RENDERMODE_WHEN_DIRTY);
+            // 绑定控件至程序，可执行全局操作
+            ((OrderKingApplication) OrderKingApplication.getInstant()).setDesignerShadow3DSurfaceView(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,4 +86,9 @@ public class DesignerShadow3DSurfaceView extends GLSurfaceView {
             }
         }
     }
+
+    public ShadowRenderer getDesignerShadow3DRender() {
+        return designerShadow3DRender;
+    }
+
 }
