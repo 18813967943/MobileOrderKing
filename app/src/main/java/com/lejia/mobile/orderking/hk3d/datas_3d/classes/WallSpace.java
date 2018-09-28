@@ -206,7 +206,7 @@ public class WallSpace extends RendererObject {
                 }
             }
             // 内墙立面操作
-            if (flag == FLAG_INNER) {
+            if (flag == FLAG_INNER || flag == FLAG_OUTER) {
                 minusNormalDir(!RendererState.isNot3D());
             }
             // Pass position information to shader

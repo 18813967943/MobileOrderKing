@@ -43,8 +43,8 @@ void main()
 	vec4 diffuseV = vec4(1.0,1.0,1.0,1.0);
 	vec4 ambientV = vec4(1.0,1.0,1.0,1.0);
 	if(roomLisght){ // 室内散射光强度调整
-	   diffuseIntensity = vec4(0.6,0.6,0.6,1.0);
-	   ambientIntensity = vec4(0.35,0.35,0.35,1.0);
+	   diffuseIntensity = vec4(0.7,0.7,0.7,1.0);
+	   ambientIntensity = vec4(0.3,0.3,0.3,1.0);
 	}else{
 	   diffuseIntensity = vec4(1.0,1.0,1.0,1.0);
 	   ambientIntensity = vec4(0.5,0.5,0.5,1.0);
