@@ -54,12 +54,10 @@ public class TilesResult {
             return;
         holeBitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(holeBitmap);
+        holeBitmap.setHasAlpha(true);
         transX = -box.left;
         transY = -box.top;
         gapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        gapPaint.setDither(true);
-        gapPaint.setAntiAlias(true);
-        gapPaint.setStyle(Paint.Style.FILL);
     }
 
     public TilesResult(RectD rectD, NSGPCManager gpcManager) {
@@ -100,7 +98,10 @@ public class TilesResult {
         } else if (color == -1) { // 白色砖缝
             color = 0xFFFFFFFF;
         }
+        gapPaint.setDither(true);
         gapPaint.setColor(color);
+        gapPaint.setStrokeWidth(0.1f);
+        gapPaint.setStyle(Paint.Style.FILL);
         ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
         Path path = new PointList(transList).getPath(true);
         canvas.drawPath(path, gapPaint);
@@ -156,6 +157,7 @@ public class TilesResult {
         holeBitmap.recycle();
         holeBitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(holeBitmap);
+        holeBitmap.setHasAlpha(true);
     }
 
     /**

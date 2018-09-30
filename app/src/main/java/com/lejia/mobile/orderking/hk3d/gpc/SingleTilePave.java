@@ -78,8 +78,9 @@ public class SingleTilePave {
         for (int i = 0; i < geomIntersectList.size(); i++) {
             ArrayList<geom.Point> pointsList = geomIntersectList.get(i);
             ArrayList<geom.Point> originList = geomOriginList.get(i);
-            Area3D area3D = new Area3D(isGap, materialCode, PointList.staticExchangeGemoListToThisList(pointsList)
-                    , PointList.staticExchangeGemoListToThisList(originList));
+            ArrayList<Point> changePointsList = PointList.staticExchangeGemoListToThisList(pointsList);
+            ArrayList<Point> changeOriginList = PointList.staticExchangeGemoListToThisList(originList);
+            Area3D area3D = new Area3D(isGap, materialCode, changePointsList, changeOriginList);
             area3D.setSkewTile(skewTile);
             tilesResult.putArea3D(area3D);
         }

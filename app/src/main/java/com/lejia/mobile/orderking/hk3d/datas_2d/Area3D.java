@@ -138,4 +138,12 @@ public class Area3D extends RendererObject {
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Area3D))
+            return false;
+        Area3D other = (Area3D) obj;
+        return new PointList(originList).equals(new PointList(other.originList));
+    }
+
 }

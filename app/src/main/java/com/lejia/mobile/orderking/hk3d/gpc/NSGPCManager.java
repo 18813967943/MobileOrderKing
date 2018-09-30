@@ -45,7 +45,7 @@ public class NSGPCManager {
     /**
      * 砖缝厚度
      */
-    private float brickGap = 0.2f;
+    private float brickGap = 0.4f;
 
     /**
      * 铺砖结果对象
