@@ -88,7 +88,6 @@ public class CadLine {
                     16, lineColorsBuffer);
             GLES30.glEnableVertexAttribArray(colorAttribute);
             GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
-            GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
         }
         GLES30.glLineWidth(2.0f);
         GLES30.glDrawArrays(GLES30.GL_LINE_STRIP, 0, size());

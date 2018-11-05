@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
@@ -115,6 +116,10 @@ public class GeneralFurniture extends BaseCad {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        // 非平面不进行渲染
+        if (RendererState.isNot2D()) {
+            return;
+        }
         if (vertexsBuffer != null) {
             // 加载材质贴图
             if (needBindTextureId) {
@@ -143,7 +148,6 @@ public class GeneralFurniture extends BaseCad {
                     GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
                     // 着色器使用标志
                     GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                    GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
                 // 选中绘制

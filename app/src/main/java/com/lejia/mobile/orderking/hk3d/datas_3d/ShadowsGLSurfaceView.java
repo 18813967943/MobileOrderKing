@@ -5,8 +5,7 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-
-import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import android.view.MotionEvent;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -15,14 +14,13 @@ import javax.microedition.khronos.egl.EGLDisplay;
 /**
  * Author by HEKE
  *
- * @time 2018/7/9 16:43
- * TODO: 三维控件
+ * @time 2018/11/5 14:56
+ * TODO: 即时光影控件
  */
-public class DesignerShadow3DSurfaceView extends GLSurfaceView {
+public class ShadowsGLSurfaceView extends GLSurfaceView {
 
-    private ShadowRenderer designerShadow3DRender; // 渲染管理对象
+    private ShadowsRenderer mRenderer;
 
-    // 初始化配置
     private void init() {
         try {
             ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
@@ -36,19 +34,27 @@ public class DesignerShadow3DSurfaceView extends GLSurfaceView {
             setEGLConfigChooser(new MyEGLConfigChooser());
             setZOrderMediaOverlay(true);
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
-            designerShadow3DRender = new ShadowRenderer(getContext());
-            setRenderer(designerShadow3DRender);
-            setRenderMode(RENDERMODE_WHEN_DIRTY);
-            // 绑定控件至程序，可执行全局操作
-            ((OrderKingApplication) OrderKingApplication.getInstant()).setDesignerShadow3DSurfaceView(this);
+            mRenderer = new ShadowsRenderer(getContext());
+            setRenderer(mRenderer);
+            setRenderMode(RENDERMODE_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public DesignerShadow3DSurfaceView(Context context) {
+    public ShadowsGLSurfaceView(Context context) {
         super(context);
         init();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+
+        return true;
+    }
+
+    public ShadowsRenderer getRenderer() {
+        return mRenderer;
     }
 
     /**
@@ -72,7 +78,7 @@ public class DesignerShadow3DSurfaceView extends GLSurfaceView {
                     EGL10.EGL_DEPTH_SIZE, 16,
                     EGL10.EGL_STENCIL_SIZE, 0,
                     EGL10.EGL_SAMPLE_BUFFERS, 1,
-                    EGL10.EGL_SAMPLES, 3,  // 在这里修改MSAA的倍数，采用3层数据采样抗锯齿
+                    EGL10.EGL_SAMPLES, 2,  // 在这里修改MSAA的倍数，采用2层数据采样抗锯齿
                     EGL10.EGL_NONE
             };
             EGLConfig[] configs = new EGLConfig[1];
@@ -85,10 +91,6 @@ public class DesignerShadow3DSurfaceView extends GLSurfaceView {
                 return configs[0];
             }
         }
-    }
-
-    public ShadowRenderer getDesignerShadow3DRender() {
-        return designerShadow3DRender;
     }
 
 }

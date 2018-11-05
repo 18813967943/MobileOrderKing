@@ -43,4 +43,6 @@
     <string name="accurate_input_width">宽度:</string>
     <string name="accurate_input_height">高度:</string>
     <string name="accurate_input">设置(单位mm)</string>
+    <string name="camera_phone_select">本机相册</string>
+    <string name="camera_take_phone">拍照</string>
 </resources>

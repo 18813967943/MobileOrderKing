@@ -26,6 +26,14 @@ public class PermissionsActivity extends Activity {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
+    /**
+     * 摄像机权限
+     */
+    protected String[] cameraPermissions = new String[]{
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_CONTACTS
+    };
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,12 +46,22 @@ public class PermissionsActivity extends Activity {
      */
     private void requestRWPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // 存储权限
             if (ContextCompat.checkSelfPermission(this, rwPermissions[0]) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, rwPermissions, 1);
             } else {
-                // TODO 可执行下一权限
-                finish();
+                requestCamera();
             }
+        }
+    }
+
+    private void requestCamera() {
+        // 摄像机权限
+        if (ContextCompat.checkSelfPermission(this, cameraPermissions[0]) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, cameraPermissions, 2);
+        } else {
+            // TODO 可执行下一条
+            finish();
         }
     }
 
@@ -53,9 +71,18 @@ public class PermissionsActivity extends Activity {
         if (requestCode == 1) {
             // 申请读写权限成功
             if (grantResults != null && grantResults[0] == 0) {
-                // TODO 可继续申请其他权限
+                requestCamera();
+            } else {
+                requestCamera();
             }
-            finish(); // 无需其他权限结束
+        }
+        // 摄像机权限
+        else if (requestCode == 2) {
+            // 申请摄像机权限成功
+            if (grantResults != null && grantResults[0] == 0) {
+                // TODO 可执行下一条
+                finish();
+            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }

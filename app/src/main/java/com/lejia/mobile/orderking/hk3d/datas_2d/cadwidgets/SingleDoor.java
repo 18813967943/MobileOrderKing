@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets;
 
 import android.opengl.GLES30;
 
+import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
@@ -208,6 +209,9 @@ public class SingleDoor extends BaseCad {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
+        // 非平面不进行渲染
+        if (RendererState.isNot2D())
+            return;
         if (vertexsBuffer != null) {
             // 开启混色
             GLES30.glEnable(GLES30.GL_BLEND);

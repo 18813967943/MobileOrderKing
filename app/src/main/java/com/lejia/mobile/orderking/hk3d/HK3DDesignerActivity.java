@@ -15,14 +15,19 @@ import android.widget.RelativeLayout;
 
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.dialogs.CameraDrawSelectDialog;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.FurnitureTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.MoreManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.On3DTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
+import com.lejia.mobile.orderking.hk3d.housetype.UnitDiscern;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,6 +47,8 @@ public class HK3DDesignerActivity extends Activity {
     ImageButton forward;
     @BindView(R.id.jingzhun)
     ImageButton jingzhun;
+    @BindView(R.id.cameraDraw)
+    ImageButton cameraDraw;
     @BindView(R.id.title)
     TitlesView title;
     @BindView(R.id.zhouce)
@@ -94,6 +101,11 @@ public class HK3DDesignerActivity extends Activity {
      */
     private On3DTouchManager on3DTouchManager;
 
+    /**
+     * 图像识别操作窗口
+     */
+    private CameraDrawSelectDialog cameraDrawSelectDialog;
+
     private void initViews() {
         designer3DManager = new Designer3DManager(this, designer3dLayout);
         tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
@@ -106,6 +118,7 @@ public class HK3DDesignerActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        OrderKingApplication.setMainActivityContext(this);
         initViews();
         // 打开权限申请
         startActivityForResult(new Intent(this, PermissionsActivity.class), -1);
@@ -116,7 +129,7 @@ public class HK3DDesignerActivity extends Activity {
         moveTaskToBack(true);
     }
 
-    @OnClick({R.id.getback, R.id.forward, R.id.jingzhun, R.id.zhouce, R.id.threed, R.id.more, R.id.drawStates})
+    @OnClick({R.id.getback, R.id.forward, R.id.jingzhun, R.id.cameraDraw, R.id.zhouce, R.id.threed, R.id.more, R.id.drawStates})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.getback:
@@ -128,19 +141,14 @@ public class HK3DDesignerActivity extends Activity {
                 RendererState.setAccurate(isAccurate);
                 jingzhun.setSelected(isAccurate);
                 break;
+            case R.id.cameraDraw:
+                // 弹出照片选择方式窗口
+                cameraDrawSelectDialog = new CameraDrawSelectDialog(HK3DDesignerActivity.this);
+                cameraDrawSelectDialog.show();
+                break;
             case R.id.zhouce:
-                if (RendererState.isNot25D()) {
-                    designer3DManager.getT3dLayout().show(RendererState.STATE_25D);
-                } else {
-                    designer3DManager.getT3dLayout().show(RendererState.STATE_2D);
-                }
                 break;
             case R.id.threed:
-                if (RendererState.isNot3D()) {
-                    designer3DManager.getT3dLayout().show(RendererState.STATE_3D);
-                } else {
-                    designer3DManager.getT3dLayout().show(RendererState.STATE_2D);
-                }
                 break;
             case R.id.more:
                 if (moreManager == null)
@@ -189,6 +197,30 @@ public class HK3DDesignerActivity extends Activity {
             return touchManager.onTouchEvent(event);
         } else {
             return super.onTouchEvent(event);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // 请求摄像机权限
+        if (requestCode == 1013) {
+            if (cameraDrawSelectDialog != null) // 拍照
+                cameraDrawSelectDialog.takePhone();
+        }
+        // 拍照识别
+        else if (requestCode == 1014) {
+            if (cameraDrawSelectDialog != null) { // 获取选择的照片
+                File file = cameraDrawSelectDialog.getOutputImagepath();
+                new UnitDiscern(this, file);
+            }
+        }
+        // 相册选择
+        else if (requestCode == 1015) {
+            // 获取拍照的照片
+            if (resultCode == RESULT_OK && null != data) {
+                new UnitDiscern(this, data);
+            }
         }
     }
 

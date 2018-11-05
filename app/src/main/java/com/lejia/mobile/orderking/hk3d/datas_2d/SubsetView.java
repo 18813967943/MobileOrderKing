@@ -1,16 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.opengl.GLES30;
-import android.os.AsyncTask;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.lejia.mobile.orderking.bases.OrderKingApplication;
-import com.lejia.mobile.orderking.hk3d.ViewingShader;
-import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.ByteBuffer;
@@ -50,8 +41,12 @@ public class SubsetView extends RendererObject {
     private void initBuffers() {
         String[] vertexArray = vertexsStr.split("[,]");
         vertexs = new float[vertexArray.length];
-        for (int i = 0; i < vertexArray.length; i++) {
-            vertexs[i] = Float.parseFloat(vertexArray[i]);
+        int vsize = vertexArray.length / 3;
+        for (int i = 0; i < vsize; i++) {
+            int index = 3 * i;
+            vertexs[index] = Float.parseFloat(vertexArray[index]) * 0.1f;
+            vertexs[index + 1] = Float.parseFloat(vertexArray[index + 2]) * 0.1f;
+            vertexs[index + 2] = Float.parseFloat(vertexArray[index + 1]) * 0.1f;
         }
         String[] uvArray = uv0Str.split("[,]");
         texcoord = new float[uvArray.length];
@@ -104,77 +99,12 @@ public class SubsetView extends RendererObject {
      * 加载材质贴图
      */
     public void loadTexture() {
-        // 加载材质贴图
-        Texture texture = getTextureCache(uuid);
-        if (texture != null) {
-            textureBitmap = texture.bitmap;
-            textureId = texture.textureId;
-            refreshRender();
-        } else {
-            if (!TextUtils.isTextEmpity(texture0Str)) {
-                Glide.with(OrderKingApplication.getInstant()).asBitmap().load(texture0Str).into(new SimpleTarget<Bitmap>() {
-                    @SuppressLint("StaticFieldLeak")
-                    @Override
-                    public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
-                        // 异步线程执行
-                        new AsyncTask<Bitmap, Integer, Bitmap>() {
-                            @Override
-                            protected Bitmap doInBackground(Bitmap... bitmaps) {
-                                return bitmaps[0];
-                            }
-
-                            @Override
-                            protected void onPostExecute(Bitmap bitmap) {
-                                super.onPostExecute(bitmap);
-                                // 赋值位图
-                                textureBitmap = bitmap;
-                                // 开启加载贴图
-                                needLoadTexture = true;
-                                refreshRender();
-                            }
-                        }.execute(bitmap);
-                    }
-                });
-            }
-        }
     }
 
     /**
      * 渲染
      */
     public void render(FurnitureMatrixs furnitureMatrixs, int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        if (needLoadTexture) {
-            needLoadTexture = false;
-            textureId = createTextureIdAndCache(uuid, textureBitmap, false);
-            refreshRender();
-        }
-        if (textureId != -1 && (!TextUtils.isTextEmpity(normalsStr))) {
-            // 关闭混色
-            GLES30.glDisable(GLES30.GL_BLEND);
-            // 顶点
-            GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
-            GLES30.glEnableVertexAttribArray(positionAttribute);
-            if (!onlyPosition) {
-                // 法线
-                GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false, 12, normalsBuffer);
-                GLES30.glEnableVertexAttribArray(normalAttribute);
-                // 纹理
-                GLES30.glVertexAttribPointer(ViewingShader.scene_uv0, 2, GLES30.GL_FLOAT, false, 8, texcoordBuffer);
-                GLES30.glEnableVertexAttribArray(ViewingShader.scene_uv0);
-                // 贴图
-                GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
-                GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
-                // 着色器使用标志
-                GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                GLES30.glUniform1f(ViewingShader.scene_use_light, 1.0f);
-            }
-            GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.length, GLES30.GL_UNSIGNED_SHORT, indicesBuffer);
-        }
     }
 
     @Override

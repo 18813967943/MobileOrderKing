@@ -113,7 +113,6 @@ public class HouseName extends RendererObject {
                     GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
                     // 着色器使用标志
                     GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                    GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
                 // 关闭混色

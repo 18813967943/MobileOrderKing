@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/mainColor"
+    android:orientation="vertical"
+    android:padding="@dimen/d8dp">
+
+    <TextView
+        android:id="@+id/dcimSelect"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/d40dp"
+        android:gravity="center"
+        android:text="@string/camera_phone_select"
+        android:textColor="#000"
+        android:textSize="16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#999" />
+
+    <TextView
+        android:id="@+id/dcimTake"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/d40dp"
+        android:gravity="center"
+        android:text="@string/camera_take_phone"
+        android:textColor="#000"
+        android:textSize="16sp" />
+
+</LinearLayout>

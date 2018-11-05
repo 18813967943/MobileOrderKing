@@ -45,6 +45,13 @@
                 android:layout_height="@dimen/d40dp"
                 android:layout_marginLeft="@dimen/d8dp"
                 android:background="@drawable/jingzhun_selector" />
+
+            <ImageButton
+                android:id="@+id/cameraDraw"
+                android:layout_width="@dimen/d30dp"
+                android:layout_height="@dimen/d30dp"
+                android:layout_marginLeft="@dimen/d8dp"
+                android:background="@drawable/cameradraw_selector" />
         </LinearLayout>
 
         <com.lejia.mobile.orderking.widgets.TitlesView

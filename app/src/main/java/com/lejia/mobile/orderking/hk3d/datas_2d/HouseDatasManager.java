@@ -20,15 +20,10 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.FurTypes;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.GeneralFurniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SimpleWindow;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SingleDoor;
-import com.lejia.mobile.orderking.hk3d.datas_3d.classes.WallSpace;
 import com.lejia.mobile.orderking.hk3d.factory.PointsSplitor;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Author by HEKE
@@ -51,7 +46,6 @@ public class HouseDatasManager {
         this.housesList = new ArrayList<>();
         this.furnituresList = new ArrayList<>();
         this.furnitureArrayList = new ArrayList<>();
-        this.wallOuterSpacesList = new ArrayList<>();
     }
 
     /**
@@ -753,36 +747,6 @@ public class HouseDatasManager {
     }
 
     /*****************************************
-     *  房间外立面处理
-     * ***************************************/
-    private ArrayList<WallSpace> wallOuterSpacesList;
-
-    public void initWallOuterFacades() {
-        wallOuterSpacesList.clear();
-        HashMap<Integer, Poly> closeMaps = PolyM.getPoliesMap();
-        if (closeMaps != null && closeMaps.size() > 0) {
-            Iterator<Map.Entry<Integer, Poly>> iterator = closeMaps.entrySet().iterator();
-            int index = 0;
-            while (iterator.hasNext()) {
-                Map.Entry<Integer, Poly> entry = iterator.next();
-                String uuid = UUID.randomUUID().toString();
-                ArrayList<Point> outerList = PolyE.toPointList(entry.getValue()).offsetList(true, 12);
-                ArrayList<Line> linesList = new PointList(outerList).toLineList();
-                if (linesList != null && linesList.size() > 0) {
-                    for (Line line : linesList) {
-                        wallOuterSpacesList.add(new WallSpace(WallSpace.FLAG_OUTER, 1,
-                                280, line.toPointList(), -2, index++));
-                    }
-                }
-            }
-        }
-    }
-
-    public ArrayList<WallSpace> getWallOuterSpacesList() {
-        return wallOuterSpacesList;
-    }
-
-    /*****************************************
      *  拖动吸附处理
      * ***************************************/
 
@@ -905,6 +869,7 @@ public class HouseDatasManager {
      */
     @Deprecated
     public void punchWallFacedes(BaseCad wd) {
+
     }
 
     /*******************************************************
@@ -1014,7 +979,7 @@ public class HouseDatasManager {
         furnituresList.add(furniture);
         // 创建模型所在位置数据对象
         FurnitureMatrixs furnitureMatrixs = new FurnitureMatrixs(furniture.point, 0, 0, (float) furniture.angle
-                , 0.1f, 0.1f, 0.1f, (float) furniture.point.x, (float) furniture.point.y,
+                , 1.0f, 1.0f, 1.0f, (float) furniture.point.x, (float) furniture.point.y,
                 furniture.furniture.groundHeight * 0.1f, furniture.mirror);
         furniture.setFurnitureMatrixs(furnitureMatrixs);
         furniture.furniture.put(furnitureMatrixs);
@@ -1134,7 +1099,7 @@ public class HouseDatasManager {
         housesList.clear();
         furnituresList.clear();
         furnitureArrayList.clear();
-        wallOuterSpacesList.clear();
+        refreshRender();
     }
 
     /**

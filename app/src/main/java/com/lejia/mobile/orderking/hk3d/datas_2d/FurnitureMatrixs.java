@@ -1,13 +1,8 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d;
 
-import android.opengl.GLES30;
-import android.opengl.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.lejia.mobile.orderking.hk3d.LightMatrixs;
-import com.lejia.mobile.orderking.hk3d.ViewingMatrixs;
-import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -105,87 +100,6 @@ public class FurnitureMatrixs implements Parcelable {
 
     public void setMirror(boolean mirror) {
         this.mirror = mirror;
-    }
-
-    /**
-     * 初始化矩阵数据
-     *
-     * @param shadow          是否阴影渲染
-     * @param renderTextureId 渲染阴影材质编号
-     */
-    public void initMatrix(boolean shadow, int renderTextureId) {
-        // 设置自身矩阵，优先平移、旋转、缩放，非动画操作
-        myModelMatrixs = ViewingMatrixs.mModelMatrix.clone();
-        Matrix.translateM(myModelMatrixs, 0, transX, transY, transZ);
-        Matrix.rotateM(myModelMatrixs, 0, rotateX, 1.0f, 0.0f, 0.0f);
-        Matrix.rotateM(myModelMatrixs, 0, rotateY, 0.0f, 1.0f, 0.0f);
-        Matrix.rotateM(myModelMatrixs, 0, rotateZ, 0.0f, 0.0f, 1.0f);
-        Matrix.scaleM(myModelMatrixs, 0, mirror ? -1.0f * scaleX : scaleX, scaleY, scaleZ);
-        // 阴影渲染参数
-        if (shadow) {
-            float[] tempResultMatrix = new float[16];
-            // Calculate matrices for standing objects
-            // View matrix * Model matrix value is stored
-            Matrix.multiplyMM(LightMatrixs.mLightMvpMatrix_staticShapes, 0, LightMatrixs.mLightViewMatrix
-                    , 0, myModelMatrixs, 0);
-
-            // Model * view * projection matrix stored and copied for use at rendering from camera point of view
-            Matrix.multiplyMM(tempResultMatrix, 0, LightMatrixs.mLightProjectionMatrix, 0,
-                    LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-            System.arraycopy(tempResultMatrix, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0, 16);
-            // Pass in the combined matrix.
-            GLES30.glUniformMatrix4fv(ViewingShader.shadow_mvpMatrixUniform, 1, false, LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-        }
-        // 常态渲染参数
-        else {
-            // 矩阵换算
-            float[] tempResultMatrix = new float[16];
-            float bias[] = new float[]{
-                    0.5f, 0.0f, 0.0f, 0.0f,
-                    0.0f, 0.5f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.5f, 0.0f,
-                    0.5f, 0.5f, 0.5f, 1.0f};
-
-            float[] depthBiasMVP = new float[16];
-            //calculate MV matrix
-            mViewMatrix = ViewingMatrixs.mViewMatrix.clone();
-            Matrix.multiplyMM(tempResultMatrix, 0, mViewMatrix, 0, myModelMatrixs, 0);
-            System.arraycopy(tempResultMatrix, 0, mMVMatrix, 0, 16);
-
-            //pass in MV Matrix as uniform
-            GLES30.glUniformMatrix4fv(ViewingShader.scene_mvMatrixUniform, 1, false, mMVMatrix, 0);
-
-            //calculate Normal Matrix as uniform (invert transpose MV)
-            Matrix.invertM(tempResultMatrix, 0, mMVMatrix, 0);
-            Matrix.transposeM(mNormalMatrix, 0, tempResultMatrix, 0);
-
-            //pass in Normal Matrix as uniform
-            GLES30.glUniformMatrix4fv(ViewingShader.scene_normalMatrixUniform, 1, false, mNormalMatrix, 0);
-
-            //calculate MVP matrix
-            mProjectionMatrix = ViewingMatrixs.mProjectionMatrix.clone();
-            Matrix.multiplyMM(tempResultMatrix, 0, mProjectionMatrix, 0, mMVMatrix, 0);
-            System.arraycopy(tempResultMatrix, 0, mMVPMatrix, 0, 16);
-            //pass in MVP Matrix as uniform
-            GLES30.glUniformMatrix4fv(ViewingShader.scene_mvpMatrixUniform, 1, false, mMVPMatrix, 0);
-
-            Matrix.multiplyMV(LightMatrixs.mLightPosInEyeSpace, 0, mViewMatrix,
-                    0, LightMatrixs.mActualLightPosition, 0);
-
-            //pass in light source position
-            GLES30.glUniform3f(ViewingShader.scene_lightPosUniform, LightMatrixs.mLightPosInEyeSpace[0],
-                    LightMatrixs.mLightPosInEyeSpace[1], LightMatrixs.mLightPosInEyeSpace[2]);
-            Matrix.multiplyMM(depthBiasMVP, 0, bias, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-            System.arraycopy(depthBiasMVP, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0, 16);
-
-            //MVP matrix that was used during depth map render
-            GLES30.glUniformMatrix4fv(ViewingShader.scene_schadowProjMatrixUniform, 1, false,
-                    LightMatrixs.mLightMvpMatrix_staticShapes, 0);
-            //pass in texture where depth map is stored
-            GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
-            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, renderTextureId);
-            GLES30.glUniform1i(ViewingShader.scene_textureUniform, 1);
-        }
     }
 
     /**

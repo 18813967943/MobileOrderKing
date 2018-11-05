@@ -162,9 +162,10 @@ public class Point implements Parcelable {
      * @param decimalPlaces 精度(保留小数点位数)
      */
     public static double percision(double evadeValue, int decimalPlaces) {
-        if (evadeValue == Double.NaN)
+        if (String.valueOf(evadeValue).equals("NaN"))
             return 0.0d;
         double evadeResult = 0.0d;
+        double test = evadeValue;
         try {
             // 计算保留位数后一位小数值
             double decimal = 1.0d;

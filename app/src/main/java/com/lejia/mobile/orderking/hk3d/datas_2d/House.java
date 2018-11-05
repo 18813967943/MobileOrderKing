@@ -1,5 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
@@ -9,8 +11,6 @@ import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.PolyE;
 import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
-import com.lejia.mobile.orderking.hk3d.datas_3d.classes.Ground3D;
-import com.lejia.mobile.orderking.hk3d.datas_3d.classes.WallSpace;
 import com.seisw.util.geom.Poly;
 import com.seisw.util.geom.PolyDefault;
 
@@ -61,19 +61,9 @@ public abstract class House {
     public ArrayList<Wall> wallsList;
 
     /**
-     * 房间立面
-     */
-    public ArrayList<WallSpace> wallSpacesList;
-
-    /**
      * 渲染地面对象
      */
     public Ground ground;
-
-    /**
-     * 对应三维地面渲染对象
-     */
-    public Ground3D ground3D;
 
     /**
      * 选中区域
@@ -103,14 +93,12 @@ public abstract class House {
     public House(Context context) {
         this.mContext = context;
         this.wallsList = new ArrayList<>();
-        this.wallSpacesList = new ArrayList<>();
     }
 
     public House(Context context, boolean isLineSeg) {
         this.mContext = context;
         this.isLineSeg = isLineSeg;
         this.wallsList = new ArrayList<>();
-        this.wallSpacesList = new ArrayList<>();
     }
 
     /**
@@ -150,21 +138,36 @@ public abstract class House {
         return down == null || up == null;
     }
 
+    ArrayList<Point> innerTList;
+    ArrayList<Point> outerTList;
+
     /**
      * 指定房间围点加载
      *
      * @param center_pointList
      * @param thickness
      */
+    @SuppressLint("StaticFieldLeak")
     private void loadDatas(PointList center_pointList, int thickness) {
         if (center_pointList == null || center_pointList.invalid())
             return;
         int halfThickness = thickness / 2;
         centerPointList = new PointList(center_pointList.copy());
-        innerPointList = new PointList(centerPointList.offsetList(false, halfThickness));
-        outerPointList = new PointList(centerPointList.offsetList(true, halfThickness));
-        createRenderer();
-        initGroundAndSelector();
+        innerTList = centerPointList.offsetList(false, halfThickness);
+        innerPointList = new PointList(innerTList);
+        outerTList = centerPointList.offsetList(true, halfThickness);
+        outerPointList = new PointList(outerTList);
+        if (innerPointList.size() != outerPointList.size()) {
+            System.out.println();
+        }
+        // 在主进程中执行
+        ((Activity) OrderKingApplication.getMainActivityContext()).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                createRenderer();
+                initGroundAndSelector();
+            }
+        });
     }
 
     public Context getContext() {
@@ -282,10 +285,6 @@ public abstract class House {
     public void createRenderer() {
         try {
             wallsList.clear();
-            if (wallSpacesList == null) {
-                wallSpacesList = new ArrayList<>();
-            }
-            wallSpacesList.clear();
             int size = innerPointList.size();
             int hashCode = hashCode();
             int cellHeight = 280;
@@ -323,27 +322,6 @@ public abstract class House {
                     Wall wall = new Wall(pointsList, this);
                     wallsList.add(wall);
                 }
-                // 三维墙面
-                // 内墙面
-                ArrayList<Point> innerList = new ArrayList<>();
-                innerList.add(inow.copy());
-                innerList.add(inext.copy());
-                wallSpacesList.add(new WallSpace(WallSpace.FLAG_INNER, 1, cellHeight, innerList, hashCode, index++));
-                // 非闭合房间外墙面直接绘制
-                if (!isWallClosed) {
-                    ArrayList<Point> outerList = new ArrayList<>();
-                    outerList.add(onow.copy());
-                    outerList.add(onext.copy());
-                    wallSpacesList.add(new WallSpace(WallSpace.FLAG_OUTER, 1, cellHeight, outerList, hashCode, index++));
-                }
-                // 墙顶部厚度面
-                if (pointsList != null && pointsList.size() > 0) {
-                    wallSpacesList.add(new WallSpace(WallSpace.FLAG_PLY, 1, cellHeight, new PointList(pointsList).copy(), hashCode, index++));
-                }
-            }
-            // 闭合房间，增加房间顶面
-            if (isWallClosed) {
-                wallSpacesList.add(new WallSpace(WallSpace.FLAG_ROOF, 1, cellHeight, innerPointList.copy(), hashCode, index++));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -359,9 +337,6 @@ public abstract class House {
         ground = new Ground(innerPointList, this); // 地面
         selector = new Selector(innerPointList); // 选中框
         houseName = new HouseName(innerPointList); // 房间名称
-        // 创建对应三维的地面
-        ground3D = new Ground3D(ground);
-        ground.setGround3D(ground3D);
     }
 
     /**
@@ -423,9 +398,6 @@ public abstract class House {
             if (ground != null) {
                 rendererObjectsList.add(ground);
             }
-            if (wallSpacesList != null) {
-                rendererObjectsList.addAll(wallSpacesList);
-            }
         } else {
             if (wallsList != null && wallsList.size() > 0) {
                 rendererObjectsList.addAll(wallsList);
@@ -455,21 +427,6 @@ public abstract class House {
             rendererObjectsList.add(houseName);
         }
         return rendererObjectsList;
-    }
-
-    /**
-     * 获取所有内外立面
-     */
-    public ArrayList<WallSpace> getCanDigholeList() {
-        if (wallSpacesList == null || wallSpacesList.size() == 0)
-            return null;
-        ArrayList<WallSpace> list = new ArrayList<>();
-        for (WallSpace wallFacade : wallSpacesList) {
-            if (wallFacade.getFlag() != WallSpace.FLAG_PLY) {
-                list.add(wallFacade);
-            }
-        }
-        return list;
     }
 
     /**

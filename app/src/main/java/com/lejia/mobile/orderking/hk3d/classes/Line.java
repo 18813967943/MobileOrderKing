@@ -80,6 +80,22 @@ public class Line implements Parcelable {
     }
 
     /**
+     * 判断线段是否垂直
+     */
+    public boolean isVertical() {
+        double angle = getAngle();
+        return angle == 90 || angle == 270;
+    }
+
+    /**
+     * 判断线段是否水平
+     */
+    public boolean isHorizontal() {
+        double angle = getAngle();
+        return angle == 0 || angle == 180;
+    }
+
+    /**
      * 获取线段与水平线形成的角度,范围0-360
      */
     public double getAngle() {

@@ -4,6 +4,7 @@ import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lejia.mobile.orderking.utils.TextUtils;
 import com.seisw.util.geom.Point2D;
 
 import java.math.BigDecimal;
@@ -30,7 +31,37 @@ public class PointList implements Parcelable {
     private boolean clockwise;
 
     public PointList(ArrayList<Point> pointsList) {
-        this.pointsList = pointsList;
+        if (pointsList == null || pointsList.size() == 0)
+            throw new NullPointerException("pointsList can`t be null !");
+        ArrayList<Point> checkThenWipeRepeatPointList = new ArrayList<>();
+        checkThenWipeRepeatPointList.add(pointsList.get(0).copy());
+        if (pointsList.size() > 1) {
+            Point check = checkThenWipeRepeatPointList.get(0);
+            for (int i = 1; i < pointsList.size(); i++) {
+                Point point = pointsList.get(i);
+                if (!((check.x == point.x) && (check.y == point.y))) {
+                    check = point;
+                    checkThenWipeRepeatPointList.add(point.copy());
+                }
+            }
+        }
+        this.pointsList = checkThenWipeRepeatPointList;
+    }
+
+    public PointList(String pointsString) {
+        if (TextUtils.isTextEmpity(pointsString))
+            throw new NullPointerException("pointsString can`t be null !");
+        String[] params = pointsString.split("[,]");
+        if (params != null) {
+            ArrayList<Point> pointArrayList = new ArrayList<>();
+            int size = params.length / 2;
+            for (int i = 0; i < size; i++) {
+                int index = 2 * i;
+                Point point = new Point(Double.parseDouble(params[index]), Double.parseDouble(params[index + 1]));
+                pointArrayList.add(point);
+            }
+            this.pointsList = pointArrayList;
+        }
     }
 
     protected PointList(Parcel in) {
@@ -966,6 +997,66 @@ public class PointList implements Parcelable {
             ret.y = target.y;
         }
         return ret;
+    }
+
+    /**
+     * 修复两点之间的浮点偏差
+     *
+     * @param target     对应目标点
+     * @param check      被检测的点
+     * @param targetDist 指定矫正差值
+     * @param changeSelf 直接改变check点数值
+     * @return 返回矫正后的点
+     */
+    public static Point deviation(Point target, Point check, double targetDist, boolean changeSelf) {
+        if (target == null || check == null)
+            return null;
+        Point ret = check.copy();
+        double poorX = Math.abs(check.x - target.x);
+        double poorY = Math.abs(check.y - target.y);
+        if (poorX <= targetDist) {
+            if (changeSelf)
+                check.x = target.x;
+            else
+                ret.x = target.x;
+        }
+        if (poorY <= targetDist) {
+            if (changeSelf)
+                check.y = target.y;
+            else
+                ret.y = target.y;
+        }
+        return ret;
+    }
+
+    /**
+     * 用于矫正列表中点与点的x/y的指定最小差值对齐的功能
+     *
+     * @param pointArrayList 需要被矫正的点列表
+     * @param targetMinDist  指定最小偏差
+     * @return 返回对齐后的结果列表
+     */
+    public static ArrayList<Point> deviationList(ArrayList<Point> pointArrayList, double targetMinDist) {
+        if (pointArrayList == null || pointArrayList.size() == 0)
+            return null;
+        try {
+            int size = pointArrayList.size();
+            for (int i = 0; i < size; i++) {
+                Point now = pointArrayList.get(i);
+                Point next = null;
+                if (i != size - 1) {
+                    next = pointArrayList.get(i + 1);
+                    deviation(now, next, targetMinDist, true);
+                } else {
+                    next = pointArrayList.get(0);
+                    deviation(next, now, targetMinDist, true);
+                }
+            }
+            return pointArrayList;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

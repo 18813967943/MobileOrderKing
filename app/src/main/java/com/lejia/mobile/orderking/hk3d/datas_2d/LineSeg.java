@@ -79,7 +79,6 @@ public class LineSeg extends RendererObject {
                         16, colorsBuffer);
                 GLES30.glEnableVertexAttribArray(colorAttribute);
                 GLES30.glUniform1f(ViewingShader.scene_only_color, 1);
-                GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
             }
             GLES30.glLineWidth(6.0f);
             GLES30.glDrawArrays(GLES30.GL_LINE_STRIP, 0, indices.length);

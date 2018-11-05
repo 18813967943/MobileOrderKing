@@ -153,7 +153,7 @@ public abstract class BaseCad extends RendererObject {
     public void refreshMatrixs() {
         // 刷新家具矩阵信息
         furnitureMatrixs = new FurnitureMatrixs(point, 0, 0, (float) angle
-                , 0.1f, 0.1f, 0.1f, (float) point.x, (float) point.y,
+                , 1.0f, 1.0f, 1.0f, (float) point.x, (float) point.y,
                 furniture.groundHeight * 0.1f, mirror);
         // 存储至渲染数据管理对象
         HouseDatasManager houseDatasManager = getHouseDatasManager();

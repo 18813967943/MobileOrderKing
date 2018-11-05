@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas_2d;
 
 import android.opengl.GLES30;
 
+import com.google.gson.annotations.Expose;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
@@ -22,9 +23,6 @@ public class Selector extends RendererObject {
 
     //private float[] color = new float[]{0.53f, 0.808f, 0.98f, 1.0f};
     private float[] color = new float[]{0.0f, 0.7f, 1.0f, 1.0f};
-    private float[] colors;
-    private FloatBuffer colorsBuffer;
-
     private int size;
 
     /**
@@ -132,7 +130,6 @@ public class Selector extends RendererObject {
             GLES30.glEnableVertexAttribArray(colorAttribute);
             // use color only render
             GLES30.glUniform1f(ViewingShader.scene_only_color, 1.0f);
-            GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
         }
         // draw selector lines
         GLES30.glLineWidth(4.0f);

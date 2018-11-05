@@ -4,14 +4,12 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
-import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
-import com.lejia.mobile.orderking.hk3d.datas_3d.classes.Ground3D;
 import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
 import com.lejia.mobile.orderking.utils.TextUtils;
@@ -45,9 +43,6 @@ public class Ground extends RendererObject {
     private int cellSize; // 层数
     private int cellCount; // 层加载计数
     private Bitmap bitmap; // 组成位图
-
-    // 对应兼容三维地面
-    private Ground3D ground3D;
 
     private void initDatas() {
         if (pointList == null || pointList.invalid())
@@ -90,10 +85,6 @@ public class Ground extends RendererObject {
         this.house = house;
         initDatas();
         defaultLoadGroundTile();
-    }
-
-    public void setGround3D(Ground3D ground3D) {
-        this.ground3D = ground3D;
     }
 
     // 默认加载地砖
@@ -246,9 +237,6 @@ public class Ground extends RendererObject {
                 textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
                 canDraw = true;
                 needRefreshNameTexture = true;
-                if (ground3D != null && fromReplaceTiles) {
-                    ground3D.setNeedBindTexture(true);
-                }
                 refreshRender();
             }
             // 材质贴图不为空
@@ -271,11 +259,6 @@ public class Ground extends RendererObject {
                     GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
                     // 着色器使用标志
                     GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                    if (RendererState.isNot2D()) {
-                        GLES30.glUniform1f(ViewingShader.scene_use_light, 1.0f);
-                    } else {
-                        GLES30.glUniform1f(ViewingShader.scene_use_light, 0.0f);
-                    }
                 }
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
                 // TODO 刷新房间名称显示

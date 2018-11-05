@@ -6,7 +6,6 @@ import android.view.MotionEvent;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
-import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowRenderer;
 
 /**
  * Author by HEKE
@@ -19,14 +18,12 @@ public class On3DTouchManager {
     private Context mContext;
     private TilesManager tilesManager;
     private Designer3DManager designer3DManager;
-    private ShadowRenderer shadowRenderer;
     private TouchSelectedManager touchSelectedManager;
 
     public On3DTouchManager(Context context, TilesManager tilesManager, Designer3DManager designer3DManager) {
         this.mContext = context;
         this.tilesManager = tilesManager;
         this.designer3DManager = designer3DManager;
-        this.shadowRenderer = this.designer3DManager.getT3dLayout().getDesignerShadow3DSurfaceView().getDesignerShadow3DRender();
         this.touchSelectedManager = this.designer3DManager.getDesigner3DRender().getTouchSelectedManager();
     }
 
@@ -100,16 +97,14 @@ public class On3DTouchManager {
                             boolean axis = !RendererState.isNot25D();
                             if (axis) {
                                 if (Math.abs(x) > Math.abs(y)) {
-                                    shadowRenderer.setTransLate(x, 0);
                                 } else {
-                                    shadowRenderer.setTransLate(0, -y);
                                 }
                             }
                             // 进入房间
                             boolean gotoHouse = !RendererState.isNot3D();
                             if (gotoHouse) {
                                 if (Math.abs(x) > Math.abs(y)) {
-                                    shadowRenderer.turnAround(x < 0);
+
                                 }
                             }
                             down.setXY(move.x, move.y);
@@ -132,11 +127,9 @@ public class On3DTouchManager {
                             double poor = moveDist - downDist;
                             // 缩小
                             if (poor < 0) {
-                                shadowRenderer.move(false, 0.05f);
                             }
                             // 放大
                             else if (poor > 0) {
-                                shadowRenderer.move(true, 0.05f);
                             }
                             downDist = moveDist; // 重置操作
                         }
