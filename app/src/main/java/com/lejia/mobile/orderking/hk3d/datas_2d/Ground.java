@@ -10,6 +10,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
 import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
 import com.lejia.mobile.orderking.utils.TextUtils;
@@ -43,6 +44,11 @@ public class Ground extends RendererObject {
     private int cellSize; // 层数
     private int cellCount; // 层加载计数
     private Bitmap bitmap; // 组成位图
+
+    /**
+     * 对应三维的地面
+     */
+    private BuildingGround buildingGround;
 
     private void initDatas() {
         if (pointList == null || pointList.invalid())
@@ -78,6 +84,7 @@ public class Ground extends RendererObject {
         normalsBuffer.put(normals).position(0);
         texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         texcoordBuffer.put(texcoord).position(0);
+        buildingGround = new BuildingGround(this);
     }
 
     public Ground(PointList pointList, House house) {
@@ -100,6 +107,13 @@ public class Ground extends RendererObject {
     // 获取所属的房间
     public House getHouse() {
         return house;
+    }
+
+    /**
+     * 获取对应的三维地面
+     */
+    public BuildingGround getBuildingGround() {
+        return buildingGround;
     }
 
     /**
@@ -165,6 +179,7 @@ public class Ground extends RendererObject {
             if (cellCount == cellSize) {
                 // 刷新绑定材质
                 needLoadBitmap = true;
+                buildingGround.setNeedBindTexture(true);
                 refreshRender();
             }
         }
@@ -241,8 +256,6 @@ public class Ground extends RendererObject {
             }
             // 材质贴图不为空
             if (textureId != -1 && canDraw) {
-                // 关闭混色
-                GLES30.glDisable(GLES30.GL_BLEND);
                 // 顶点
                 GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
                 GLES30.glEnableVertexAttribArray(positionAttribute);

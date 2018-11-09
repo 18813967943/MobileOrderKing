@@ -189,6 +189,26 @@ public abstract class RendererObject {
     }
 
     /**
+     * 从资源中获取贴图
+     *
+     * @param id
+     * @return
+     */
+    public Bitmap createTextureWithRaw(int id) {
+        if (id <= 0)
+            return null;
+        Bitmap bitmap = null;
+        try {
+            InputStream fis = getContext().getResources().openRawResource(id);
+            bitmap = BitmapFactory.decodeStream(fis);
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
      * 刷新画布
      */
     public void refreshRender() {

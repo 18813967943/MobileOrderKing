@@ -30,6 +30,7 @@ public class TilesResult {
      * 对应的切割管理对象
      */
     private NSGPCManager gpcManager;
+    private float gap;
 
     /**
      * 所有切割结果区域列表
@@ -94,14 +95,14 @@ public class TilesResult {
             return;
         int color = gpcManager.getGapsColor();
         if (color == 0) { // 黑色砖缝
-            color = 0xFF333333;
+            color = 0xFF000000;
         } else if (color == -1) { // 白色砖缝
             color = 0xFFFFFFFF;
         }
-        gapPaint.setDither(true);
         gapPaint.setColor(color);
-        gapPaint.setStrokeWidth(0.1f);
-        gapPaint.setStyle(Paint.Style.FILL);
+        gapPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        gapPaint.setStrokeWidth(1f);
+        this.gap = this.gpcManager.getBrickGap();
         ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
         Path path = new PointList(transList).getPath(true);
         canvas.drawPath(path, gapPaint);

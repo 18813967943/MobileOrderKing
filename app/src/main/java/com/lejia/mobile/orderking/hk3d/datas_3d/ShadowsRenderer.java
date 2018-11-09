@@ -9,9 +9,21 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
+import com.lejia.mobile.orderking.hk3d.RendererState;
+import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.classes.PolyM;
+import com.lejia.mobile.orderking.hk3d.datas_2d.House;
+import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingWall;
 import com.lejia.mobile.orderking.hk3d.datas_3d.common.FPSCounter;
 import com.lejia.mobile.orderking.hk3d.datas_3d.common.RenderConstants;
 import com.lejia.mobile.orderking.hk3d.datas_3d.common.RenderProgram;
+import com.lejia.mobile.orderking.hk3d.datas_3d.tools.Scaling;
+
+import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -71,7 +83,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
      * Light source position in model space
      */
     private final float[] mLightPosModel = new float[]
-            {-5.0f, 9.0f, 0.0f, 1.0f};
+            {0.0f, 27.0f, -3.0f, 1.0f};
 
     public float[] mActualLightPosition = new float[4];
 
@@ -103,31 +115,21 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     public int scene_mapStepXUniform;
     public int scene_mapStepYUniform;
 
-    // Uniform locations for shadow render program
-    public int shadow_mvpMatrixUniform;
-
     // Shader program attribute locations
     public int scene_positionAttribute;
     public int scene_normalAttribute;
     public int scene_colorAttribute;
 
+    public int scene_SbaseMapUniform;
     public int scene_texcoordAttribute;
     public int scene_useSkinTexcoord_flag;
+    public int scene_uSpecular;
 
+    // Uniform locations for shadow render program
+    public int shadow_mvpMatrixUniform;
     public int shadow_positionAttribute;
 
-    public int texture_mvpMatrixUniform;
-    public int texture_positionAttribute;
-    public int texture_texCoordAttribute;
-    public int texture_textureUniform;
-
-    // Shapes that will be displayed
-    private Cube mCube;
-    private Cube mSmallCube0;
-    private Cube mSmallCube1;
-    private Cube mSmallCube2;
-    private Cube mSmallCube3;
-
+    // 展示地面
     private Plane mPlane;
 
     /**
@@ -138,39 +140,61 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     /**
      * 旋转设置
      */
-    public float rotateX;
     public float rotateY;
+
+    /**
+     * 平移设置
+     */
+    public float transY;
+
+    /**
+     * 摄像机位置
+     */
+    public float eyesX;
+    public float eyesY;
+    public float eyesZ = -12;
+
+    /**
+     * 视线
+     */
+    public float lookX;
+    public float lookY;
+    public float lookZ = 3000;
+
+    /**
+     * 平面数据管理对象
+     */
+    private HouseDatasManager houseDatasManager;
+
+    // 加载阴影FBO缓存区域标志
+    private boolean hadGenerateShadowFBO;
 
     public ShadowsRenderer(Context context) {
         this.mContext = context;
+        if (mContext != null) {
+            OrderKingApplication orderKingApplication = (OrderKingApplication) mContext.getApplicationContext();
+            Designer3DSurfaceView designer3DSurfaceView = orderKingApplication.getDesigner3DSurfaceView();
+            houseDatasManager = designer3DSurfaceView.getDesigner3DRender().getHouseDatasManager();
+        }
     }
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         mFPSCounter = new FPSCounter();
         // Test OES_depth_texture extension
         String extensions = GLES30.glGetString(GLES20.GL_EXTENSIONS);
         if (extensions.contains("OES_depth_texture"))
             mHasDepthTextureExtension = true;
-        //Set the background frame color
-        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         //Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        //arrange scene
-        //center cube
-        mCube = new Cube(new float[]{0.0f, 0.0f, 0.0f}, 3.0f, new float[]{0.0f, 0.0f, 1.0f, 1.0f});
-        //4 small cubes on the ground plane
-        mSmallCube0 = new Cube(new float[]{-4.0f, -3.9f, 4.0f}, 2.0f, new float[]{1.0f, 0.0f, 0.0f, 1.0f});
-        mSmallCube1 = new Cube(new float[]{4.0f, -3.9f, 4.0f}, 2.0f, new float[]{0.0f, 1.0f, 0.0f, 1.0f});
-        mSmallCube2 = new Cube(new float[]{4.0f, -3.9f, -4.0f}, 2.0f, new float[]{0.0f, 1.0f, 1.0f, 1.0f});
-        mSmallCube3 = new Cube(new float[]{-4.0f, -3.9f, -4.0f}, 2.0f, new float[]{1.0f, 0.0f, 1.0f, 1.0f});
+        //GLES20.glEnable(GLES20.GL_CULL_FACE);
         //ground
-        mPlane = new Plane();
+        mPlane = new Plane(mContext);
         //Set view matrix from eye position
         Matrix.setLookAtM(mViewMatrix, 0,
                 //eyeX, eyeY, eyeZ,
-                0, 1, -12,
+                eyesX, eyesY, eyesZ,
                 //lookX, lookY, lookZ,
                 0, 0, 0,
                 //upX, upY, upZ
@@ -190,12 +214,14 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                     R.raw.depth_tex_f_depth_map, mContext);
         }
         mActiveProgram = mPCFShadowDynamicBiasProgram.getProgram();
+        loadShaders();
     }
 
     /**
      * Sets up the framebuffer and renderbuffer to render to texture
      */
     public void generateShadowFBO() {
+        hadGenerateShadowFBO = true;
         mShadowMapWidth = Math.round(mDisplayWidth * mShadowMapRatio);
         mShadowMapHeight = Math.round(mDisplayHeight * mShadowMapRatio);
         fboId = new int[1];
@@ -248,7 +274,8 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         GLES20.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
 
         // Generate buffer where depth values are saved for shadow calculation
-        generateShadowFBO();
+        if (!hadGenerateShadowFBO)
+            generateShadowFBO();
 
         float ratio = (float) mDisplayWidth / mDisplayHeight;
 
@@ -257,7 +284,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         float bottom = -1.0f;
         float top = 1.0f;
         float near = 1.0f;
-        float far = 100.0f;
+        float far = 1000.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, bottom, top, near, far);
 
@@ -266,10 +293,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         //Matrix.frustumM(mLightProjectionMatrix, 0, -ratio, ratio, bottom, top, near, far);
     }
 
-    @Override
-    public void onDrawFrame(GL10 unused) {
-        // Write FPS information to console
-        mFPSCounter.logFrame();
+    private void loadShaders() {
         setRenderProgram();
         // Set program handles for cube drawing.
         scene_mvpMatrixUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.MVP_MATRIX_UNIFORM);
@@ -278,19 +302,25 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         scene_lightPosUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.LIGHT_POSITION_UNIFORM);
         scene_schadowProjMatrixUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.SHADOW_PROJ_MATRIX);
         scene_textureUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.SHADOW_TEXTURE);
+        scene_SbaseMapUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.SKIN_TEXTURE);
         scene_positionAttribute = GLES20.glGetAttribLocation(mActiveProgram, RenderConstants.POSITION_ATTRIBUTE);
         scene_normalAttribute = GLES20.glGetAttribLocation(mActiveProgram, RenderConstants.NORMAL_ATTRIBUTE);
         scene_colorAttribute = GLES20.glGetAttribLocation(mActiveProgram, RenderConstants.COLOR_ATTRIBUTE);
         scene_texcoordAttribute = GLES20.glGetAttribLocation(mActiveProgram, RenderConstants.TEX_COORDINATE);
         scene_useSkinTexcoord_flag = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.HAS_SKIN_FLAG);
+        scene_uSpecular = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.USE_SPECULAR);
         scene_mapStepXUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.SHADOW_X_PIXEL_OFFSET);
         scene_mapStepYUniform = GLES20.glGetUniformLocation(mActiveProgram, RenderConstants.SHADOW_Y_PIXEL_OFFSET);
-
         //shadow handles
         int shadowMapProgram = mDepthMapProgram.getProgram();
         shadow_mvpMatrixUniform = GLES20.glGetUniformLocation(shadowMapProgram, RenderConstants.MVP_MATRIX_UNIFORM);
         shadow_positionAttribute = GLES20.glGetAttribLocation(shadowMapProgram, RenderConstants.SHADOW_POSITION_ATTRIBUTE);
+    }
 
+    @Override
+    public void onDrawFrame(GL10 unused) {
+        // Write FPS information to console
+        mFPSCounter.logFrame();
         //--------------- calc values common for both renderers
         // light rotates around Y axis in every 12 seconds
         long elapsedMilliSec = SystemClock.elapsedRealtime();
@@ -300,6 +330,8 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(rotationMatrix, 0);
         Matrix.rotateM(rotationMatrix, 0, lightRotationDegree, 0.0f, 1.0f, 0.0f);
         Matrix.multiplyMV(mActualLightPosition, 0, rotationMatrix, 0, mLightPosModel, 0);
+        //System.out.println("####### mActualLightPosition : " + mActualLightPosition[0] + " , " + mActualLightPosition[1] + " , " + mActualLightPosition[2]);
+        //mActualLightPosition = new float[]{0, 27, -5, 1.0f};
         // set models Matrixs
         setModelMatrix();
         //Set view matrix from light source position
@@ -312,17 +344,24 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                 //upX, upY, upZ
                 //up vector in the direction of axisY
                 -mActualLightPosition[0], 0, -mActualLightPosition[2]);
-
+        // set real time person at
+        Matrix.setLookAtM(mViewMatrix, 0,
+                //eyeX, eyeY, eyeZ,
+                eyesX, eyesY, eyesZ,
+                //lookX, lookY, lookZ,
+                lookX, lookY, lookZ,
+                //upX, upY, upZ
+                0, 1, 0);
         //------------------------- render depth map --------------------------
 
         // Cull front faces for shadow generation to avoid self shadowing
-        GLES20.glCullFace(GLES20.GL_FRONT);
+        //GLES20.glCullFace(GLES20.GL_FRONT);
         renderShadowMap();
 
         //------------------------- render scene ------------------------------
 
         // Cull back faces for normal render
-        GLES20.glCullFace(GLES20.GL_BACK);
+        //GLES20.glCullFace(GLES20.GL_BACK);
         renderScene();
 
         // Print openGL errors to console
@@ -338,7 +377,10 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
      */
     private void setModelMatrix() {
         Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.scaleM(mModelMatrix, 0, -1.0f, 1.0f, 1.0f);
+        Matrix.rotateM(mModelMatrix, 0, -180, 0.0f, 1.0f, 0.0f);
         Matrix.rotateM(mModelMatrix, 0, rotateY, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mModelMatrix, 0, 0, transY, 0);
     }
 
     private void renderShadowMap() {
@@ -360,17 +402,42 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         System.arraycopy(tempResultMatrix, 0, mLightMvpMatrix_staticShapes, 0, 16);
         // Pass in the combined matrix.
         GLES20.glUniformMatrix4fv(shadow_mvpMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
-        // Render all stationary shapes on scene
-        mPlane.render(shadow_positionAttribute, 0, 0, true);
-        mSmallCube0.render(shadow_positionAttribute, 0, 0, true);
-        mSmallCube1.render(shadow_positionAttribute, 0, 0, true);
-        mSmallCube2.render(shadow_positionAttribute, 0, 0, true);
-        mSmallCube3.render(shadow_positionAttribute, 0, 0, true);
+        try {
+            // Render all stationary shapes on scene
+            // 仅绘制外墙面阴影
+            ArrayList<BuildingWall> insideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.OUTSIDE);
+            if (insideBuildingWallsList != null && insideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : insideBuildingWallsList) {
+                    buildingWall.render(shadow_positionAttribute, 0, 0, true);
+                }
+            }
+            // 闭合房间外墙面
+            ArrayList<BuildingWall> closeHouseOutsideBuildingWallsList = PolyM.getCloseHousesOutsideBuildingWallsList();
+            if (closeHouseOutsideBuildingWallsList != null && closeHouseOutsideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : closeHouseOutsideBuildingWallsList) {
+                    buildingWall.render(shadow_positionAttribute, 0, 0, true);
+                }
+            }
+            // 绘制地面
+            ArrayList<House> houseArrayList = houseDatasManager.getHousesList();
+            if (houseArrayList != null && houseArrayList.size() > 0) {
+                for (House house : houseArrayList) {
+                    BuildingGround buildingGround = house.ground.getBuildingGround();
+                    if (buildingGround != null) {
+                        buildingGround.render(shadow_positionAttribute, 0, 0, true);
+                    }
+                }
+            }
+            mPlane.render(shadow_positionAttribute, 0, 0, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void renderScene() {
         // bind default framebuffer
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         GLES20.glUseProgram(mActiveProgram);
         GLES20.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
@@ -412,12 +479,64 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE10);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, renderTextureId[0]);
         GLES20.glUniform1i(scene_textureUniform, 10);
-
-        mSmallCube0.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
-        mSmallCube1.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
-        mSmallCube2.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
-        mSmallCube3.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
-        mPlane.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+        try {
+            // 墙内面
+            ArrayList<BuildingWall> insideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.INSIDE);
+            if (insideBuildingWallsList != null && insideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : insideBuildingWallsList) {
+                    buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                }
+            }
+            // 闭合房间外墙面
+            ArrayList<BuildingWall> closeHouseOutsideBuildingWallsList = PolyM.getCloseHousesOutsideBuildingWallsList();
+            if (closeHouseOutsideBuildingWallsList != null && closeHouseOutsideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : closeHouseOutsideBuildingWallsList) {
+                    buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                }
+            }
+            // 未闭合房间墙外面
+            ArrayList<BuildingWall> outsideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.OUTSIDE);
+            if (outsideBuildingWallsList != null && outsideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : outsideBuildingWallsList) {
+                    buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                }
+            }
+            // 绘制地面
+            ArrayList<House> houseArrayList = houseDatasManager.getHousesList();
+            if (houseArrayList != null && houseArrayList.size() > 0) {
+                for (House house : houseArrayList) {
+                    BuildingGround buildingGround = house.ground.getBuildingGround();
+                    if (buildingGround != null) {
+                        buildingGround.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                    }
+                }
+            }
+            // 顶部厚度面
+            ArrayList<BuildingWall> topsideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.TOPSIDE);
+            if (topsideBuildingWallsList != null && topsideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : topsideBuildingWallsList) {
+                    buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                }
+            }
+            topsideBuildingWallsList = PolyM.getCloseHousesTopsideBuildingWallsList();
+            if (topsideBuildingWallsList != null && topsideBuildingWallsList.size() > 0) {
+                for (BuildingWall buildingWall : topsideBuildingWallsList) {
+                    buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                }
+            }
+            // 闭合房间顶面
+            if (!RendererState.isNot3D()) {
+                ArrayList<BuildingWall> roofBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.ROOF);
+                if (roofBuildingWallsList != null && roofBuildingWallsList.size() > 0) {
+                    for (BuildingWall buildingWall : roofBuildingWallsList) {
+                        buildingWall.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+                    }
+                }
+            }
+            mPlane.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -425,6 +544,31 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
      */
     private void setRenderProgram() {
         mActiveProgram = mPCFShadowDynamicBiasProgram.getProgram();
+    }
+
+    /**
+     * 轴侧展示
+     */
+    public void axisSide() {
+        rotateY = -40;
+        eyesX = 0;
+        eyesY = 4;
+        eyesZ = -12;
+        transY = -5;
+        lookZ = 0;
+    }
+
+    /**
+     * 进入房间
+     */
+    public void enterHouse() {
+        Point point = houseDatasManager.getEnterHouse3DInnerPosition();
+        rotateY = 0;
+        eyesX = Scaling.scaleSimpleValue((float) point.x);
+        eyesY = 0.8f;
+        eyesZ = -Scaling.scaleSimpleValue((float) point.y);
+        transY = -0.4f;
+        lookZ = 3000;
     }
 
 }

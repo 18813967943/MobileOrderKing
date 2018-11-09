@@ -133,9 +133,7 @@ public class PointList implements Parcelable {
             return null;
         ArrayList<Point> pointsList = new ArrayList<>();
         for (geom.Point point : geomList) {
-            Point point1 = new Point();
-            point1.x = point.x;
-            point1.y = point.y;
+            Point point1 = new Point(point.x, point.y);
             pointsList.add(point1);
         }
         return pointsList;
@@ -392,8 +390,26 @@ public class PointList implements Parcelable {
         Point[] array = new Point[pointsList.size()];
         int count = 0;
         for (Point point : pointsList) {
-            array[count] = point;
+            array[count] = point.copy();
             count++;
+        }
+        return array;
+    }
+
+    /**
+     * 转换成数值数组
+     *
+     * @return
+     */
+    public float[] toFloatArray() {
+        if (invalid())
+            return null;
+        float[] array = new float[2 * pointsList.size()];
+        for (int i = 0; i < pointsList.size(); i++) {
+            Point point = pointsList.get(i);
+            int index = 2 * i;
+            array[index] = (float) point.x;
+            array[index + 1] = (float) point.y;
         }
         return array;
     }
@@ -453,6 +469,21 @@ public class PointList implements Parcelable {
                 linesList.add(new Line(now.copy(), next.copy()));
         }
         return linesList;
+    }
+
+    /**
+     * 转化为对应的三维围点列表
+     */
+    public ArrayList<LJ3DPoint> to3DPointsList() {
+        if (invalid())
+            return null;
+        ArrayList<LJ3DPoint> lj3dList = new ArrayList<>();
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            Point now = pointsList.get(i);
+            lj3dList.add(now.toLJ3DPoint());
+        }
+        return lj3dList;
     }
 
     /**

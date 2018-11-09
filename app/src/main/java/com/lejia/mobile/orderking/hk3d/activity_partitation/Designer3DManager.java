@@ -1,7 +1,6 @@
 package com.lejia.mobile.orderking.hk3d.activity_partitation;
 
 import android.content.Context;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DRender;
@@ -9,6 +8,7 @@ import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.OnRenderStatesListener;
 import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsGLSurfaceView;
 import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsRenderer;
+import com.lejia.mobile.orderking.widgets.ScrollLayout;
 
 /**
  * Author by HEKE
@@ -19,7 +19,7 @@ import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsRenderer;
 public class Designer3DManager {
 
     private Context mContext;
-    private LinearLayout designer3dLayout;
+    private ScrollLayout designer3dLayout;
 
     // 三维平面控件
     private Designer3DSurfaceView designer3DSurfaceView;
@@ -40,14 +40,12 @@ public class Designer3DManager {
                 , LinearLayout.LayoutParams.MATCH_PARENT));
         designer3dLayout.addView(shadowsGLSurfaceView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT
                 , LinearLayout.LayoutParams.MATCH_PARENT));
-
-        // test
-        designer3DSurfaceView.setVisibility(View.GONE);
     }
 
-    public Designer3DManager(Context context, LinearLayout designer3dLayout) {
+    public Designer3DManager(Context context, ScrollLayout designer3dLayout) {
         mContext = context;
         this.designer3dLayout = designer3dLayout;
+        this.designer3dLayout.setScrollable(false);
         initViews();
     }
 
@@ -56,6 +54,29 @@ public class Designer3DManager {
      */
     public Designer3DRender getDesigner3DRender() {
         return designer3DRender;
+    }
+
+    /**
+     * 轴侧展示
+     */
+    public void toAxisSide() {
+        designer3dLayout.setToScreen(1);
+        shadowsRenderer.axisSide();
+    }
+
+    /**
+     * 进入房间展示
+     */
+    public void enterHouse() {
+        designer3dLayout.setToScreen(1);
+        shadowsRenderer.enterHouse();
+    }
+
+    /**
+     * 切至回平面
+     */
+    public void to2D() {
+        designer3dLayout.setToScreen(0);
     }
 
     /**

@@ -6,6 +6,7 @@ uniform sampler2D s_baseMap;
 uniform float uxPixelOffset;
 uniform float uyPixelOffset;
 uniform float useSkinTextures;
+uniform float uSpecular;
 in vec3 vPosition;
 in vec4 vColor;
 in vec3 vNormal;
@@ -18,6 +19,7 @@ void main()
 	lightVec = normalize(lightVec);
 	float diffuseComponent = max(0.0,dot(lightVec, vNormal) );
 	float ambientComponent = 0.3;
+	float specularComponent = uSpecular;
    	float shadow = 1.0;
 	if (vShadowCoord.w > 0.0) {
         for (float y = -1.5; y <= 1.5; y = y + 1.0) {
@@ -50,8 +52,8 @@ void main()
 	bool hasSkin = (useSkinTextures==1.0);
 	if(hasSkin){
 	   vec4 tcolors = texture(s_baseMap,vTexcoord);
-       outColor = tcolors * diffuseComponent + tcolors*ambientComponent*shadow;
+       outColor = tcolors * (diffuseComponent*shadow + ambientComponent + specularComponent);
 	}else{
-       outColor = vColor * diffuseComponent + vColor*ambientComponen *shadow;
+       outColor = vColor *( diffuseComponent + ambientComponen + specularComponent)*shadow;
     }
 }                                                                     	

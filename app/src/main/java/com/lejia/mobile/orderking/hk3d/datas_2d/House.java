@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
@@ -287,7 +288,6 @@ public abstract class House {
             wallsList.clear();
             int size = innerPointList.size();
             int hashCode = hashCode();
-            int cellHeight = 280;
             int index = 0;
             for (int i = 0; i < size; i++) {
                 Point inow = innerPointList.getIndexAt(i);
@@ -325,6 +325,19 @@ public abstract class House {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            createBuildingWalls();
+        }
+    }
+
+    /**
+     * 三维墙体创建
+     */
+    private void createBuildingWalls() {
+        Designer3DSurfaceView designer3DSurfaceView = ((OrderKingApplication) mContext.getApplicationContext()).getDesigner3DSurfaceView();
+        if (designer3DSurfaceView != null) {
+            HouseDatasManager houseDatasManager = designer3DSurfaceView.getDesigner3DRender().getHouseDatasManager();
+            houseDatasManager.createBuildingWalls();
         }
     }
 

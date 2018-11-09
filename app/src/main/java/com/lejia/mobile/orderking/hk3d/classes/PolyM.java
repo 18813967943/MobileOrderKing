@@ -1,6 +1,9 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
 import com.lejia.mobile.orderking.hk3d.datas_2d.House;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingWall;
+import com.lejia.mobile.orderking.hk3d.datas_3d.tools.Cell;
+import com.lejia.mobile.orderking.hk3d.datas_3d.tools.CellsRecord;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;
@@ -121,9 +124,81 @@ public class PolyM {
         } else {
             poliesMap.put(index, poly);
         }
-        // 打印测试结果，并生成立面墙体的外墙面
+        // 并生成立面墙体的外墙面
         if (poliesMap.size() > 0) {
+            createOutsideWalls();
         }
+    }
+
+    /**
+     * 闭合房间外立面列表
+     */
+    private static ArrayList<BuildingWall> closeHousesOutsideBuildingWallsList;
+    /**
+     * 闭合房间顶部厚度面列表
+     */
+    private static ArrayList<BuildingWall> closeHousesTopsideBuildingWallsList;
+
+    /**
+     * 创建闭合房间的外立面
+     */
+    private static void createOutsideWalls() {
+        if (closeHousesOutsideBuildingWallsList == null)
+            closeHousesOutsideBuildingWallsList = new ArrayList<>();
+        closeHousesOutsideBuildingWallsList.clear();
+        if (closeHousesTopsideBuildingWallsList == null)
+            closeHousesTopsideBuildingWallsList = new ArrayList<>();
+        closeHousesTopsideBuildingWallsList.clear();
+        Cell cell = CellsRecord.get(CellsRecord.current_edit_cell);
+        Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Poly> entry = iterator.next();
+            PointList centerList = PolyE.toPointList(entry.getValue());
+            centerList.setPointsList(centerList.antiClockwise());
+            PointList outterList = new PointList(centerList.offsetList(true, 12));
+            outterList.setPointsList(outterList.antiClockwise());
+            for (int i = 0; i < centerList.size(); i++) {
+                Point onow = outterList.getIndexAt(i);
+                Point cnow = centerList.getIndexAt(i);
+                Point onext = null;
+                Point cnext = null;
+                if (i == outterList.size() - 1) {
+                    onext = outterList.getIndexAt(0);
+                    cnext = centerList.getIndexAt(0);
+                } else {
+                    onext = outterList.getIndexAt(i + 1);
+                    cnext = centerList.getIndexAt(i + 1);
+                }
+                // 外墙体
+                ArrayList<Point> outsideList = new ArrayList<>();
+                outsideList.add(onow.copy());
+                outsideList.add(onext.copy());
+                BuildingWall outsideBuildingWall = new BuildingWall(cell, BuildingWall.Type.OUTSIDE, outsideList);
+                closeHousesOutsideBuildingWallsList.add(outsideBuildingWall);
+                // 顶面墙厚面
+                ArrayList<Point> topsideList = new ArrayList<>();
+                topsideList.add(onow.copy());
+                topsideList.add(onext.copy());
+                topsideList.add(cnext.copy());
+                topsideList.add(cnow.copy());
+                BuildingWall topsideBuildingWall = new BuildingWall(cell, BuildingWall.Type.TOPSIDE, topsideList);
+                closeHousesTopsideBuildingWallsList.add(topsideBuildingWall);
+            }
+        }
+    }
+
+    /**
+     * 获取闭合房间的组合外立面列表
+     */
+    public static ArrayList<BuildingWall> getCloseHousesOutsideBuildingWallsList() {
+        return closeHousesOutsideBuildingWallsList;
+    }
+
+    /**
+     * 获取闭合房间的顶部厚度面
+     */
+    public static ArrayList<BuildingWall> getCloseHousesTopsideBuildingWallsList() {
+        return closeHousesTopsideBuildingWallsList;
     }
 
     /**

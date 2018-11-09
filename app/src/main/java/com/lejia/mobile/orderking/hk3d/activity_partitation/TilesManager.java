@@ -471,6 +471,7 @@ public class TilesManager {
     private TileDirectionSelectorView.OnTileDirectionsSelectedListener onTileDirectionsSelectedListener = new TileDirectionSelectorView.OnTileDirectionsSelectedListener() {
         @Override
         public void selected(int direction) {
+            System.out.println("### direction : " + direction);
             // 设置当前选中地面的铺砖起铺方向
             Ground ground = getSelectedGround();
             if (ground != null) {

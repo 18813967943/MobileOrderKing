@@ -13,10 +13,12 @@ public class RenderConstants {
 	public static final String TEX_COORDINATE = "aTexcoord";
 	
 	public static final String SHADOW_TEXTURE = "uShadowTexture";
+	public static final String SKIN_TEXTURE = "s_baseMap";
 	public static final String SHADOW_PROJ_MATRIX = "uShadowProjMatrix";
 	public static final String SHADOW_X_PIXEL_OFFSET = "uxPixelOffset";
 	public static final String SHADOW_Y_PIXEL_OFFSET = "uyPixelOffset";
 	public static final String HAS_SKIN_FLAG = "useSkinTextures";
+	public static final String USE_SPECULAR = "uSpecular";
 	
 	public static final String SHADOW_POSITION_ATTRIBUTE = "aShadowPosition";
 	

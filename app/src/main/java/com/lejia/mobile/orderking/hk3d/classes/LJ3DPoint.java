@@ -156,6 +156,14 @@ public class LJ3DPoint implements Parcelable {
         return lj3DPoint;
     }
 
+    public LJ3DPoint reverser(){
+        LJ3DPoint lj3DPoint = new LJ3DPoint();
+        lj3DPoint.x = -x;
+        lj3DPoint.y = -y;
+        lj3DPoint.z = -z;
+        return lj3DPoint;
+    }
+
     /**
      * 缩放至指定倍数
      *

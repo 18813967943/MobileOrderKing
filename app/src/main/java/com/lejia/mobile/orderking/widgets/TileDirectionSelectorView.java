@@ -108,28 +108,28 @@ public class TileDirectionSelectorView extends View {
             gpcArea.pointsList = pointsList;
             switch (index) {
                 case 0:
-                    gpcArea.direction = GPCConfig.FROM_LEFT_TOP;
+                    gpcArea.direction = GPCConfig.FROM_RIGHT_TOP;
                     break;
                 case 1:
                     gpcArea.direction = GPCConfig.FROM_MIDDLE_TOP;
                     break;
                 case 2:
-                    gpcArea.direction = GPCConfig.FROM_RIGHT_TOP;
+                    gpcArea.direction = GPCConfig.FROM_LEFT_TOP;
                     break;
                 case 3:
-                    gpcArea.direction = GPCConfig.FROM_MIDDLE_RIGHT;
+                    gpcArea.direction = GPCConfig.FROM_MIDDLE_LEFT;
                     break;
                 case 4:
-                    gpcArea.direction = GPCConfig.FROM_RIGHT_BOTTOM;
+                    gpcArea.direction = GPCConfig.FROM_LEFT_BOTTOM;
                     break;
                 case 5:
                     gpcArea.direction = GPCConfig.FROM_MIDDLE_BOTTOM;
                     break;
                 case 6:
-                    gpcArea.direction = GPCConfig.FROM_LEFT_BOTTOM;
+                    gpcArea.direction = GPCConfig.FROM_RIGHT_BOTTOM;
                     break;
                 case 7:
-                    gpcArea.direction = GPCConfig.FROM_MIDDLE_LEFT;
+                    gpcArea.direction = GPCConfig.FROM_MIDDLE_RIGHT;
                     break;
                 case 8:
                     gpcArea.direction = GPCConfig.FROM_MIDDLE;

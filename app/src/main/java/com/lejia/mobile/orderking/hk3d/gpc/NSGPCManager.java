@@ -30,7 +30,7 @@ public class NSGPCManager {
     /**
      * 铺砖起始方向
      */
-    private int direction = GPCConfig.FROM_LEFT_TOP;
+    private int direction = GPCConfig.FROM_RIGHT_TOP;
 
     /**
      * 是否45°斜铺
@@ -45,7 +45,7 @@ public class NSGPCManager {
     /**
      * 砖缝厚度
      */
-    private float brickGap = 0.4f;
+    private float brickGap = 0.2f;
 
     /**
      * 铺砖结果对象

@@ -5,7 +5,8 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.view.MotionEvent;
+
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -23,6 +24,7 @@ public class ShadowsGLSurfaceView extends GLSurfaceView {
 
     private void init() {
         try {
+            // 基础设置
             ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
             ConfigurationInfo info = am.getDeviceConfigurationInfo();
             int v = info.reqGlEsVersion;
@@ -37,6 +39,7 @@ public class ShadowsGLSurfaceView extends GLSurfaceView {
             mRenderer = new ShadowsRenderer(getContext());
             setRenderer(mRenderer);
             setRenderMode(RENDERMODE_CONTINUOUSLY);
+            ((OrderKingApplication) getContext().getApplicationContext()).setShadowsGLSurfaceView(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -45,12 +48,6 @@ public class ShadowsGLSurfaceView extends GLSurfaceView {
     public ShadowsGLSurfaceView(Context context) {
         super(context);
         init();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-
-        return true;
     }
 
     public ShadowsRenderer getRenderer() {
@@ -78,7 +75,7 @@ public class ShadowsGLSurfaceView extends GLSurfaceView {
                     EGL10.EGL_DEPTH_SIZE, 16,
                     EGL10.EGL_STENCIL_SIZE, 0,
                     EGL10.EGL_SAMPLE_BUFFERS, 1,
-                    EGL10.EGL_SAMPLES, 2,  // 在这里修改MSAA的倍数，采用2层数据采样抗锯齿
+                    EGL10.EGL_SAMPLES, 3,  // 在这里修改MSAA的倍数，采用3层数据采样抗锯齿
                     EGL10.EGL_NONE
             };
             EGLConfig[] configs = new EGLConfig[1];

@@ -1,5 +1,6 @@
 package com.lejia.mobile.orderking.bases;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,6 +9,7 @@ import android.view.WindowManager;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
+import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsGLSurfaceView;
 import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
 
@@ -48,6 +50,11 @@ public class OrderKingApplication extends Application {
      * 三维平面数据渲染控件
      */
     private Designer3DSurfaceView designer3DSurfaceView;
+
+    /**
+     * 三维即时光影数据渲染控件
+     */
+    private ShadowsGLSurfaceView shadowsGLSurfaceView;
 
     /**
      * 单例程序上下文内容
@@ -196,6 +203,14 @@ public class OrderKingApplication extends Application {
         return designer3DSurfaceView;
     }
 
+    public ShadowsGLSurfaceView getShadowsGLSurfaceView() {
+        return shadowsGLSurfaceView;
+    }
+
+    public void setShadowsGLSurfaceView(ShadowsGLSurfaceView shadowsGLSurfaceView) {
+        this.shadowsGLSurfaceView = shadowsGLSurfaceView;
+    }
+
     /**
      * 渲染刷新渲染控件
      */
@@ -203,6 +218,26 @@ public class OrderKingApplication extends Application {
         if (designer3DSurfaceView == null)
             return;
         designer3DSurfaceView.requestRender();
+    }
+
+    /**
+     * 渲染刷新即时光影渲染控件
+     */
+    public void render3D() {
+        if (shadowsGLSurfaceView == null)
+            return;
+        shadowsGLSurfaceView.requestRender();
+    }
+
+    /**
+     * 在主进程中执行操作
+     *
+     * @param r
+     */
+    public void runOnMainUIThread(Runnable r) {
+        if (mainActivityContext == null || r == null)
+            return;
+        ((Activity) mainActivityContext).runOnUiThread(r);
     }
 
     /**

@@ -14,16 +14,20 @@ import com.lejia.mobile.orderking.hk3d.classes.PolyE;
 import com.lejia.mobile.orderking.hk3d.classes.PolyIntersectedResult;
 import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.lejia.mobile.orderking.hk3d.classes.PolyUM;
+import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.UncloseCheckResult;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.FurTypes;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.GeneralFurniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SimpleWindow;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.SingleDoor;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingWall;
+import com.lejia.mobile.orderking.hk3d.datas_3d.tools.BuildingWallsCreator;
 import com.lejia.mobile.orderking.hk3d.factory.PointsSplitor;
 import com.seisw.util.geom.Poly;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Author by HEKE
@@ -46,6 +50,8 @@ public class HouseDatasManager {
         this.housesList = new ArrayList<>();
         this.furnituresList = new ArrayList<>();
         this.furnitureArrayList = new ArrayList<>();
+        this.buildingWallsCreator = new BuildingWallsCreator(this, onBuildingWallsChangeListener);
+        this.buildingWallsCreator.start();
     }
 
     /**
@@ -746,6 +752,23 @@ public class HouseDatasManager {
         return copyHouseList;
     }
 
+    /**
+     * 获取整个绘制方案的最大区域组合
+     */
+    public RectD getOuterBox() {
+        ArrayList<House> houseArrayList = getHousesList();
+        if (houseArrayList == null)
+            return null;
+        ArrayList<Point> pointArrayList = new ArrayList<>();
+        for (House house : houseArrayList) {
+            pointArrayList.addAll(house.outerPointList.copy());
+        }
+        if (pointArrayList.size() == 0)
+            return null;
+        PointList pointList = new PointList(pointArrayList);
+        return pointList.getRectBox();
+    }
+
     /*****************************************
      *  拖动吸附处理
      * ***************************************/
@@ -860,6 +883,55 @@ public class HouseDatasManager {
             ret = lepsList.get(1);
         }
         return ret;
+    }
+
+    /***********************************************
+     *  三维数据刷新处理
+     * *********************************************/
+
+    private HashMap<Integer, ArrayList<BuildingWall>> buildingWallsMaps;
+    private BuildingWallsCreator buildingWallsCreator;
+
+    /**
+     * 创建所有墙体
+     */
+    public void createBuildingWalls() {
+        if (buildingWallsCreator != null) {
+            if (buildingWallsCreator.isExecutting()) {
+                buildingWallsCreator.forceInterrupt();
+            } else {
+                buildingWallsCreator.requestExcute();
+            }
+        }
+    }
+
+    // 墙体创建回调数据接口
+    private BuildingWallsCreator.OnBuildingWallsChangeListener onBuildingWallsChangeListener = new BuildingWallsCreator.OnBuildingWallsChangeListener() {
+        @Override
+        public void completed(HashMap<Integer, ArrayList<BuildingWall>> buildingWallsMaps) {
+            HouseDatasManager.this.buildingWallsMaps = buildingWallsMaps;
+        }
+    };
+
+    /**
+     * 获取所有墙体面
+     *
+     * @return
+     */
+    public HashMap<Integer, ArrayList<BuildingWall>> getBuildingWallsMaps() {
+        return buildingWallsMaps;
+    }
+
+    /**
+     * 获取对应类型的所有墙体面
+     *
+     * @param type
+     * @return
+     */
+    public ArrayList<BuildingWall> getBuildingWallsMapsWithType(int type) {
+        if (buildingWallsMaps == null || !buildingWallsMaps.containsKey(type))
+            return null;
+        return buildingWallsMaps.get(type);
     }
 
     /**

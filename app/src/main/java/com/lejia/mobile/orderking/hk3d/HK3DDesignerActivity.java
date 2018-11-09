@@ -24,6 +24,7 @@ import com.lejia.mobile.orderking.hk3d.activity_partitation.On3DTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TouchManager;
 import com.lejia.mobile.orderking.hk3d.housetype.UnitDiscern;
+import com.lejia.mobile.orderking.widgets.ScrollLayout;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
 
@@ -58,7 +59,7 @@ public class HK3DDesignerActivity extends Activity {
     @BindView(R.id.more)
     ImageButton more;
     @BindView(R.id.designer3dLayout)
-    LinearLayout designer3dLayout;
+    ScrollLayout designer3dLayout;
     @BindView(R.id.drawStates)
     ImageView drawStates;
     @BindView(R.id.detialsList)
@@ -147,8 +148,22 @@ public class HK3DDesignerActivity extends Activity {
                 cameraDrawSelectDialog.show();
                 break;
             case R.id.zhouce:
+                if (RendererState.isNot25D()) {
+                    RendererState.setRenderState(RendererState.STATE_25D);
+                    designer3DManager.toAxisSide();
+                } else {
+                    RendererState.setRenderState(RendererState.STATE_2D);
+                    designer3DManager.to2D();
+                }
                 break;
             case R.id.threed:
+                if (RendererState.isNot3D()) {
+                    RendererState.setRenderState(RendererState.STATE_3D);
+                    designer3DManager.enterHouse();
+                } else {
+                    RendererState.setRenderState(RendererState.STATE_2D);
+                    designer3DManager.to2D();
+                }
                 break;
             case R.id.more:
                 if (moreManager == null)
