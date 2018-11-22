@@ -52,7 +52,7 @@ public class ResponseEntity implements Parcelable {
     }
 
     public String getData() {
-        if (TextUtils.isTextEmpity(data))
+        if (TextUtils.isTextEmpty(data))
             return null;
         String json = null;
         try {
@@ -69,7 +69,7 @@ public class ResponseEntity implements Parcelable {
      * @param key
      */
     public String getJSonObject(String key) {
-        if (TextUtils.isTextEmpity(data))
+        if (TextUtils.isTextEmpty(data))
             return null;
         String json = null;
         try {
@@ -86,7 +86,7 @@ public class ResponseEntity implements Parcelable {
      * @param key
      */
     public JSONArray getJSonArray(String key) {
-        if (TextUtils.isTextEmpity(data))
+        if (TextUtils.isTextEmpty(data))
             return null;
         JSONArray array = null;
         try {
@@ -103,7 +103,7 @@ public class ResponseEntity implements Parcelable {
      * @param position
      */
     public String getJSonArray(int position) {
-        if (TextUtils.isTextEmpity(data))
+        if (TextUtils.isTextEmpty(data))
             return null;
         String json = null;
         try {

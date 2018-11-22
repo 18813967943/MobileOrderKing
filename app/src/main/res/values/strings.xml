@@ -1,7 +1,7 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Yi3D</string>
-    <string name="account">账号:</string>
-    <string name="password">密码:</string>
+    <string name="account">账号</string>
+    <string name="password">密码</string>
     <string name="register">注册</string>
     <string name="login">登入</string>
     <string name="forget_password">忘记密码?</string>
@@ -36,7 +36,6 @@
         <item>门</item>
         <item>窗</item>
         <item>吊顶</item>
-        <item>配饰</item>
         <item>方案</item>
     </string-array>
     <string name="accurate_input_xlong">长度:</string>

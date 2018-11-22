@@ -11,6 +11,7 @@ import java.util.ArrayList;
  * @time 2018/8/23 15:41
  * TODO: 大类数据区分
  */
+@Deprecated
 public class CatlogChecker {
 
     /**
@@ -32,7 +33,7 @@ public class CatlogChecker {
     public static int checkDoorOrWindow(int materialTypeId) {
         if (materialTypeId < 0 || CatlogChecker.furnitureCatlogList == null)
             return -1;
-        ArrayList<LJNodes> nodesList = CatlogChecker.furnitureCatlogList.getMaterialTypeList();
+        /*ArrayList<LJNodes> nodesList = CatlogChecker.furnitureCatlogList.getMaterialTypeList();
         for (LJNodes nodes : nodesList) {
             if (nodes.getId() == materialTypeId) {
                 String name = nodes.getName();
@@ -42,7 +43,7 @@ public class CatlogChecker {
                     return 1;
                 }
             }
-        }
+        }*/
         return -1;
     }
 

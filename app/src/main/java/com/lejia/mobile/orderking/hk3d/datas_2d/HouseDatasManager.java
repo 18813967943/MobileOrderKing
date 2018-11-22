@@ -1166,12 +1166,20 @@ public class HouseDatasManager {
         ((OrderKingApplication) mContext.getApplicationContext()).render();
     }
 
+    // 刷新三维画布
+    private void refreshRender3D() {
+        ((OrderKingApplication) mContext.getApplicationContext()).getShadowsGLSurfaceView().requestRender();
+    }
+
     // 清空房间数据列表
     public void laterClearWhen3DViewsClearFinished() {
         housesList.clear();
         furnituresList.clear();
         furnitureArrayList.clear();
+        buildingWallsMaps.clear();
+        PolyM.clear3DViews();
         refreshRender();
+        refreshRender3D();
     }
 
     /**

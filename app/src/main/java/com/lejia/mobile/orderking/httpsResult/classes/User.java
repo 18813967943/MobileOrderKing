@@ -57,7 +57,7 @@ public class User implements Parcelable {
     }
 
     public User(String user) {
-        if (!TextUtils.isTextEmpity(user)) {
+        if (!TextUtils.isTextEmpty(user)) {
             String[] vs = user.split("[|]");
             if (vs.length >= 25) {
                 id = Long.parseLong(vs[0]);
@@ -290,11 +290,12 @@ public class User implements Parcelable {
         return enterpriseInfo;
     }
 
+    @Deprecated
     public void setEnterpriseInfo(String enterpriseInfo) {
         this.enterpriseInfo = enterpriseInfo;
         // 解析对应的企业信息
         try {
-            if (!TextUtils.isTextEmpity(enterpriseInfo)) {
+            if (!TextUtils.isTextEmpty(enterpriseInfo) && !enterpriseInfo.equals("乐家")) {
                 JSONObject object = new JSONObject(enterpriseInfo);
                 enterprise = new Gson().fromJson(object.toString(), Enterprise.class);
             }

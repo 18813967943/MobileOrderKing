@@ -195,7 +195,7 @@ public class UnitDiscern {
      * @param resultJson
      */
     private void discern(String resultJson) {
-        if (TextUtils.isTextEmpity(resultJson))
+        if (TextUtils.isTextEmpty(resultJson))
             return;
         try {
             JSONObject object = new JSONObject(resultJson);

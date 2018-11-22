@@ -22,6 +22,8 @@
     <dimen name="d90dp">90dp</dimen>
     <dimen name="d100dp">100dp</dimen>
     <dimen name="d120dp">120dp</dimen>
+    <dimen name="d130dp">130dp</dimen>
+    <dimen name="d140dp">140dp</dimen>
     <dimen name="d150dp">150dp</dimen>
     <dimen name="d180dp">180dp</dimen>
     <dimen name="d200dp">200dp</dimen>

@@ -19,6 +19,7 @@ import geom.gpc.TileInfoList;
  * @time 2018/7/27 10:12
  * TODO: 单张材质铺贴
  */
+@Deprecated
 public class SingleTilePave {
 
     private Context mContext;
@@ -72,7 +73,7 @@ public class SingleTilePave {
      * @param isGap
      */
     private void createArea3D(TileInfoList tileInfoList, boolean isGap) {
-        String materialCode = tileDescription.getMaterialCode(0);
+        String materialCode = tileDescription.getMaterialCode(0, 0);
         ArrayList<ArrayList<geom.Point>> geomIntersectList = tileInfoList.intersect_point;
         ArrayList<ArrayList<geom.Point>> geomOriginList = tileInfoList.original_point;
         for (int i = 0; i < geomIntersectList.size(); i++) {

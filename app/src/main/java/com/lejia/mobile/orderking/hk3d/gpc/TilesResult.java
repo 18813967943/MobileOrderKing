@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * @time 2018/7/21 17:10
  * TODO: 铺砖结果存储对象
  */
+@Deprecated
 public class TilesResult {
 
     /**
@@ -113,8 +114,9 @@ public class TilesResult {
      *
      * @param area3D
      */
+    @Deprecated
     private void saveArea3DBitmap(Area3D area3D) {
-        Bitmap codeBitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode(), area3D.getStyleType());
+        /*Bitmap codeBitmap = gpcManager.getGround().getTileBitmap(area3D.getMaterialCode(), area3D.getStyleType());
         if (codeBitmap == null || codeBitmap.isRecycled())
             return;
         Bitmap bitmap = codeBitmap.copy(Bitmap.Config.ARGB_8888, true);
@@ -134,7 +136,7 @@ public class TilesResult {
         PointList pointList = new PointList(transList);
         RectD box = pointList.getRectBox();
         canvas.drawBitmap(bitmap, (float) box.left, (float) box.top, null);
-        bitmap.recycle();
+        bitmap.recycle();*/
     }
 
     /**

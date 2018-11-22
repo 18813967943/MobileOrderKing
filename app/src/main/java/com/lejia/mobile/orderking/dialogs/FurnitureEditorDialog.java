@@ -88,14 +88,6 @@ public class FurnitureEditorDialog extends Dialog {
                 houseDatasManager.mirror(selector);
                 break;
             case R.id.replace:
-                tilesManager.setFromReplace(true, new TilesManager.OnReplaceFurnitureListener() {
-                    @Override
-                    public void replaced(Furniture furniture) {
-                        houseDatasManager.relace(selector, furniture);
-                    }
-                });
-                tilesManager.setFlag(TilesManager.FLAG_LAYOUTS);
-                tilesManager.setTilesMenuLayoutShowFromNewCreate(true);
                 break;
             case R.id.delete:
                 houseDatasManager.delete(selector);

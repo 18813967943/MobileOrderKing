@@ -3,8 +3,7 @@
     xmlns:titles="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF"
-    >
+    android:background="#FFF">
 
     <RelativeLayout
         android:id="@+id/bottomLayout"
@@ -50,8 +49,8 @@
 
             <ImageButton
                 android:id="@+id/cameraDraw"
-                android:layout_width="@dimen/d30dp"
-                android:layout_height="@dimen/d30dp"
+                android:layout_width="@dimen/d40dp"
+                android:layout_height="@dimen/d40dp"
                 android:layout_marginLeft="@dimen/d8dp"
                 android:background="@drawable/cameradraw_selector" />
         </LinearLayout>
@@ -124,7 +123,8 @@
         android:layout_alignParentRight="true"
         android:background="#FFFFFFFE"
         android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        >
 
         <View
             android:layout_width="1px"

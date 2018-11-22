@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.lejia.mobile.orderking.bases.HttpsConfig;
-import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.https.OkHttpRequest;
 import com.lejia.mobile.orderking.https.ReqCallBack;
 import com.lejia.mobile.orderking.httpsResult.ResponseEntity;
@@ -22,7 +21,9 @@ import java.util.HashMap;
  *
  * @time 2018/7/12 8:54
  * TODO: 获取企业信息对应的服务器节点列表
+ * 20181116 去除使用
  */
+@Deprecated
 public class EnterPriseNodesList {
 
     private Context mContext;
@@ -59,7 +60,7 @@ public class EnterPriseNodesList {
                                 materialTypeList.add(nodes);
                             }
                             // 铺砖材质节点列表
-                            ((OrderKingApplication) mContext.getApplicationContext()).setMaterialTypeList(materialTypeList, result.toString());
+                            //((OrderKingApplication) mContext.getApplicationContext()).setMaterialTypeList(materialTypeList, result.toString());
                             // 获取模型节点列表
                             fetchFuritureNodes();
                         }
@@ -96,7 +97,7 @@ public class EnterPriseNodesList {
                                 materialTypeList.add(nodes);
                             }
                             // 存入模型节点列表
-                            ((OrderKingApplication) mContext.getApplicationContext()).setFurnitureMaterialTypeList(materialTypeList, result.toString());
+                            //((OrderKingApplication) mContext.getApplicationContext()).setFurnitureMaterialTypeList(materialTypeList, result.toString());
                             // 拉取大类节点列表
                             fetchCatlogList();
                         }
@@ -134,7 +135,7 @@ public class EnterPriseNodesList {
                             materialTypeList.add(nodes);
                         }
                         // 存储大类节点列表
-                        ((OrderKingApplication) mContext.getApplicationContext()).setFurnitureCatlogList(materialTypeList, result.toString());
+                        //((OrderKingApplication) mContext.getApplicationContext()).setFurnitureCatlogList(materialTypeList, result.toString());
                         // 回调完成
                         if (onEnterpriseNodesListCompeletedListener != null)
                             onEnterpriseNodesListCompeletedListener.done();

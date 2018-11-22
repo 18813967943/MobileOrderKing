@@ -52,7 +52,7 @@ public class SignIn {
     // 数据检测
     private void checkDatas() {
         // 数据为空提示填写完整信息
-        if (TextUtils.isTextEmpity(account) || TextUtils.isTextEmpity(password)) {
+        if (TextUtils.isTextEmpty(account) || TextUtils.isTextEmpty(password)) {
             if (errorMsg())
                 return;
             Toast.makeText(mContext, R.string.please_input_hole_datas, Toast.LENGTH_SHORT).show();

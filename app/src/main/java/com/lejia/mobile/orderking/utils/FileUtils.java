@@ -16,7 +16,7 @@ public class FileUtils {
      * @param absolutelyDir
      */
     public static boolean createDirectory(String absolutelyDir) {
-        if (TextUtils.isTextEmpity(absolutelyDir))
+        if (TextUtils.isTextEmpty(absolutelyDir))
             return false;
         try {
             File dir = new File(absolutelyDir);
@@ -39,7 +39,7 @@ public class FileUtils {
      * @param absolutelyFile
      */
     public static boolean createFile(String absolutelyFile) {
-        if (TextUtils.isTextEmpity(absolutelyFile))
+        if (TextUtils.isTextEmpty(absolutelyFile))
             return false;
         try {
             File file = new File(absolutelyFile);
@@ -62,7 +62,7 @@ public class FileUtils {
      * @param filePath
      */
     public static boolean deleteFile(String filePath) {
-        if (TextUtils.isTextEmpity(filePath))
+        if (TextUtils.isTextEmpty(filePath))
             return false;
         try {
             File file = new File(filePath);
@@ -82,7 +82,7 @@ public class FileUtils {
      * @param dir
      */
     public static boolean deleteAllFiles(String dir) {
-        if (TextUtils.isTextEmpity(dir))
+        if (TextUtils.isTextEmpty(dir))
             return false;
         try {
             File dirFile = new File(dir);

@@ -77,6 +77,7 @@ public class Designer3DManager {
      */
     public void to2D() {
         designer3dLayout.setToScreen(0);
+        shadowsGLSurfaceView.requestRender();
     }
 
     /**

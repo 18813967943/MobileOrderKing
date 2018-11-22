@@ -4,18 +4,19 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.lejia.mobile.orderking.R;
 import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.classes.ServiceNodesFetcher;
 import com.lejia.mobile.orderking.dialogs.CameraDrawSelectDialog;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.FurnitureTouchManager;
@@ -72,6 +73,11 @@ public class HK3DDesignerActivity extends Activity {
     RelativeLayout rightLayout;
 
     /**
+     * 服务资源节点数据对象
+     */
+    private ServiceNodesFetcher serviceNodesFetcher;
+
+    /**
      * 三维管理对象
      */
     private Designer3DManager designer3DManager;
@@ -108,8 +114,29 @@ public class HK3DDesignerActivity extends Activity {
     private CameraDrawSelectDialog cameraDrawSelectDialog;
 
     private void initViews() {
-        designer3DManager = new Designer3DManager(this, designer3dLayout);
-        tilesManager = new TilesManager(this, title, rightLayout, nodesList, detialsList, resGrid, drawStates, designer3DManager);
+        if (serviceNodesFetcher == null) {
+            serviceNodesFetcher = new ServiceNodesFetcher(this, new ServiceNodesFetcher.OnServiceNodesFetchedListener() {
+                @Override
+                public void fetchStatues(boolean error, String errorInfo) {
+                    // 正确加载完毕，执行数据创建
+                    if (!error) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                designer3DManager = new Designer3DManager(HK3DDesignerActivity.this, designer3dLayout);
+                                tilesManager = new TilesManager(HK3DDesignerActivity.this, title, rightLayout, nodesList,
+                                        detialsList, resGrid, drawStates, designer3DManager, serviceNodesFetcher);
+                            }
+                        });
+                    }
+                    // 服务资源节点加载失败，则关闭程序
+                    else {
+                        Log.e("Yi3D", "Service error -- " + errorInfo);
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -120,9 +147,21 @@ public class HK3DDesignerActivity extends Activity {
         super.setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         OrderKingApplication.setMainActivityContext(this);
-        initViews();
-        // 打开权限申请
+        // 打开权限申请，并执行控件相关操作，解决权限操作时序加载数据问题
         startActivityForResult(new Intent(this, PermissionsActivity.class), -1);
+    }
+
+    /**
+     * 加载控件
+     */
+    public void loadViews() {
+        initViews();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 
     @Override

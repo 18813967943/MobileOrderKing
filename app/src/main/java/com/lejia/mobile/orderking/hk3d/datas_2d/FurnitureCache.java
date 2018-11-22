@@ -35,7 +35,7 @@ public class FurnitureCache {
      * @param subset 模型子件
      */
     public static void put(String code, Subset subset) {
-        if (TextUtils.isTextEmpity(code) || subset == null)
+        if (TextUtils.isTextEmpty(code) || subset == null)
             return;
         if (existed(code))
             return;
@@ -48,7 +48,7 @@ public class FurnitureCache {
      * @param code
      */
     public static void remove(String code) {
-        if (TextUtils.isTextEmpity(code)) {
+        if (TextUtils.isTextEmpty(code)) {
             return;
         }
         if (!existed(code))
@@ -63,7 +63,7 @@ public class FurnitureCache {
      * @return
      */
     public static Subset get(String code) {
-        if (TextUtils.isTextEmpity(code)) {
+        if (TextUtils.isTextEmpty(code)) {
             return null;
         }
         if (!existed(code))

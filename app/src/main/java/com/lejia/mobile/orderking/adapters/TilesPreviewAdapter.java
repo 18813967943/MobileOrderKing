@@ -49,7 +49,7 @@ public class TilesPreviewAdapter extends BaseAdapter {
      * 获取预览图名称
      */
     private String getMaterialName(String url) {
-        if (TextUtils.isTextEmpity(url))
+        if (TextUtils.isTextEmpty(url))
             return null;
         String[] vs = url.split("[//]");
         return vs[vs.length - 1].split("[.]")[0];

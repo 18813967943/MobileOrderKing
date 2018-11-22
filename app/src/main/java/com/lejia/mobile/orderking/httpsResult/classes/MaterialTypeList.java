@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * @time 2018/7/12 10:31
  * TODO: 企业对应材质节点数据列表对象
  */
+@Deprecated
 public class MaterialTypeList implements Parcelable {
 
     public ArrayList<LJNodes> materialTypeList;
@@ -89,11 +90,12 @@ public class MaterialTypeList implements Parcelable {
      * @return 返回指定节点的详细节点数据列表
      */
     public ArrayList<LJNodes> getChildDetailsList(int position) {
-        if (materialTypeList == null || materialTypeList.size() == 0)
+       /* if (materialTypeList == null || materialTypeList.size() == 0)
             return null;
         if (position < 0 || position >= materialTypeList.size())
             return null;
-        return materialTypeList.get(position).getChildrenList();
+        return materialTypeList.get(position).getChildrenList();*/
+        return null;
     }
 
     /**
@@ -103,7 +105,7 @@ public class MaterialTypeList implements Parcelable {
      * @return
      */
     public LJNodes getChildByName(String nodeName) {
-        if (TextUtils.isTextEmpity(nodeName))
+        if (TextUtils.isTextEmpty(nodeName))
             return null;
         if (materialTypeList == null || materialTypeList.size() == 0)
             return null;

@@ -51,7 +51,6 @@ public class MoreManager {
                 case 0:
                     // 新建
                     houseDatasManager.clear();
-                    tilesManager.setTilesMenuLayoutShowFromNewCreate(false);
                     break;
                 case 1:
                     // 打开

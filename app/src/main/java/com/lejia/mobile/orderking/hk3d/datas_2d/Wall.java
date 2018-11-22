@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 public class Wall extends RendererObject {
 
-    private float[] colorValue = new float[]{0.1f, 0.1f, 0.1f, 1.0f}; // 颜色值
+    private float[] colorValue = new float[]{0.25f, 0.25f, 0.25f, 1.0f}; // 颜色值
     private float[] colors; // 墙体颜色
     private FloatBuffer colorsBuffer; // 颜色字节缓存
     private ArrayList<Point> pointsList; // 围点

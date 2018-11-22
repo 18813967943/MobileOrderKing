@@ -1,6 +1,5 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d;
 
-import android.graphics.Bitmap;
 import android.opengl.GLES30;
 
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
@@ -32,8 +31,7 @@ public class HouseName extends RendererObject {
     private boolean needBindTextureId;
 
     private void loadDatas() {
-        if (nameData == null)
-            return;
+        createNameTextureWithGroundBitmap();
         uuid = UUID.randomUUID().toString();
         nameData.pointList.setPointsList(nameData.pointList.antiClockwise());
         lj3DPointsList = nameData.pointList.to3dList();
@@ -59,28 +57,20 @@ public class HouseName extends RendererObject {
         texcoordBuffer.put(texcoord).position(0);
         indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
         indicesBuffer.put(indices).position(0);
+        needBindTextureId = true;
+        refreshRender();
     }
 
     public HouseName(PointList innerPointList) {
         this.innerPointList = innerPointList;
+        loadDatas();
     }
 
     /**
      * 根据地面铺砖贴图创建名称贴图材质
-     *
-     * @param bitmap
      */
-    public void createNameTextureWithGroundBitmap(Bitmap bitmap) {
-        if (bitmap == null || bitmap.isRecycled())
-            return;
-        nameData = RoomNameBitmapFactory.createRoomNameBitmap(null, innerPointList, bitmap);
-        // 初次创建
-        if (indices == null) {
-            loadDatas();
-        }
-        if (nameData != null)
-            needBindTextureId = true;
-        refreshRender();
+    public void createNameTextureWithGroundBitmap() {
+        nameData = RoomNameBitmapFactory.createRoomNameBitmap(null, innerPointList, null);
     }
 
     /**

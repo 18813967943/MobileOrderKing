@@ -4,20 +4,22 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.classes.ResUrlNodeXml;
+import com.lejia.mobile.orderking.classes.XInfo;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
-import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.DefaultTile;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.NormalPave;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.WaveLinesPave;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.WaveMutliPlan;
 import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
-import com.lejia.mobile.orderking.hk3d.gpc.NSGPCManager;
 import com.lejia.mobile.orderking.hk3d.gpc.OnTilesResultListener;
-import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -29,21 +31,26 @@ import java.util.UUID;
 public class Ground extends RendererObject {
 
     private House house; // 所属房间
-    private boolean needLoadBitmap; // 是否需要加载瓷砖贴图
     private boolean canDraw; // 是否可渲染
     private boolean needBindTextureId; // 是否需要打开绑定材质贴图标签
-    private boolean needRefreshNameTexture; // 是否需要刷新房间名称显示
     private boolean fromReplaceTiles; // 来自于瓷砖替换操作
     private PointList pointList; // 地面围点列表
-    private NSGPCManager gpcManager; // 切割管理对象
 
     /**
      * 瓷砖列表
      */
-    private ArrayList<TileDescription> tileDescriptionsList;
-    private int cellSize; // 层数
-    private int cellCount; // 层加载计数
     private Bitmap bitmap; // 组成位图
+
+    /**
+     * 普通砖铺砖
+     */
+    private NormalPave normalPave;
+
+    /**
+     * 波打线铺砖
+     */
+    private WaveLinesPave waveLinesPave;
+    private WaveMutliPlan waveLinesPaveRes;
 
     /**
      * 对应三维的地面
@@ -96,12 +103,96 @@ public class Ground extends RendererObject {
 
     // 默认加载地砖
     private void defaultLoadGroundTile() {
-        TileDescription tileDescription = ((OrderKingApplication) house.getContext().getApplicationContext()).getRandomTileDescription();
-        if (tileDescription != null) {
-            ArrayList<TileDescription> tileDescriptionsList = new ArrayList<>();
-            tileDescriptionsList.add(tileDescription);
-            setTileDescriptionsList(tileDescriptionsList);
+        OrderKingApplication orderKingApplication = (OrderKingApplication) getContext().getApplicationContext();
+        String defaultCode = orderKingApplication.getDefaultTileCode();
+        new DefaultTile(getContext(), defaultCode, new DefaultTile.OnDefaultTilesListener() {
+            @Override
+            public void compelet(XInfo xInfo, Bitmap bitmap) {
+                // 执行铺砖切割操作
+                normalPave = new NormalPave(pointList, null, xInfo, Ground.this, new OnTilesResultListener() {
+                    @Override
+                    public void textureJointCompleted(Bitmap bitmap) {
+                        // 刷新绑定操作
+                        Ground.this.bitmap = bitmap;
+                        needBindTextureId = true;
+                        refreshRender();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * 设置普通换砖
+     *
+     * @param resPath
+     */
+    public void setNormalPaveRes(final ResUrlNodeXml.ResPath resPath) {
+        if (resPath == null)
+            return;
+        // 释放上一次铺贴数据
+        if (normalPave != null) {
+            normalPave.release();
+            normalPave = null;
         }
+        // 已有波打线铺砖方案，则修改中心砖
+        if (waveLinesPave != null) {
+            normalPave = new NormalPave(resPath, new NormalPave.OnNoNeedTileListener() {
+                @Override
+                public void created() {
+                    setWaveLinesPaveRes(waveLinesPaveRes);
+                }
+            });
+        } else {
+            new DefaultTile(getContext(), resPath.name, new DefaultTile.OnDefaultTilesListener() {
+                @Override
+                public void compelet(XInfo xInfo, Bitmap bitmap) {
+                    // 执行铺砖切割操作
+                    normalPave = new NormalPave(pointList, resPath, xInfo, Ground.this, new OnTilesResultListener() {
+                        @Override
+                        public void textureJointCompleted(Bitmap bitmap) {
+                            refreshTileResult(bitmap);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    /**
+     * 设置波打线铺砖
+     *
+     * @param waveLinesPaveRes 波打线铺砖数据
+     */
+    public void setWaveLinesPaveRes(WaveMutliPlan waveLinesPaveRes) {
+        if (waveLinesPaveRes == null)
+            return;
+        this.waveLinesPaveRes = waveLinesPaveRes;
+        // 释放上一次铺贴数据
+        if (waveLinesPave != null) {
+            waveLinesPave.release();
+            waveLinesPave = null;
+        }
+        // 加载波打线
+        waveLinesPave = new WaveLinesPave(pointList, waveLinesPaveRes, normalPave, new OnTilesResultListener() {
+            @Override
+            public void textureJointCompleted(Bitmap bitmap) {
+                refreshTileResult(bitmap);
+            }
+        });
+    }
+
+    /**
+     * 刷新铺砖显示
+     *
+     * @param bitmap
+     */
+    private void refreshTileResult(Bitmap bitmap) {
+        Ground.this.bitmap = bitmap;
+        fromReplaceTiles = true;
+        needBindTextureId = true;
+        buildingGround.setNeedBindTexture(true);
+        refreshRender();
     }
 
     // 获取所属的房间
@@ -115,89 +206,6 @@ public class Ground extends RendererObject {
     public BuildingGround getBuildingGround() {
         return buildingGround;
     }
-
-    /**
-     * 设置铺砖数据内容
-     *
-     * @param tileDescriptionsList
-     */
-    public void setTileDescriptionsList(ArrayList<TileDescription> tileDescriptionsList) {
-        if (tileDescriptionsList == null || tileDescriptionsList.size() == 0)
-            return;
-        fromReplaceTiles = !TileDescription.isTileDescriptionListEquals(this.tileDescriptionsList, tileDescriptionsList);
-        this.tileDescriptionsList = tileDescriptionsList;
-        // 有效加载数据
-        if (this.tileDescriptionsList != null && this.tileDescriptionsList.size() > 0) {
-            cellSize = this.tileDescriptionsList.size();
-            cellCount = 0;
-            canDraw = false;
-            for (TileDescription tileDescription : this.tileDescriptionsList) {
-                tileDescription.loadBitmaps(onTileDescriptionLoadListener);
-            }
-        }
-    }
-
-    /**
-     * 获取地面内部的铺砖管理对象
-     */
-    public NSGPCManager getGpcManager() {
-        return gpcManager;
-    }
-
-    /**
-     * 根据材质编码获取材质位图
-     *
-     * @param materialCode 编码
-     * @return 返回对应贴图
-     */
-    public Bitmap getTileBitmap(String materialCode, int styleType) {
-        if (TextUtils.isTextEmpity(materialCode) || tileDescriptionsList == null)
-            return null;
-        Bitmap bmp = null;
-        // 普通铺砖、波打线
-        if (styleType <= 2) {
-            for (TileDescription tileDescription : tileDescriptionsList) {
-                bmp = tileDescription.getTileBitmap(materialCode);
-                if (bmp != null)
-                    break;
-            }
-        }
-        // 样式砖
-        else {
-        }
-        // 方案砖
-        return bmp;
-    }
-
-    /**
-     * 每层材质加载回调监听接口
-     */
-    private TileDescription.OnTileDescriptionLoadListener onTileDescriptionLoadListener = new TileDescription.OnTileDescriptionLoadListener() {
-        @Override
-        public void onLoaded() {
-            cellCount++;
-            if (cellCount == cellSize) {
-                // 刷新绑定材质
-                needLoadBitmap = true;
-                buildingGround.setNeedBindTexture(true);
-                refreshRender();
-            }
-        }
-    };
-
-    /**
-     * 铺砖完成结果监听对象
-     */
-    private OnTilesResultListener onTilesResultListener = new OnTilesResultListener() {
-        @Override
-        public void textureJointCompleted(Bitmap bitmap) {
-            if (bitmap != null) {
-                Ground.this.bitmap = bitmap;
-                needBindTextureId = true;
-                refreshRender();
-            }
-        }
-    };
 
     /**
      * 获取贴图
@@ -236,52 +244,34 @@ public class Ground extends RendererObject {
 
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        // 进行切割
-        if (needLoadBitmap) {
-            needLoadBitmap = false;
-            // 进行铺砖对象切割
-            if (gpcManager == null)
-                gpcManager = new NSGPCManager(pointList, tileDescriptionsList, this, onTilesResultListener);
-            gpcManager.setTileDescriptionsList(tileDescriptionsList);
+        // 加载材质贴图
+        if (needBindTextureId) {
+            needBindTextureId = false;
+            textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
+            canDraw = true;
+            fromReplaceTiles = false;
+            refreshRender();
         }
-        // 渲染内容
-        else {
-            // 加载材质贴图
-            if (needBindTextureId) {
-                needBindTextureId = false;
-                textureId = createTextureIdAndCache(uuid, bitmap, fromReplaceTiles);
-                canDraw = true;
-                needRefreshNameTexture = true;
-                refreshRender();
+        // 材质贴图不为空
+        if (textureId != -1 && canDraw) {
+            // 顶点
+            GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
+            GLES30.glEnableVertexAttribArray(positionAttribute);
+            if (!onlyPosition) {
+                // 法线
+                GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false, 12, normalsBuffer);
+                GLES30.glEnableVertexAttribArray(normalAttribute);
+                // 纹理
+                GLES30.glVertexAttribPointer(ViewingShader.scene_uv0, 2, GLES30.GL_FLOAT, false, 8, texcoordBuffer);
+                GLES30.glEnableVertexAttribArray(ViewingShader.scene_uv0);
+                // 贴图
+                GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+                GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
+                // 着色器使用标志
+                GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
             }
-            // 材质贴图不为空
-            if (textureId != -1 && canDraw) {
-                // 顶点
-                GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false, 12, vertexsBuffer);
-                GLES30.glEnableVertexAttribArray(positionAttribute);
-                if (!onlyPosition) {
-                    // 法线
-                    GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false, 12, normalsBuffer);
-                    GLES30.glEnableVertexAttribArray(normalAttribute);
-                    // 纹理
-                    GLES30.glVertexAttribPointer(ViewingShader.scene_uv0, 2, GLES30.GL_FLOAT, false, 8, texcoordBuffer);
-                    GLES30.glEnableVertexAttribArray(ViewingShader.scene_uv0);
-                    // 贴图
-                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
-                    GLES30.glUniform1i(ViewingShader.scene_s_baseMap, 0);
-                    // 着色器使用标志
-                    GLES30.glUniform1f(ViewingShader.scene_only_color, 0.0f);
-                }
-                GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
-                // TODO 刷新房间名称显示
-                if (needRefreshNameTexture) {
-                    needRefreshNameTexture = false;
-                    if (house.houseName != null) {
-                        house.houseName.createNameTextureWithGroundBitmap(bitmap);
-                    }
-                }
-            }
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
         }
     }
 

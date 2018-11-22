@@ -65,6 +65,7 @@ public class BuildingGround extends Render3DObject {
         this.needBindTexture = needBindTexture;
         if (needBindTexture)
             textureId = -1;
+        refreshRender();
     }
 
     /**
@@ -82,6 +83,7 @@ public class BuildingGround extends Render3DObject {
             textureId = createTextureIdAndCache(uuid, textureBitmap, true);
             needBindTexture = false;
         }
+        refreshRender();
     }
 
     @Override

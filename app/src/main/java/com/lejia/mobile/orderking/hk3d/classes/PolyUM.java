@@ -80,7 +80,7 @@ public class PolyUM {
      * @param poly
      */
     public static void put(String hashCode, Poly poly) {
-        if (TextUtils.isTextEmpity(hashCode) || poly == null || poly.isEmpty())
+        if (TextUtils.isTextEmpty(hashCode) || poly == null || poly.isEmpty())
             return;
         Poly ip = poliesMap.get(hashCode);
         if (ip == null) { // 不存在加入
@@ -98,7 +98,7 @@ public class PolyUM {
      * @param hashCode
      */
     public static void remove(String hashCode) {
-        if (TextUtils.isTextEmpity(hashCode))
+        if (TextUtils.isTextEmpty(hashCode))
             return;
         poliesMap.remove(hashCode);
     }

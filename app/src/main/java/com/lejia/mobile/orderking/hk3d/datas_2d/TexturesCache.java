@@ -30,7 +30,7 @@ public class TexturesCache {
      * @param bitmap
      */
     public static synchronized void put(String key, int textureId, Bitmap bitmap) {
-        if (TextUtils.isTextEmpity(key) || bitmap == null || bitmap.isRecycled())
+        if (TextUtils.isTextEmpty(key) || bitmap == null || bitmap.isRecycled())
             return;
         Texture texture = new Texture();
         texture.key = key;
@@ -46,7 +46,7 @@ public class TexturesCache {
      * @return 对应贴图
      */
     public static Texture get(String key) {
-        if (TextUtils.isTextEmpity(key))
+        if (TextUtils.isTextEmpty(key))
             return null;
         return staticMap.get(key);
     }

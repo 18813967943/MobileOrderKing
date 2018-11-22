@@ -29,9 +29,13 @@ public class FetchLocal {
      */
     private OnAsyncPullListener onAsyncPullListener; // 异步拉取回调数据接口
 
+    /**
+     * 异步保存文件回调状态接口
+     */
+    private OnAsyncPushListener onAsyncPushListener;
+
     public FetchLocal(String path) {
         this.path = path;
-
     }
 
     /**
@@ -61,7 +65,7 @@ public class FetchLocal {
                                 if (i == lastIndex) {
                                     rootPath += ("/" + splitorValues[i] + "/");
                                 } else if (i < lastIndex) {
-                                    if (!TextUtils.isTextEmpity(splitorValues[i]))
+                                    if (!TextUtils.isTextEmpty(splitorValues[i]))
                                         rootPath += ("/" + splitorValues[i]);
                                 }
                             }
@@ -89,6 +93,73 @@ public class FetchLocal {
                     e.printStackTrace();
                 }
                 return null;
+            }
+        }.execute(content);
+    }
+
+    /**
+     * 写入文件内容
+     *
+     * @param content
+     */
+    @SuppressLint("StaticFieldLeak")
+    public void pushAsync(String content, OnAsyncPushListener listener) {
+        this.onAsyncPushListener = listener;
+        new AsyncTask<String, Integer, String>() {
+            @Override
+            protected String doInBackground(String... params) {
+                try {
+                    // 先获取文件数据流
+                    File file = new File(path);
+                    if (!file.exists()) {
+                        if (file.isDirectory()) {
+                            file.setExecutable(true);
+                            file.setReadable(true);
+                            file.setWritable(true);
+                            file.mkdirs();
+                        } else {
+                            String[] splitorValues = file.getAbsolutePath().split("[//]");
+                            String rootPath = "";
+                            for (int i = 0; i < splitorValues.length; i++) {
+                                int lastIndex = splitorValues.length - 2;
+                                if (i == lastIndex) {
+                                    rootPath += ("/" + splitorValues[i] + "/");
+                                } else if (i < lastIndex) {
+                                    if (!TextUtils.isTextEmpty(splitorValues[i]))
+                                        rootPath += ("/" + splitorValues[i]);
+                                }
+                            }
+                            File dir = new File(rootPath);
+                            if (!dir.exists()) {
+                                dir.setExecutable(true);
+                                dir.setReadable(true);
+                                dir.setWritable(true);
+                                dir.mkdirs();
+                            }
+                            file.setExecutable(true);
+                            file.setReadable(true);
+                            file.setWritable(true);
+                            file.createNewFile();
+                        }
+                    } else {
+                        return null;
+                    }
+                    // 获取文件数据流
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(params[0].getBytes());
+                    fos.flush();
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                if (onAsyncPushListener != null)
+                    onAsyncPushListener.pushCompleted();
             }
         }.execute(content);
     }
@@ -179,6 +250,16 @@ public class FetchLocal {
      */
     public interface OnAsyncPullListener {
         void pullCompleted(String contents);
+    }
+
+    /**
+     * Author by HEKE
+     *
+     * @time 2018/11/16 13:10
+     * TODO: 异步保存回调监听接口
+     */
+    public interface OnAsyncPushListener {
+        void pushCompleted();
     }
 
 }

@@ -12,10 +12,12 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.Ray;
 import com.lejia.mobile.orderking.hk3d.datas_2d.DummyGround;
+import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
 
 import java.util.ArrayList;
 
@@ -149,8 +151,8 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         //Set view matrix from light source position
         Matrix.setLookAtM(ViewingMatrixs.mViewMatrix, 0, eyesX, eyesY, eyesZ,
                 lookX, lookY, lookZ, 0, 1, 0);
-        //------------------------- render scene ------------------------------
-        // normal render
+        //------------------------- refreshRender scene ------------------------------
+        // normal refreshRender
         renderScene();
         // release datas
         if (release) {
@@ -204,7 +206,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(depthBiasMVP, 0, bias, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0);
         System.arraycopy(depthBiasMVP, 0, LightMatrixs.mLightMvpMatrix_staticShapes, 0, 16);
 
-        //MVP matrix that was used during depth map render
+        //MVP matrix that was used during depth map refreshRender
         GLES30.glUniformMatrix4fv(ViewingShader.scene_schadowProjMatrixUniform, 1, false,
                 LightMatrixs.mLightMvpMatrix_staticShapes, 0);
     }
@@ -531,10 +533,24 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         ArrayList<House> housesList = houseDatasManager.getHousesList();
         if (housesList != null && housesList.size() > 0) {
             for (House house : housesList) {
+                // 2D数据
                 ArrayList<RendererObject> rendererObjectsList = house.getTotalRendererObjectList();
                 if (rendererObjectsList != null && rendererObjectsList.size() > 0) {
                     for (RendererObject rendererObject : rendererObjectsList) {
                         rendererObject.release();
+                    }
+                }
+                // 3D数据
+                Ground ground = house.ground;
+                if (ground != null) {
+                    final BuildingGround buildingGround = ground.getBuildingGround();
+                    if (buildingGround != null) {
+                        buildingGround.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                buildingGround.release();
+                            }
+                        });
                     }
                 }
             }

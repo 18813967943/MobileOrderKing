@@ -128,7 +128,7 @@ public class Selector extends RendererObject {
             GLES30.glVertexAttribPointer(colorAttribute, 4, GLES30.GL_FLOAT, false,
                     16, colorsBuffer);
             GLES30.glEnableVertexAttribArray(colorAttribute);
-            // use color only render
+            // use color only refreshRender
             GLES30.glUniform1f(ViewingShader.scene_only_color, 1.0f);
         }
         // draw selector lines

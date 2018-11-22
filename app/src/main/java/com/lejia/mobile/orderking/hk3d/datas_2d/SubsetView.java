@@ -57,7 +57,7 @@ public class SubsetView extends RendererObject {
                 texcoord[i] = Float.parseFloat(uvArray[i]);
             }
         }
-        if (!TextUtils.isTextEmpity(normalsStr)) {
+        if (!TextUtils.isTextEmpty(normalsStr)) {
             String[] normalsArray = normalsStr.split("[,]");
             normals = new float[normalsArray.length];
             for (int i = 0; i < normalsArray.length; i++) {

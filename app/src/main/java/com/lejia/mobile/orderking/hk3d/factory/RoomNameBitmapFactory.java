@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
-import com.lejia.mobile.orderking.hk3d.classes.L3DMatrix;
 import com.lejia.mobile.orderking.hk3d.classes.NameData;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
@@ -44,7 +43,7 @@ public class RoomNameBitmapFactory {
             Point roomNameAtPoint = pointList.getInnerValidPoint(false);
             RectD houseInnerBox = pointList.getRectBox();
             // 房间名称为null，自动根据面积选择
-            if (TextUtils.isTextEmpity(roomName)) {
+            if (TextUtils.isTextEmpty(roomName)) {
                 // 客餐厅
                 if (area > 22.0d) {
                     roomName = "客餐厅";

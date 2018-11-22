@@ -38,7 +38,7 @@ public class ShadowsGLSurfaceView extends GLSurfaceView {
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mRenderer = new ShadowsRenderer(getContext());
             setRenderer(mRenderer);
-            setRenderMode(RENDERMODE_CONTINUOUSLY);
+            setRenderMode(RENDERMODE_WHEN_DIRTY);
             ((OrderKingApplication) getContext().getApplicationContext()).setShadowsGLSurfaceView(this);
         } catch (Exception e) {
             e.printStackTrace();

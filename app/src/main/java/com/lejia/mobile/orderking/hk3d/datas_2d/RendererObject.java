@@ -101,7 +101,7 @@ public abstract class RendererObject {
      * @return 返回材质纹理对应渲染编号
      */
     public int createTextureIdAndCache(String key, Bitmap bitmap, boolean fromReplaceTiles) {
-        if (TextUtils.isTextEmpity(key) || bitmap == null || bitmap.isRecycled())
+        if (TextUtils.isTextEmpty(key) || bitmap == null || bitmap.isRecycled())
             return -1;
         int[] textureId = new int[1];
         try {

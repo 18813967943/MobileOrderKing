@@ -104,7 +104,6 @@ public class On3DTouchManager {
                             boolean gotoHouse = !RendererState.isNot3D();
                             if (gotoHouse) {
                                 if (Math.abs(x) > Math.abs(y)) {
-
                                 }
                             }
                             down.setXY(move.x, move.y);

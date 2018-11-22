@@ -44,7 +44,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     private void initToolbar() {
-        toolbar =findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
@@ -96,6 +96,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         View view = super.findViewById(R.id.title);
         if (view != null) {
             ((TextView) view).setText(getString(id));
+        }
+    }
+
+    /**
+     * 设置顶部返回按钮是否显示
+     *
+     * @param hasBackButton
+     */
+    protected void setHasBackButton(boolean hasBackButton) {
+        View view = super.findViewById(R.id.back);
+        if (view != null) {
+            view.setVisibility(hasBackButton ? View.VISIBLE : View.GONE);
         }
     }
 

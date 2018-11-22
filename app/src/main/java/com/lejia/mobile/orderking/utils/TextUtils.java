@@ -17,7 +17,7 @@ public class TextUtils {
      * @param text
      * @return
      */
-    public static boolean isTextEmpity(String text) {
+    public static boolean isTextEmpty(String text) {
         return text == null || text.trim().length() == 0;
     }
 

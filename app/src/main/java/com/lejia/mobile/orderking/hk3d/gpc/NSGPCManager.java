@@ -20,6 +20,7 @@ import geom.gpc.GPCConfig;
  * @time 2018/7/10 9:51
  * TODO: 切割管理对象
  */
+@Deprecated
 public class NSGPCManager {
 
     private Context mContext;

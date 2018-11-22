@@ -14,7 +14,7 @@ import com.lejia.mobile.orderking.R;
  * @time 2018/7/20 15:58
  * TODO: 铺砖、布置菜单栏右边图标展示适配器
  */
-public class TilesRightIconsAdapter extends BaseAdapter {
+public class RightIconsAdapter extends BaseAdapter {
 
     private Context mContext;
     private int[] normalIcons; // 常态下正常显示图标
@@ -22,7 +22,7 @@ public class TilesRightIconsAdapter extends BaseAdapter {
 
     private int selectePosition = -1; // 选中位置
 
-    public TilesRightIconsAdapter(Context context, int[] normalIcons, int[] selectedIcons) {
+    public RightIconsAdapter(Context context, int[] normalIcons, int[] selectedIcons) {
         mContext = context;
         this.normalIcons = normalIcons;
         this.selectedIcons = selectedIcons;

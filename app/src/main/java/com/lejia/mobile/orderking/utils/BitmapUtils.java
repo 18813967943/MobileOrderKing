@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.Base64;
 
+import com.lejia.mobile.orderking.classes.XInfo;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 
 import java.io.ByteArrayInputStream;
@@ -237,7 +238,7 @@ public class BitmapUtils {
      * @param pointsList
      * @return
      */
-    public static Bitmap rotateWithCenter(Bitmap bitmap, int degree, ArrayList<Point> pointsList) {
+    public static Bitmap rotateWithCenter(Bitmap bitmap, float degree, ArrayList<Point> pointsList) {
         if (bitmap == null || bitmap.isRecycled())
             return null;
         int width = bitmap.getWidth();
@@ -248,6 +249,62 @@ public class BitmapUtils {
         drawBitmap.setHasAlpha(true);
         bitmap.recycle();
         return drawBitmap;
+    }
+
+    /**
+     * 指定图片宽高加载网络瓷砖对应的贴图材质位图
+     *
+     * @param xInfo
+     * @param length
+     * @param width
+     * @return
+     */
+    public static Bitmap createBitmapByXInfo(XInfo xInfo, float length, float width) {
+        if (xInfo == null)
+            return null;
+        Bitmap bitmap = null;
+        try {
+            byte[] buffer = xInfo.previewBuffer;
+            if (buffer == null || buffer.length == 0)
+                return null;
+            Bitmap nowBmp = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
+            float scaleWidth = length * 0.1f / nowBmp.getWidth();
+            float scaleHeight = width * 0.1f / nowBmp.getHeight();
+            Matrix scale = new Matrix();
+            scale.setScale(scaleWidth, scaleHeight);
+            bitmap = Bitmap.createBitmap(nowBmp, 0, 0, nowBmp.getWidth(), nowBmp.getHeight(), scale, true);
+            nowBmp.recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 加载网络瓷砖对应的贴图材质位图
+     *
+     * @param xInfo
+     * @return
+     */
+    public static Bitmap createBitmapByXInfo(XInfo xInfo) {
+        if (xInfo == null)
+            return null;
+        Bitmap bitmap = null;
+        try {
+            byte[] buffer = xInfo.previewBuffer;
+            if (buffer == null || buffer.length == 0)
+                return null;
+            Bitmap nowBmp = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
+            float scaleWidth = xInfo.X * 0.1f / nowBmp.getWidth();
+            float scaleHeight = xInfo.Y * 0.1f / nowBmp.getHeight();
+            Matrix scale = new Matrix();
+            scale.setScale(scaleWidth, scaleHeight);
+            bitmap = Bitmap.createBitmap(nowBmp, 0, 0, nowBmp.getWidth(), nowBmp.getHeight(), scale, true);
+            nowBmp.recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
 }

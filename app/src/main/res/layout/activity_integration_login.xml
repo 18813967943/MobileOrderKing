@@ -1,0 +1,75 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFFFF">
+
+    <LinearLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include
+                android:id="@+id/topBarLayout"
+                layout="@layout/top_bar_lessuse"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/top_bar_height"
+                android:layout_alignParentTop="true" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/topBarLayout"
+                android:background="@color/white"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/enter_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/large"
+                    android:layout_marginLeft="@dimen/middle"
+                    android:layout_marginRight="@dimen/middle"
+                    android:layout_marginTop="@dimen/large"
+                    android:background="@mipmap/bg_edittext"
+                    android:drawableRight="@drawable/selector_user_login"
+                    android:hint="@string/account"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    android:textSize="@dimen/large_size">
+
+                    <requestFocus />
+                </EditText>
+
+                <EditText
+                    android:id="@+id/enter_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/middle"
+                    android:layout_marginRight="@dimen/middle"
+                    android:background="@mipmap/bg_edittext"
+                    android:drawableRight="@drawable/selector_password_login"
+                    android:hint="@string/password"
+                    android:inputType="textPassword"
+                    android:padding="10dp"
+                    android:textSize="@dimen/large_size" />
+
+                <Button
+                    android:id="@+id/loginBut"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/middle"
+                    android:layout_marginRight="@dimen/middle"
+                    android:layout_marginTop="@dimen/middle"
+                    android:background="@drawable/unselector_button"
+                    android:text="@string/login"
+                    android:textColor="#FFACAFAC"
+                    android:textSize="@dimen/big_large_size" />
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -139,6 +139,7 @@ public class BuildingWall extends Render3DObject {
             String path = "use_textures/" + textureName + ".jpg";
             textureBitmap = createTextureWithAssets(path);
             textureId = createTextureIdAndCache(textureName, textureBitmap, false);
+            refreshRender();
         }
     }
 

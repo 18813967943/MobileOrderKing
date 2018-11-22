@@ -26,7 +26,7 @@ public class ValidateCode implements Parcelable {
     }
 
     public boolean isValid() {
-        return !TextUtils.isTextEmpity(id);
+        return !TextUtils.isTextEmpty(id);
     }
 
     public String getId() {

@@ -56,7 +56,7 @@ public class TouchManager {
                 return true;
             }
             // 绘制方法类型
-            int drawState = tilesManager.getDrawState();
+            int drawState = tilesManager.getDrawStatues();
             switch (drawState) {
                 case TilesManager.DRAW_RECT:
                     // 矩形画房间
@@ -185,7 +185,7 @@ public class TouchManager {
             // 移除当前编辑的房间
             if (needRemoveCurrentEditHouse) {
                 needRemoveCurrentEditHouse = false;
-                int drawState = tilesManager.getDrawState();
+                int drawState = tilesManager.getDrawStatues();
                 switch (drawState) {
                     case TilesManager.DRAW_RECT:
                         // 矩形画房间
@@ -308,7 +308,7 @@ public class TouchManager {
                         new AccurateInputDialog(mContext, rectHouse, AccurateInputDialog.RECT, new AccurateInputDialog.OnAccurateInputListener() {
                             @Override
                             public void onInputed(int xlong, int width, int height, int flag) {
-                                rectHouse.accurateSet(width/ 10, height / 10);
+                                rectHouse.accurateSet(width / 10, height / 10);
                                 // 检测闭合房间切割组合
                                 houseDatasManager.gpcClosedCheck(rectHouse);
                             }

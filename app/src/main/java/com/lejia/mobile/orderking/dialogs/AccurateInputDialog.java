@@ -118,9 +118,9 @@ public class AccurateInputDialog extends Dialog {
                 String lonStr = xlong.getText().toString();
                 String widStr = width.getText().toString();
                 String heiStr = height.getText().toString();
-                int lonVal = TextUtils.isTextEmpity(lonStr) ? 0 : Integer.parseInt(lonStr);
-                int widVal = TextUtils.isTextEmpity(widStr) ? 0 : Integer.parseInt(widStr);
-                int heiVal = TextUtils.isTextEmpity(heiStr) ? 0 : Integer.parseInt(heiStr);
+                int lonVal = TextUtils.isTextEmpty(lonStr) ? 0 : Integer.parseInt(lonStr);
+                int widVal = TextUtils.isTextEmpty(widStr) ? 0 : Integer.parseInt(widStr);
+                int heiVal = TextUtils.isTextEmpty(heiStr) ? 0 : Integer.parseInt(heiStr);
                 if (onAccurateInputListener != null) {
                     onAccurateInputListener.onInputed(lonVal, widVal, heiVal, flag);
                 }

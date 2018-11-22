@@ -119,13 +119,32 @@ public class TileDescription implements Parcelable {
      * 加载所有贴图
      */
     public void loadBitmaps(OnTileDescriptionLoadListener onTileDescriptionLoadListener) {
-        if (materialList == null || materialList.size() == 0)
-            return;
-        this.onTileDescriptionLoadListener = onTileDescriptionLoadListener;
-        this.size = materialList.size();
-        this.count = 0;
-        for (Tile tile : materialList) {
-            tile.getBitmap(onTileBitmapListener);
+        // 样式、方案铺砖
+        if (styliesMaterialList != null && styliesMaterialList.size() > 0) {
+            this.onTileDescriptionLoadListener = onTileDescriptionLoadListener;
+            ArrayList<Tile> allTilesArrayList = new ArrayList<>();
+            for (int i = 0; i < styliesMaterialList.size(); i++) {
+                ArrayList<Tile> tileArrayList = styliesMaterialList.get(i);
+                if (tileArrayList != null && tileArrayList.size() > 0) {
+                    this.size += tileArrayList.size();
+                    allTilesArrayList.addAll(tileArrayList);
+                }
+            }
+            this.count = 0;
+            for (Tile tile : allTilesArrayList) {
+                tile.getBitmap(onTileBitmapListener);
+            }
+        }
+        // 常态铺砖
+        else {
+            if (materialList == null || materialList.size() == 0)
+                return;
+            this.onTileDescriptionLoadListener = onTileDescriptionLoadListener;
+            this.size = materialList.size();
+            this.count = 0;
+            for (Tile tile : materialList) {
+                tile.getBitmap(onTileBitmapListener);
+            }
         }
     }
 
@@ -136,14 +155,35 @@ public class TileDescription implements Parcelable {
      * @return 对应位图
      */
     public Bitmap getTileBitmap(String materialCode) {
-        if (TextUtils.isTextEmpity(materialCode) || materialList == null || materialList.size() == 0)
+        if (TextUtils.isTextEmpty(materialCode))
             return null;
-        for (Tile tile : materialList) {
-            if (tile.materialCode.equals(materialCode)) {
-                return tile.bitmap;
+        // 波打线、样式
+        if (styliesMaterialList != null && styliesMaterialList.size() > 0) {
+            ArrayList<Tile> allTilesArrayList = new ArrayList<>();
+            for (int i = 0; i < styliesMaterialList.size(); i++) {
+                ArrayList<Tile> tileArrayList = styliesMaterialList.get(i);
+                if (tileArrayList != null && tileArrayList.size() > 0) {
+                    allTilesArrayList.addAll(tileArrayList);
+                }
             }
+            for (Tile tile : allTilesArrayList) {
+                if (tile.materialCode.equals(materialCode)) {
+                    return tile.bitmap;
+                }
+            }
+            return null;
         }
-        return null;
+        // 常态砖
+        else {
+            if (materialList == null || materialList.size() == 0)
+                return null;
+            for (Tile tile : materialList) {
+                if (tile.materialCode.equals(materialCode)) {
+                    return tile.bitmap;
+                }
+            }
+            return null;
+        }
     }
 
     /**
@@ -152,9 +192,13 @@ public class TileDescription implements Parcelable {
      * @param position
      */
     public int getTileWidth(int position) {
-        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
-            return 0;
-        return materialList.get(position).materialWidth / 10;
+        if (styliesMaterialList != null && styliesMaterialList.size() > 0) {
+            return styliesMaterialList.get(position).get(0).materialWidth / 10;
+        } else {
+            if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+                return 0;
+            return materialList.get(position).materialWidth / 10;
+        }
     }
 
     /**
@@ -163,20 +207,29 @@ public class TileDescription implements Parcelable {
      * @param position
      */
     public int getTileHeight(int position) {
-        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
-            return 0;
-        return materialList.get(position).materialHeight / 10;
+        if (styliesMaterialList != null && styliesMaterialList.size() > 0) {
+            return styliesMaterialList.get(position).get(0).materialHeight / 10;
+        } else {
+            if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+                return 0;
+            return materialList.get(position).materialHeight / 10;
+        }
     }
 
     /**
      * 获取材质编码
      *
+     * @param cell
      * @param position
      */
-    public String getMaterialCode(int position) {
-        if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
-            return null;
-        return materialList.get(position).materialCode;
+    public String getMaterialCode(int cell, int position) {
+        if (styliesMaterialList != null && styliesMaterialList.size() > 0) {
+            return styliesMaterialList.get(cell).get(position).materialCode;
+        } else {
+            if (materialList == null || materialList.size() == 0 || position < 0 || position >= materialList.size())
+                return null;
+            return materialList.get(position).materialCode;
+        }
     }
 
     /**

@@ -57,7 +57,7 @@ public class Subset {
     // 初步加载
     @SuppressLint("StaticFieldLeak")
     private void load() {
-        if (TextUtils.isTextEmpity(fileUrl)) {
+        if (TextUtils.isTextEmpty(fileUrl)) {
             return;
         }
         String dirPath = CACHE_ROOT_PATH + "subsets/";

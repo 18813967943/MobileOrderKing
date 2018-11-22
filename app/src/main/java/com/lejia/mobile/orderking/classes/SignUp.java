@@ -45,7 +45,7 @@ public class SignUp {
      */
     private void handle() {
         // 数据为空提示填写完整信息
-        if (TextUtils.isTextEmpity(account) || TextUtils.isTextEmpity(password) || TextUtils.isTextEmpity(repeatPassword) || TextUtils.isTextEmpity(inputCode)) {
+        if (TextUtils.isTextEmpty(account) || TextUtils.isTextEmpty(password) || TextUtils.isTextEmpty(repeatPassword) || TextUtils.isTextEmpty(inputCode)) {
             Toast.makeText(mContext, R.string.please_input_hole_datas, Toast.LENGTH_SHORT).show();
             return;
         }

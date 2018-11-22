@@ -8,12 +8,8 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
-import com.lejia.mobile.orderking.hk3d.classes.TileDescription;
 import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsGLSurfaceView;
-import com.lejia.mobile.orderking.httpsResult.classes.MaterialTypeList;
 import com.lejia.mobile.orderking.httpsResult.classes.User;
-
-import java.util.ArrayList;
 
 /**
  * Author by HEKE
@@ -27,21 +23,6 @@ public class OrderKingApplication extends Application {
      * 当前登入用户
      */
     public User mUser;
-
-    /**
-     * 当前用户企业信息数据节点列表
-     */
-    public MaterialTypeList materialTypeList;
-
-    /**
-     * 当前用户企业信息模型数据节点列表
-     */
-    public MaterialTypeList furnitureMaterialTypeList;
-
-    /**
-     * 当前用户企业信息大类数据节点列表
-     */
-    public MaterialTypeList furnitureCatlogList;
 
     // 应用存储信息
     private SharedPreferences sp;
@@ -68,10 +49,6 @@ public class OrderKingApplication extends Application {
         return context;
     }
 
-    /**
-     * 默认换砖材质第一页数据对象内容
-     */
-    public ArrayList<TileDescription> defaultTileDescriptionList;
 
     /**
      * 主界面上下文
@@ -82,30 +59,27 @@ public class OrderKingApplication extends Application {
         return mainActivityContext;
     }
 
+    /**
+     * 默认铺贴瓷砖
+     */
+    private String[] defaultTilesCodeArray;
+
     @Override
     public void onCreate() {
         super.onCreate();
         // 设置单例程序上下文
         context = getApplicationContext();
-        defaultTileDescriptionList = new ArrayList<>();
+        // 默认铺砖编码集合
+        defaultTilesCodeArray = new String[]{"SAY0889504-1-800X800", "SAY0889489-1-800X800", "SAY0889032-1-800X800", "SAY0989508-1-900X900", "SAY9689423-1-900X600"
+                , "SAY9689417-1-900X600", "SAY9689416-1-900X600", "SAY0889487-1-800X800", "SAY0989511-1-900X900", "SAY0889035-1-800X800", "SDF0888442-1-800X800"
+                , "SDF0888446-1-800X800", "SAY0889415-R5-1-800X800", "SAY0889526-1-800X800", "SAY0889854-1-800X800", "SAY0889504-1-800X800", "SAY1089236-1-1000X1000"
+                , "SAY0889247-1-800X800", "SDF0888243-1-800X800", "SDF0888239-1-800X800", "SDF0888725-1-800X800", "SDF0888237-1-800X800"
+                , "SDF0888718-1-800X800", "SDF0888602-1-800X800"};
         // 自动读取用户登入缓存信息
         sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
         String vs = sp.getString("USER", null);
         if (vs != null) {
             mUser = new User(vs);
-        }
-        String mtl = sp.getString("MATERIAL_TYPE_LIST", null);
-        if (mtl != null) {
-            materialTypeList = new MaterialTypeList(mtl, false);
-        }
-        String fmtl = sp.getString("FURNITURES_MATERIAL_TYPE_LIST", null);
-        if (fmtl != null) {
-            furnitureMaterialTypeList = new MaterialTypeList(fmtl, true);
-        }
-        String catlogmtl = sp.getString("FURNITURE_CATLOG_LIST", null);
-        if (catlogmtl != null) {
-            furnitureCatlogList = new MaterialTypeList(catlogmtl, false);
-            CatlogChecker.setFurnitureCatlogList(furnitureCatlogList);
         }
     }
 
@@ -131,63 +105,6 @@ public class OrderKingApplication extends Application {
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("USER", mUser.toString());
         editor.commit();
-    }
-
-    /**
-     * 设置企业对应节点数据列表对象
-     */
-    public void setMaterialTypeList(MaterialTypeList materialTypeList, String json) {
-        this.materialTypeList = materialTypeList;
-        // 缓存字典信息
-        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("MATERIAL_TYPE_LIST", json);
-        editor.commit();
-    }
-
-    /**
-     * 设置企业对应模型节点数据列表对象
-     */
-    public void setFurnitureMaterialTypeList(MaterialTypeList furnitureMaterialTypeList, String json) {
-        this.furnitureMaterialTypeList = furnitureMaterialTypeList;
-        // 缓存字典信息
-        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("FURNITURES_MATERIAL_TYPE_LIST", json);
-        editor.commit();
-    }
-
-    /**
-     * 设置企业对应模型大类节点数据列表对象
-     */
-    public void setFurnitureCatlogList(MaterialTypeList furnitureCatlogList, String json) {
-        this.furnitureCatlogList = furnitureCatlogList;
-        // 缓存字典信息
-        sp = getSharedPreferences("USER_CACHE", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("FURNITURE_CATLOG_LIST", json);
-        editor.commit();
-        // 绑定大类数据
-        CatlogChecker.setFurnitureCatlogList(this.furnitureCatlogList);
-    }
-
-    /**
-     * 设置企业对应的换砖第一页数据材质，主要用于画房间结束后默认加载材质内容
-     *
-     * @param defaultTileDescriptionList
-     */
-    public void setDefaultTileDescriptionList(ArrayList<TileDescription> defaultTileDescriptionList) {
-        this.defaultTileDescriptionList = defaultTileDescriptionList;
-    }
-
-    /**
-     * 获取随机默认铺砖材质
-     */
-    public TileDescription getRandomTileDescription() {
-        if (defaultTileDescriptionList == null || defaultTileDescriptionList.size() == 0)
-            return null;
-        int position = (int) (Math.random() * defaultTileDescriptionList.size());
-        return defaultTileDescriptionList.get(position);
     }
 
     /**
@@ -247,6 +164,13 @@ public class OrderKingApplication extends Application {
         if (designer3DSurfaceView == null)
             return;
         designer3DSurfaceView.getDesigner3DRender().requestRelease();
+    }
+
+    /**
+     * 获取随机默认铺砖编码
+     */
+    public String getDefaultTileCode() {
+        return defaultTilesCodeArray[(int) (Math.random() * defaultTilesCodeArray.length)];
     }
 
     /**

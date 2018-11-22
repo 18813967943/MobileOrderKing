@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.activitys;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +10,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.WindowManager;
+
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.HK3DDesignerActivity;
 
 /**
  * Author by HEKE
@@ -61,6 +65,7 @@ public class PermissionsActivity extends Activity {
             ActivityCompat.requestPermissions(this, cameraPermissions, 2);
         } else {
             // TODO 可执行下一条
+            notifyMainActivityRefreshViews();
             finish();
         }
     }
@@ -81,10 +86,24 @@ public class PermissionsActivity extends Activity {
             // 申请摄像机权限成功
             if (grantResults != null && grantResults[0] == 0) {
                 // TODO 可执行下一条
+                notifyMainActivityRefreshViews();
                 finish();
+            } else {
+                notifyMainActivityRefreshViews();
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    /**
+     * 权限处理完毕后，执行控件加载
+     */
+    private void notifyMainActivityRefreshViews() {
+        Context context = OrderKingApplication.getMainActivityContext();
+        if (context != null) {
+            HK3DDesignerActivity hk3DDesignerActivity = (HK3DDesignerActivity) context;
+            hk3DDesignerActivity.loadViews();
+        }
     }
 
 }

@@ -41,7 +41,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     private RenderProgram mPCFShadowDynamicBiasProgram;
 
     /**
-     * The vertex and fragment shader to render depth map
+     * The vertex and fragment shader to refreshRender depth map
      */
     private RenderProgram mDepthMapProgram;
 
@@ -105,7 +105,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     int[] depthTextureId;
     public int[] renderTextureId;
 
-    // Uniform locations for scene render program
+    // Uniform locations for scene refreshRender program
     public int scene_mvpMatrixUniform;
     public int scene_mvMatrixUniform;
     public int scene_normalMatrixUniform;
@@ -125,7 +125,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     public int scene_useSkinTexcoord_flag;
     public int scene_uSpecular;
 
-    // Uniform locations for shadow render program
+    // Uniform locations for shadow refreshRender program
     public int shadow_mvpMatrixUniform;
     public int shadow_positionAttribute;
 
@@ -218,7 +218,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Sets up the framebuffer and renderbuffer to render to texture
+     * Sets up the framebuffer and renderbuffer to refreshRender to texture
      */
     public void generateShadowFBO() {
         hadGenerateShadowFBO = true;
@@ -229,7 +229,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         renderTextureId = new int[1];
         // create a framebuffer object
         GLES20.glGenFramebuffers(1, fboId, 0);
-        // create render buffer and bind 16-bit depth buffer
+        // create refreshRender buffer and bind 16-bit depth buffer
         GLES20.glGenRenderbuffers(1, depthTextureId, 0);
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, depthTextureId[0]);
         GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, mShadowMapWidth, mShadowMapHeight);
@@ -352,15 +352,15 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                 lookX, lookY, lookZ,
                 //upX, upY, upZ
                 0, 1, 0);
-        //------------------------- render depth map --------------------------
+        //------------------------- refreshRender depth map --------------------------
 
         // Cull front faces for shadow generation to avoid self shadowing
         //GLES20.glCullFace(GLES20.GL_FRONT);
         renderShadowMap();
 
-        //------------------------- render scene ------------------------------
+        //------------------------- refreshRender scene ------------------------------
 
-        // Cull back faces for normal render
+        // Cull back faces for normal refreshRender
         //GLES20.glCullFace(GLES20.GL_BACK);
         renderScene();
 
@@ -473,7 +473,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
             Matrix.multiplyMM(depthBiasMVP, 0, bias, 0, mLightMvpMatrix_staticShapes, 0);
             System.arraycopy(depthBiasMVP, 0, mLightMvpMatrix_staticShapes, 0, 16);
         }
-        //MVP matrix that was used during depth map render
+        //MVP matrix that was used during depth map refreshRender
         GLES20.glUniformMatrix4fv(scene_schadowProjMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
         //pass in texture where depth map is stored
         GLES20.glActiveTexture(GLES20.GL_TEXTURE10);
@@ -540,7 +540,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Changes render program after changes in menu
+     * Changes refreshRender program after changes in menu
      */
     private void setRenderProgram() {
         mActiveProgram = mPCFShadowDynamicBiasProgram.getProgram();
@@ -556,6 +556,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         eyesZ = -12;
         transY = -5;
         lookZ = 0;
+        refreshRender();
     }
 
     /**
@@ -569,6 +570,16 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         eyesZ = -Scaling.scaleSimpleValue((float) point.y);
         transY = -0.4f;
         lookZ = 3000;
+        refreshRender();
+    }
+
+    /**
+     * 刷新显示
+     */
+    public void refreshRender() {
+        OrderKingApplication orderKingApplication = (OrderKingApplication) mContext.getApplicationContext();
+        ShadowsGLSurfaceView shadowsGLSurfaceView = orderKingApplication.getShadowsGLSurfaceView();
+        shadowsGLSurfaceView.requestRender();
     }
 
 }

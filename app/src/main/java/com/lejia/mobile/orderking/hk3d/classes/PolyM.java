@@ -202,6 +202,16 @@ public class PolyM {
     }
 
     /**
+     * 清空三维墙体数据
+     */
+    public static void clear3DViews() {
+        if (closeHousesTopsideBuildingWallsList != null)
+            closeHousesTopsideBuildingWallsList.clear();
+        if (closeHousesOutsideBuildingWallsList != null)
+            closeHousesOutsideBuildingWallsList.clear();
+    }
+
+    /**
      * 获取指定位置的组合数据
      *
      * @param index

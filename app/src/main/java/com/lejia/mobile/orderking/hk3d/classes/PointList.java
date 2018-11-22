@@ -49,7 +49,7 @@ public class PointList implements Parcelable {
     }
 
     public PointList(String pointsString) {
-        if (TextUtils.isTextEmpity(pointsString))
+        if (TextUtils.isTextEmpty(pointsString))
             throw new NullPointerException("pointsString can`t be null !");
         String[] params = pointsString.split("[,]");
         if (params != null) {

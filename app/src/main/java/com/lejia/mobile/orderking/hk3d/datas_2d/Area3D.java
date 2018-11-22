@@ -2,6 +2,7 @@ package com.lejia.mobile.orderking.hk3d.datas_2d;
 
 import com.lejia.mobile.orderking.hk3d.classes.L3DMatrix;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
+import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
@@ -25,6 +26,8 @@ public class Area3D extends RendererObject {
     private int horizontalAngle; // 水平旋转角度
     private int verticalAngle; // 垂直旋转角度
 
+    private float waveangle; // 角度值
+
     /**
      * 铺砖类型，默认为普通铺砖
      */
@@ -38,13 +41,16 @@ public class Area3D extends RendererObject {
     private void initDatas() {
         PointList pointList = new PointList(pointsList);
         PointList mOriginList = new PointList(originList);
-        if (pointList.invalid())
+        if (pointList.invalid() || invalid())
             return;
         pointList.setPointsList(pointList.antiClockwise());
         pointsList = pointList.getPointsList();
         lj3DPointsList = pointList.to3dList();
         RectD box = mOriginList.getRectBox();
         indices = new Trianglulate().getTristrip(pointList.toArray());
+        if (indices == null) {
+            return;
+        }
         vertexs = new float[3 * indices.length];
         texcoord = new float[2 * indices.length];
         for (int i = 0; i < indices.length; i++) {
@@ -120,6 +126,61 @@ public class Area3D extends RendererObject {
 
     public void setSkewTile(boolean skewTile) {
         isSkewTile = skewTile;
+    }
+
+    public boolean invalid() {
+        return pointsList != null && pointsList.size() < 3;
+    }
+
+    // 波打线角度
+    public float getWaveangle() {
+        return waveangle;
+    }
+
+    /**
+     * 瓷砖角度，用于波打线设置
+     *
+     * @param pointList 所在布置房间的围点列表对象
+     */
+    public void setWaveAngle(PointList pointList) {
+        if (pointsList == null || pointsList.size() == 0 || pointList == null)
+            return;
+        try {
+            // 获取自身区域最长的线段
+            ArrayList<Line> linesList = new PointList(pointsList).toLineList();
+            Line maxLengthLine = linesList.get(0);
+            for (Line line : linesList) {
+                if (line.getLength() >= maxLengthLine.getLength()) {
+                    maxLengthLine = line;
+                }
+            }
+            RectD box = pointList.getRectBox();
+            double boxMaxLength = box.width() >= box.height() ? box.width() : box.height();
+            // 取最长线段的中点，判断与铺设房间围点形成的线段哪条距离最近，则为吸附墙体，角度为墙体角度
+            Point point = maxLengthLine.getCenter();
+            ArrayList<Line> houseLinesList = pointList.toLineList();
+            double minDist = Float.MAX_VALUE;
+            Line adsorbLine = null;
+            for (Line line : houseLinesList) {
+                ArrayList<Point> lepsList = PointList.getRotateLEPS(line.getAngle() + 90.0d, 5 * boxMaxLength, point);
+                Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
+                Point interPoint = lepsLine.getLineIntersectedPoint(line);
+                if (interPoint != null) { // 交点为空时，可判定为不接近的墙体直接忽略
+                    // 求出最小距离选项
+                    double dist = point.dist(interPoint);
+                    if (dist <= minDist) {
+                        minDist = dist;
+                        adsorbLine = line;
+                    }
+                }
+            }
+            // 赋值角度
+            if (adsorbLine != null) {
+                waveangle = (float) adsorbLine.getAngle();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

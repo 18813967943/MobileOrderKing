@@ -158,9 +158,6 @@ public abstract class House {
         innerPointList = new PointList(innerTList);
         outerTList = centerPointList.offsetList(true, halfThickness);
         outerPointList = new PointList(outerTList);
-        if (innerPointList.size() != outerPointList.size()) {
-            System.out.println();
-        }
         // 在主进程中执行
         ((Activity) OrderKingApplication.getMainActivityContext()).runOnUiThread(new Runnable() {
             @Override
@@ -470,7 +467,7 @@ public abstract class House {
      * 刷新请求
      */
     public void refreshRenderer() {
-        ((OrderKingApplication) getContext().getApplicationContext()).render(); // refresh render contents
+        ((OrderKingApplication) getContext().getApplicationContext()).render(); // refresh refreshRender contents
     }
 
 }

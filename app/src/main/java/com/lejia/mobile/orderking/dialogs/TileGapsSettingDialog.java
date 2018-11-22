@@ -132,7 +132,7 @@ public class TileGapsSettingDialog extends Dialog {
             if (actionId == KeyEvent.ACTION_DOWN || actionId == EditorInfo.IME_ACTION_DONE) {
                 if (onTileGapSettingListener != null) {
                     String size = gapSize.getText().toString();
-                    if (TextUtils.isTextEmpity(size))
+                    if (TextUtils.isTextEmpty(size))
                         size = "0";
                     onTileGapSettingListener.setGapSize(Integer.parseInt(size));
                     dismiss();
@@ -149,7 +149,7 @@ public class TileGapsSettingDialog extends Dialog {
                 // 设置砖缝厚度
                 if (onTileGapSettingListener != null) {
                     String size = gapSize.getText().toString();
-                    if (TextUtils.isTextEmpity(size))
+                    if (TextUtils.isTextEmpty(size))
                         size = "0";
                     onTileGapSettingListener.setGapSize(Integer.parseInt(size));
                     dismiss();
