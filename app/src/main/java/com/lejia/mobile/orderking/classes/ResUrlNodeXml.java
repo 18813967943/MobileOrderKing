@@ -3,6 +3,8 @@ package com.lejia.mobile.orderking.classes;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
+import com.lejia.mobile.orderking.utils.TextUtils;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -71,7 +73,7 @@ public class ResUrlNodeXml {
      * @time 2018/11/17 10:43
      * TODO: 服务器资源路径对象
      */
-    public class ResPath {
+    public static class ResPath {
 
         public String path;
         public String fileName;
@@ -87,6 +89,17 @@ public class ResUrlNodeXml {
                 this.fileName = splitor[splitor.length - 1];
                 this.name = this.fileName.split("[.]")[0];
             }
+        }
+
+        /**
+         * 静态创建内部路径类
+         *
+         * @param path
+         */
+        public static ResPath createResPath(String path) {
+            if (TextUtils.isTextEmpty(path))
+                return null;
+            return new ResPath(path);
         }
 
         @Override

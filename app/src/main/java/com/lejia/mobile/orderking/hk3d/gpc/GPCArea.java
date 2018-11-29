@@ -13,4 +13,5 @@ import java.util.ArrayList;
 public class GPCArea {
     public ArrayList<Point> pointsList; // 围点列表
     public int direction; // 起铺方向编号
+    public int position; // 对应窗口点的位置
 }

@@ -79,4 +79,23 @@ public class PositiveNumberTranslationRecord {
         return backList;
     }
 
+    /**
+     * 以此相同规则平移其他围点
+     *
+     * @param pointsList 需要偏移的围点列表
+     * @return 返回列表
+     */
+    public ArrayList<Point> doList(ArrayList<Point> pointsList) {
+        if (pointsList == null || pointsList.size() == 0)
+            return null;
+        ArrayList<Point> doList = new ArrayList<>();
+        for (Point point : pointsList) {
+            Point bp = new Point();
+            bp.x = point.x + transX;
+            bp.y = point.y + transY;
+            doList.add(bp);
+        }
+        return doList;
+    }
+
 }

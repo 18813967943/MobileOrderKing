@@ -65,6 +65,10 @@ public class AttachDirectionExp implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<attachDirectionExp>\n" + symbolVector3D.toXml() + "\n</attachDirectionExp>";
+    }
+
     @Override
     public String toString() {
         return "" + symbolVector3D;

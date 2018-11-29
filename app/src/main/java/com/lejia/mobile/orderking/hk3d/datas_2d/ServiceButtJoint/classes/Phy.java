@@ -98,6 +98,17 @@ public class Phy implements Parcelable {
         }
     };
 
+    public String toXml() {
+        String value = "<phy>";
+        if (tileArrayList != null && tileArrayList.size() > 0) {
+            for (Tile tile : tileArrayList) {
+                value += "\n" + tile.toXml();
+            }
+        }
+        value += "\n</phy>";
+        return value;
+    }
+
     @Override
     public String toString() {
         return "Phy{" + tileArrayList + "}";

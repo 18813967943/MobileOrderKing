@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_height"
+        android:background="@color/mainColor">
+
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="@dimen/d20dp"
+            android:layout_height="@dimen/d25dp"
+            android:layout_centerVertical="true"
+            android:background="@mipmap/back_white" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/mineSchemes"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/d15dp"
+                android:gravity="center_vertical"
+                android:text="我的"
+                android:textColor="#FFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/baseHouseLibrary"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/d15dp"
+                android:gravity="center_vertical"
+                android:text="户型库"
+                android:textColor="#FFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/prototypeRooms"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/d15dp"
+                android:gravity="center_vertical"
+                android:text="样板间"
+                android:textColor="#FFF"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <com.lejia.mobile.orderking.widgets.ScrollerGridView
+        android:id="@+id/schemesGrid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFF"
+        android:numColumns="4"
+        android:scrollbars="none" />
+</LinearLayout>

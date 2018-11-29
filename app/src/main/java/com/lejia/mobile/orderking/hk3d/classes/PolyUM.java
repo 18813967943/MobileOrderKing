@@ -92,6 +92,10 @@ public class PolyUM {
         }
     }
 
+    public static HashMap<String, Poly> getPoliesMap() {
+        return poliesMap;
+    }
+
     /**
      * 移除对应的房间墙体数据缓存
      *

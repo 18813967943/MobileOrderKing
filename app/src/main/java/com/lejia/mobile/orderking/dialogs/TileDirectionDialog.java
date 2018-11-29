@@ -13,6 +13,7 @@ import com.lejia.mobile.orderking.widgets.TileDirectionSelectorView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import geom.gpc.GPCConfig;
 
 /**
  * Author by HEKE
@@ -26,6 +27,8 @@ public class TileDirectionDialog extends Dialog {
     TileDirectionSelectorView tileDirectionSelector;
 
     private TileDirectionSelectorView.OnTileDirectionsSelectedListener onTileDirectionsSelectedListener;
+
+    private int direction = GPCConfig.FROM_RIGHT_TOP; // 铺砖方向
 
     public TileDirectionDialog(@NonNull Context context, TileDirectionSelectorView.OnTileDirectionsSelectedListener onTileDirectionsSelectedListener) {
         super(context, R.style.transparentDiag);
@@ -56,6 +59,14 @@ public class TileDirectionDialog extends Dialog {
         initViews();
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            tileDirectionSelector.setDirection(direction);
+        }
+    }
+
     /**
      * 设置窗口显示时的起铺方向
      *
@@ -64,7 +75,7 @@ public class TileDirectionDialog extends Dialog {
     public void setDirection(int direction) {
         if (tileDirectionSelector == null)
             return;
-        tileDirectionSelector.setDirection(direction);
+        this.direction = direction;
     }
 
     public int getDirection() {

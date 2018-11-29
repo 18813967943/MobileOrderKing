@@ -1,7 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.activity_partitation;
 
 import android.content.Context;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DRender;
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
@@ -36,10 +36,10 @@ public class Designer3DManager {
         designer3DRender = designer3DSurfaceView.getDesigner3DRender();
         shadowsGLSurfaceView = new ShadowsGLSurfaceView(mContext);
         shadowsRenderer = shadowsGLSurfaceView.getRenderer();
-        designer3dLayout.addView(designer3DSurfaceView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT
-                , LinearLayout.LayoutParams.MATCH_PARENT));
-        designer3dLayout.addView(shadowsGLSurfaceView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT
-                , LinearLayout.LayoutParams.MATCH_PARENT));
+        designer3dLayout.addView(designer3DSurfaceView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                , ViewGroup.LayoutParams.MATCH_PARENT));
+        designer3dLayout.addView(shadowsGLSurfaceView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                , ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     public Designer3DManager(Context context, ScrollLayout designer3dLayout) {
@@ -78,6 +78,18 @@ public class Designer3DManager {
     public void to2D() {
         designer3dLayout.setToScreen(0);
         shadowsGLSurfaceView.requestRender();
+    }
+
+    public ScrollLayout getDesigner3dLayout() {
+        return designer3dLayout;
+    }
+
+    public Designer3DSurfaceView getDesigner3DSurfaceView() {
+        return designer3DSurfaceView;
+    }
+
+    public ShadowsGLSurfaceView getShadowsGLSurfaceView() {
+        return shadowsGLSurfaceView;
     }
 
     /**

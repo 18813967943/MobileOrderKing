@@ -63,6 +63,11 @@ public class Tile implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<Tile code=\"" + code + "\" codeNum=\"" + codeNum + "\" length=\"" + length + "\" width=\"" + width + "\" " +
+                "url=\"" + url + "\" family=\"\" parentCode=\"\"/>";
+    }
+
     @Override
     public String toString() {
         return code + "," + codeNum + "," + length + "," + width + "," + url;

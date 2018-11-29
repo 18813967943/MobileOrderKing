@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class TilePlan implements Parcelable {
     public float gap; // 缝隙
     public int locate; // 起铺位置
     public float rotate; // 旋转角度
+    public int gapColor; // 砖缝颜色
 
     /**
      * 铺砖计划中的运算数值标记集合
@@ -193,6 +195,47 @@ public class TilePlan implements Parcelable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 创建数据xml
+     *
+     * @param pointArrayList 区域围点列表
+     * @return xml数据
+     */
+    public String toXml(ArrayList<Point> pointArrayList) {
+        String v = "<TilePlan code=\"" + code + "\" type=\"" + type + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
+                "rotate=\"" + rotate + "\">";
+        if (symbolMaps != null && symbolMaps.size() > 0) {
+            Iterator<Map.Entry<String, Integer>> iterator = symbolMaps.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Integer> entry = iterator.next();
+                String key = entry.getKey();
+                Integer val = entry.getValue();
+                v += "\n" + "<symbol key=\"" + key + "\" value=\"" + val + "\"/>";
+            }
+        }
+        if (phy != null) {
+            v += "\n" + phy.toXml();
+        }
+        if (logtile != null) {
+            v += "\n" + logtile.toXml();
+        }
+        if (dirExp1 != null) {
+            v += "\n" + dirExp1.toXml();
+        }
+        if (dirExp2 != null) {
+            v += "\n" + dirExp2.toXml();
+        }
+        if (pointArrayList != null && pointArrayList.size() > 0) {
+            v += "\n<tileRegion>";
+            for (com.lejia.mobile.orderking.hk3d.classes.Point point : pointArrayList) {
+                v += "\n<TPoint x=\"" + (int) (point.x * 10) + "\" y=\"" + (int) (point.y * 10) + "\"/>";
+            }
+            v += "\n</tileRegion>";
+        }
+        v += "\n</TilePlan>";
+        return v;
     }
 
     @Override

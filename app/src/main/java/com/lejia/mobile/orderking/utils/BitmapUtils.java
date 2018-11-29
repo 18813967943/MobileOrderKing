@@ -8,10 +8,14 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.Region;
 import android.util.Base64;
 
 import com.lejia.mobile.orderking.classes.XInfo;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.classes.PositiveNumberTranslationRecord;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -216,12 +220,20 @@ public class BitmapUtils {
     public static Bitmap toSize(Bitmap res, int width, int height) {
         if (res == null || res.isRecycled())
             return null;
-        if (width <= 1 || height <= 1)
-            return null;
         int bmpWidth = res.getWidth();
         int bmpHeight = res.getHeight();
         float scaleWidth = width * 1f / bmpWidth;
         float scaleHeight = height * 1f / bmpHeight;
+        if (width != -1 && height != -1) {
+            scaleWidth = width * 1f / bmpWidth;
+            scaleHeight = height * 1f / bmpHeight;
+        } else if (width != -1 && height == -1) {
+            scaleWidth = width * 1f / bmpWidth;
+            scaleHeight = scaleWidth;
+        } else if (width == -1 && height != -1) {
+            scaleHeight = height * 1f / bmpHeight;
+            scaleWidth = scaleHeight;
+        }
         Matrix matrix = new Matrix();
         matrix.setScale(scaleWidth, scaleHeight);
         Bitmap ret = Bitmap.createBitmap(res, 0, 0, bmpWidth, bmpHeight, matrix, true);
@@ -305,6 +317,52 @@ public class BitmapUtils {
             e.printStackTrace();
         }
         return bitmap;
+    }
+
+    /**
+     * 根据原始围点以及切割区域围点，将位于进行裁剪围点区域
+     *
+     * @param oringinList 原始顶点
+     * @param clipList    切割区域
+     * @param rBitmap     已旋转过的位图
+     * @return 返回切割后的位图
+     */
+    public static Bitmap clipBitmap(ArrayList<Point> oringinList, ArrayList<Point> clipList, Bitmap rBitmap) {
+        if (oringinList == null || oringinList.size() == 0 || clipList == null || clipList.size() == 0 || rBitmap == null)
+            return null;
+        Bitmap clipRetBmp = null;
+        try {
+            // 平移数据
+            PositiveNumberTranslationRecord pntr = new PositiveNumberTranslationRecord(oringinList);
+            ArrayList<Point> clipTransList = pntr.doList(clipList);
+            // 裁剪
+            int width = rBitmap.getWidth();
+            int height = rBitmap.getHeight();
+            Bitmap clip = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+            Canvas canvas = new Canvas(clip);
+            clip.setHasAlpha(true);
+            // 路径
+            Path path = new Path();
+            path.reset();
+            for (int i = 0; i < clipTransList.size(); i++) {
+                Point p = clipTransList.get(i);
+                if (i == 0) {
+                    path.moveTo((float) p.x, (float) p.y);
+                } else {
+                    path.lineTo((float) p.x, (float) p.y);
+                }
+            }
+            path.close();
+            // 裁剪
+            canvas.clipPath(path, Region.Op.INTERSECT);
+            canvas.clipRect(new RectF(0, 0, width, height));
+            canvas.drawBitmap(rBitmap, 0, 0, null);
+            rBitmap.recycle();
+            clipRetBmp = clip;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return clipRetBmp;
     }
 
 }

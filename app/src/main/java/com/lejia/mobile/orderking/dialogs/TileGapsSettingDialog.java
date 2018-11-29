@@ -77,6 +77,15 @@ public class TileGapsSettingDialog extends Dialog {
         initWindowAttrs();
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            setGapsSize(size);
+            setGapsColor(color);
+        }
+    }
+
     /**
      * 自动显示或隐藏
      */

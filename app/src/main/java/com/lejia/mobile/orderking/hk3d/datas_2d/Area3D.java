@@ -19,14 +19,15 @@ import java.util.ArrayList;
 public class Area3D extends RendererObject {
 
     private boolean isGap; // 是否是砖缝
-    private String materialCode; // 瓷砖编码
-    private ArrayList<Point> pointsList; // 自身切割后的围点(实际显示的)
-    private ArrayList<Point> originList; // 自身完整区域的围点
+    public String materialCode; // 瓷砖编码
+    public ArrayList<Point> pointsList; // 自身切割后的围点(实际显示的)
+    public ArrayList<Point> originList; // 自身完整区域的围点
 
     private int horizontalAngle; // 水平旋转角度
     private int verticalAngle; // 垂直旋转角度
 
     private float waveangle; // 角度值
+    private boolean isWaveHoleTile; // 波打线此区域是否整砖
 
     /**
      * 铺砖类型，默认为普通铺砖
@@ -37,6 +38,11 @@ public class Area3D extends RendererObject {
      * 是否斜铺
      */
     private boolean isSkewTile;
+
+    /**
+     * 是否乱序铺，默认不开启
+     */
+    private boolean randRotate;
 
     private void initDatas() {
         PointList pointList = new PointList(pointsList);
@@ -61,25 +67,30 @@ public class Area3D extends RendererObject {
             vertexs[index + 1] = (float) point.y;
             vertexs[index + 2] = (float) point.z;
             // 随机uv方向
-            int random = (int) (Math.random() * 10 + 1);
-            int randomD = (int) (Math.random() * 20 + 1);
-            boolean evenNumber = random % 2 == 0;
-            boolean reverser = randomD % 2 == 1;
-            // 纹理，偶数正常、奇数u颠倒，反转false为正常,true为v颠倒
-            int uvIndex = 2 * i;
-            if (evenNumber) {
-                texcoord[uvIndex] = (float) (Math.abs(point.x - box.left) / box.width());
+            if (randRotate) {
+                int random = (int) (Math.random() * 10 + 1);
+                int randomD = (int) (Math.random() * 20 + 1);
+                boolean evenNumber = random % 2 == 0;
+                boolean reverser = randomD % 2 == 1;
+                // 纹理，偶数正常、奇数u颠倒，反转false为正常,true为v颠倒
+                int uvIndex = 2 * i;
+                if (evenNumber) {
+                    texcoord[uvIndex] = (float) (Math.abs(point.x - box.left) / box.width());
+                    horizontalAngle = 0;
+                } else {
+                    texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
+                    horizontalAngle = 180;
+                }
+                if (reverser) {
+                    texcoord[uvIndex + 1] = (float) (Math.abs(point.y - box.bottom) / box.height());
+                    verticalAngle = 0;
+                } else {
+                    texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(box.bottom - point.y) / box.height());
+                    verticalAngle = 180;
+                }
+            } else {
                 horizontalAngle = 0;
-            } else {
-                texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
-                horizontalAngle = 180;
-            }
-            if (reverser) {
-                texcoord[uvIndex + 1] = (float) (Math.abs(point.y - box.bottom) / box.height());
                 verticalAngle = 0;
-            } else {
-                texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(box.bottom - point.y) / box.height());
-                verticalAngle = 180;
             }
         }
     }
@@ -90,6 +101,23 @@ public class Area3D extends RendererObject {
         this.pointsList = pointsList;
         this.originList = originList;
         initDatas();
+    }
+
+    public Area3D(boolean isGap, String materialCode, boolean randRotate, ArrayList<Point> pointsList, ArrayList<Point> originList) {
+        this.isGap = isGap;
+        this.materialCode = materialCode;
+        this.randRotate = randRotate;
+        this.pointsList = pointsList;
+        this.originList = originList;
+        initDatas();
+    }
+
+    public boolean isRandRotate() {
+        return randRotate;
+    }
+
+    public void setRandRotate(boolean randRotate) {
+        this.randRotate = randRotate;
     }
 
     public int getHorizontalAngle() {
@@ -137,47 +165,38 @@ public class Area3D extends RendererObject {
         return waveangle;
     }
 
+    public boolean isWaveHoleTile() {
+        return isWaveHoleTile;
+    }
+
     /**
      * 瓷砖角度，用于波打线设置
      *
-     * @param pointList 所在布置房间的围点列表对象
+     * @param pointList     所在布置房间的围点列表对象
+     * @param tilethickness 瓷砖厚度
      */
-    public void setWaveAngle(PointList pointList) {
-        if (pointsList == null || pointsList.size() == 0 || pointList == null)
+    public void setWaveAngle(PointList pointList, float tilethickness) {
+        if (originList == null || originList.size() == 0 || pointList == null)
             return;
         try {
             // 获取自身区域最长的线段
-            ArrayList<Line> linesList = new PointList(pointsList).toLineList();
-            Line maxLengthLine = linesList.get(0);
+            ArrayList<Line> linesList = new PointList(originList).toLineList();
+            Line notThickLine = null;
             for (Line line : linesList) {
-                if (line.getLength() >= maxLengthLine.getLength()) {
-                    maxLengthLine = line;
+                double length = line.getLength();
+                if (Math.abs(length - tilethickness) >= 0.5f) {
+                    notThickLine = line;
+                    break;
                 }
             }
-            RectD box = pointList.getRectBox();
-            double boxMaxLength = box.width() >= box.height() ? box.width() : box.height();
-            // 取最长线段的中点，判断与铺设房间围点形成的线段哪条距离最近，则为吸附墙体，角度为墙体角度
-            Point point = maxLengthLine.getCenter();
-            ArrayList<Line> houseLinesList = pointList.toLineList();
-            double minDist = Float.MAX_VALUE;
-            Line adsorbLine = null;
-            for (Line line : houseLinesList) {
-                ArrayList<Point> lepsList = PointList.getRotateLEPS(line.getAngle() + 90.0d, 5 * boxMaxLength, point);
-                Line lepsLine = new Line(lepsList.get(1), lepsList.get(0));
-                Point interPoint = lepsLine.getLineIntersectedPoint(line);
-                if (interPoint != null) { // 交点为空时，可判定为不接近的墙体直接忽略
-                    // 求出最小距离选项
-                    double dist = point.dist(interPoint);
-                    if (dist <= minDist) {
-                        minDist = dist;
-                        adsorbLine = line;
-                    }
-                }
+            // 短砖不需要做此处理
+            if (notThickLine == null) {
+                return;
             }
-            // 赋值角度
-            if (adsorbLine != null) {
-                waveangle = (float) adsorbLine.getAngle();
-            }
+            // 长砖
+            waveangle = (float) Point.percision(notThickLine.getAngle(), 4);
+            // 判断是否整砖，非整砖进行标记
+            isWaveHoleTile = new PointList(pointsList).equals(new PointList(originList));
         } catch (Exception e) {
             e.printStackTrace();
         }

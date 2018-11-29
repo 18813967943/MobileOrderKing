@@ -67,6 +67,11 @@ public class Style implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<style type=\"" + type + "\" defType=\"" + defType + "\" yxExp0=\"" + yxExp0 + "\" " +
+                "yxExp1=\"" + yxExp1 + "\" zxExp0=\"" + zxExp0 + "\" zxExp1=\"" + zxExp1 + "\"/>";
+    }
+
     @Override
     public String toString() {
         return type + "," + defType + "," + yxExp0 + "," + yxExp1 + "," + zxExp0 + "," + zxExp1;

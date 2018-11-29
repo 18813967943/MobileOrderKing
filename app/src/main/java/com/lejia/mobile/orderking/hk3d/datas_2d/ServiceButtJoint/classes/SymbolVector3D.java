@@ -20,6 +20,9 @@ public class SymbolVector3D implements Parcelable {
     public float v; // 垂直方向偏移量
     public float w; // 权重值
 
+    private String su;
+    private String sv;
+
     public SymbolVector3D() {
         super();
     }
@@ -34,6 +37,8 @@ public class SymbolVector3D implements Parcelable {
         u = in.readFloat();
         v = in.readFloat();
         w = in.readFloat();
+        su = in.readString();
+        sv = in.readString();
     }
 
     /**
@@ -167,12 +172,14 @@ public class SymbolVector3D implements Parcelable {
     public void calculateValues(String ustring, String vstring, HashMap<String, Integer> symbolsMap) {
         if (symbolsMap == null || symbolsMap.size() == 0 || TextUtils.isTextEmpty(ustring) || TextUtils.isTextEmpty(vstring))
             return;
+        su = ustring;
+        sv = vstring;
         if (isSingleLengthIntegerValue(ustring))
             u = Integer.parseInt(ustring);
         else
             u = calculate(ustring, symbolsMap);
         if (isSingleLengthIntegerValue(vstring))
-            v = Integer.parseInt(ustring);
+            v = Integer.parseInt(vstring);
         else
             v = calculate(vstring, symbolsMap);
         w = 0;
@@ -183,6 +190,8 @@ public class SymbolVector3D implements Parcelable {
         dest.writeFloat(u);
         dest.writeFloat(v);
         dest.writeFloat(w);
+        dest.writeString(su);
+        dest.writeString(sv);
     }
 
     @Override
@@ -201,6 +210,10 @@ public class SymbolVector3D implements Parcelable {
             return new SymbolVector3D[size];
         }
     };
+
+    public String toXml() {
+        return "<SymbolVector3D u=\"" + su + "\" v=\"" + sv + "\" w=\"0\"/>";
+    }
 
     @Override
     public String toString() {

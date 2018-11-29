@@ -344,9 +344,12 @@ public abstract class House {
     public void initGroundAndSelector() {
         if (innerPointList == null || innerPointList.invalid())
             return;
-        ground = new Ground(innerPointList, this); // 地面
-        selector = new Selector(innerPointList); // 选中框
-        houseName = new HouseName(innerPointList); // 房间名称
+        if (ground == null)
+            ground = new Ground(innerPointList, this); // 地面
+        if (selector == null)
+            selector = new Selector(innerPointList); // 选中框
+        if (houseName == null)
+            houseName = new HouseName(innerPointList); // 房间名称
     }
 
     /**

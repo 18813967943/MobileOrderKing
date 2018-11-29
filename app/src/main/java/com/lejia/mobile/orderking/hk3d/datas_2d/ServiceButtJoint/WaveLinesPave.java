@@ -42,22 +42,27 @@ public class WaveLinesPave {
     /**
      * 铺砖起始方向
      */
-    private int direction;
+    public int direction;
 
     /**
      * 是否45°斜铺
      */
-    private boolean skewTile;
+    public boolean skewTile;
 
     /**
      * 砖缝颜色
      */
-    private int gapsColor;
+    public int gapsColor;
 
     /**
      * 砖缝厚度
      */
-    private float brickGap;
+    public float brickGap;
+
+    /**
+     * 随机纹理标志
+     */
+    public boolean randRotate;
 
     /**
      * 编码对应贴图位图集合
@@ -69,6 +74,11 @@ public class WaveLinesPave {
      */
     private WLTileResult wlTileResult;
 
+    /**
+     * 中心铺砖围点
+     */
+    private ArrayList<Point> centerPointsList;
+
     public WaveLinesPave(PointList pointList, WaveMutliPlan waveMutliPlan, NormalPave normalPave, OnTilesResultListener onTilesResultListener) {
         this.pointList = pointList;
         this.waveMutliPlan = waveMutliPlan;
@@ -78,6 +88,7 @@ public class WaveLinesPave {
         this.direction = normalPave.getDirection();
         this.gapsColor = normalPave.getGapsColor();
         this.skewTile = normalPave.isSkewTile();
+        this.randRotate = normalPave.randRotate;
         tile();
     }
 
@@ -150,6 +161,14 @@ public class WaveLinesPave {
         tile();
     }
 
+    public int getDirection() {
+        return direction;
+    }
+
+    public boolean isSkewTile() {
+        return skewTile;
+    }
+
     /**
      * 执行切割铺砖
      */
@@ -187,6 +206,7 @@ public class WaveLinesPave {
                     // 中心砖铺贴
                     Bitmap centerTileBitmap = getCenterBitmap();
                     ArrayList<Point> innerFixedList = new PointList(innerRingList).fixToLeftTopPointsList();
+                    centerPointsList = new PointList(innerFixedList).copy();
                     GPCManager gpcManager = new GPCManager(new PointList(innerFixedList).toGeomPointList(), centerTileBitmap.getWidth(), centerTileBitmap.getHeight()
                             , gap, gap, direction, skewTile ? GPCConfig.TILT : GPCConfig.STRAIGHT);
                     String centerCode = normalPave.getNormalXInfo().materialCode;
@@ -316,17 +336,24 @@ public class WaveLinesPave {
             ArrayList<geom.Point> originList = geomOriginList.get(i);
             ArrayList<com.lejia.mobile.orderking.hk3d.classes.Point> changePointsList = PointList.staticExchangeGemoListToThisList(pointsList);
             ArrayList<com.lejia.mobile.orderking.hk3d.classes.Point> changeOriginList = PointList.staticExchangeGemoListToThisList(originList);
-            Area3D area3D = new Area3D(isGap, materialCode, changePointsList, changeOriginList);
+            boolean randChecker = (isGap ? false : (isWaveLine ? false : randRotate));
+            Area3D area3D = new Area3D(isGap, materialCode, randChecker, changePointsList, changeOriginList);
             if (!isWaveLine)
                 area3D.setSkewTile(skewTile);
             else {
                 area3D.setSkewTile(false);
-                if (!isGap)
-                    area3D.setWaveAngle(pointList);
+                if (!isGap) {
+                    area3D.setWaveAngle(pointList, tilethickness);
+                }
             }
             // 存入图片处理器
             wlTileResult.putArea3D(area3D, isWaveLine);
         }
+    }
+
+    // 获取中心区域铺砖围点
+    public ArrayList<Point> getCenterPointsList() {
+        return centerPointsList;
     }
 
     /**

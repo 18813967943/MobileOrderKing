@@ -137,6 +137,10 @@ public class WLTileResult {
             float waveangle = area3D.getWaveangle();
             if (waveangle != 0.0f)
                 bitmap = BitmapUtils.rotateWithCenter(bitmap, waveangle, area3D.getPointsList());
+            // 非整砖，切割绘制
+            if (!area3D.isWaveHoleTile()) {
+                bitmap = BitmapUtils.clipBitmap(area3D.originList, area3D.pointsList, bitmap);
+            }
         }
         ArrayList<Point> transList = area3D.translatePointsList(transX, transY);
         PointList pointList = new PointList(transList);

@@ -127,6 +127,12 @@ public class PolyM {
         // 并生成立面墙体的外墙面
         if (poliesMap.size() > 0) {
             createOutsideWalls();
+            // 测试打印
+            Iterator<Map.Entry<Integer, Poly>> iterator = poliesMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Poly> entry = iterator.next();
+                System.out.println("### Poly[" + entry.getKey() + "] : " + PolyE.toPointsList(entry.getValue()));
+            }
         }
     }
 

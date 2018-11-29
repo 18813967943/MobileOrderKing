@@ -41,27 +41,37 @@ public class NormalPave {
     /**
      * 铺砖起始方向
      */
-    private int direction = GPCConfig.FROM_RIGHT_TOP;
+    public int direction = GPCConfig.FROM_RIGHT_TOP;
 
     /**
      * 是否45°斜铺
      */
-    private boolean skewTile;
+    public boolean skewTile;
 
     /**
      * 砖缝颜色
      */
-    private int gapsColor = 0xFF333333;
+    public int gapsColor = 0xFF333333;
 
     /**
      * 砖缝厚度
      */
-    private float brickGap = 0.2f;
+    public float brickGap = 0.2f;
+
+    /**
+     * 纹理随机标志
+     */
+    public boolean randRotate;
 
     /**
      * 铺砖结果对象
      */
     private NTTileResult NTTileResult;
+
+    /**
+     * 仅用于替换波打线中心区域铺砖标志
+     */
+    private boolean onlyUseWavelinesCenterTile;
 
     /**
      * 基础构造函数一
@@ -106,6 +116,34 @@ public class NormalPave {
     }
 
     /**
+     * 基础构造函数三
+     *
+     * @param pointList
+     * @param resPath
+     * @param xInfo
+     * @param ground
+     * @param randRotate
+     * @param isSkewTile
+     * @param direction
+     * @param gap
+     * @param onTilesResultListener
+     */
+    public NormalPave(PointList pointList, ResUrlNodeXml.ResPath resPath, XInfo xInfo, Ground ground, boolean randRotate,
+                      boolean isSkewTile, int direction, float gap, OnTilesResultListener onTilesResultListener) {
+        this.mContext = OrderKingApplication.getInstant();
+        this.pointList = pointList;
+        this.resPath = resPath;
+        this.normalXInfo = xInfo;
+        this.ground = ground;
+        this.randRotate = randRotate;
+        this.skewTile = isSkewTile;
+        this.direction = direction;
+        this.brickGap = gap;
+        this.onTilesResultListener = onTilesResultListener;
+        tile();
+    }
+
+    /**
      * 构造函数三，基于无需进行铺砖操作的前提下，创建NormalPave对象
      *
      * @param resPath
@@ -114,6 +152,7 @@ public class NormalPave {
     @SuppressLint("StaticFieldLeak")
     public NormalPave(ResUrlNodeXml.ResPath resPath, OnNoNeedTileListener onNoNeedTileListener) {
         this.resPath = resPath;
+        this.onlyUseWavelinesCenterTile = true;
         final OnNoNeedTileListener myOnNoNeedTileListener = onNoNeedTileListener;
         new DefaultTile().getTilesXInfo(resPath.name, resPath.nodeName, new DefaultTile.OnDefaultTilesListener() {
             @Override
@@ -225,6 +264,8 @@ public class NormalPave {
      */
     @SuppressLint("StaticFieldLeak")
     private void tile() {
+        if (onlyUseWavelinesCenterTile) // 用于中心砖，无需自身铺砖
+            return;
         new AsyncTask<String, Integer, NTTileResult>() {
             @Override
             protected NTTileResult doInBackground(String... strings) {
@@ -281,7 +322,8 @@ public class NormalPave {
             ArrayList<geom.Point> originList = geomOriginList.get(i);
             ArrayList<com.lejia.mobile.orderking.hk3d.classes.Point> changePointsList = PointList.staticExchangeGemoListToThisList(pointsList);
             ArrayList<com.lejia.mobile.orderking.hk3d.classes.Point> changeOriginList = PointList.staticExchangeGemoListToThisList(originList);
-            Area3D area3D = new Area3D(isGap, materialCode, changePointsList, changeOriginList);
+            boolean randChecker = (isGap ? false : randRotate);
+            Area3D area3D = new Area3D(isGap, materialCode, randChecker, changePointsList, changeOriginList);
             area3D.setSkewTile(skewTile);
             NTTileResult.putArea3D(area3D);
         }
@@ -310,5 +352,89 @@ public class NormalPave {
      */
     public interface OnNoNeedTileListener {
         void created();
+    }
+
+    /**
+     * 起铺方向转换为接单王的起铺方向
+     */
+    private int jdwDir() {
+        int dir = 4;
+        switch (direction) {
+            case GPCConfig.FROM_RIGHT_TOP:
+                dir = 0;
+                break;
+            case GPCConfig.FROM_LEFT_TOP:
+                dir = 2;
+                break;
+            case GPCConfig.FROM_LEFT_BOTTOM:
+                dir = 8;
+                break;
+            case GPCConfig.FROM_MIDDLE:
+                dir = 4;
+                break;
+            case GPCConfig.FROM_MIDDLE_BOTTOM:
+                dir = 7;
+                break;
+            case GPCConfig.FROM_MIDDLE_LEFT:
+                dir = 5;
+                break;
+            case GPCConfig.FROM_MIDDLE_RIGHT:
+                dir = 3;
+                break;
+            case GPCConfig.FROM_MIDDLE_TOP:
+                dir = 1;
+                break;
+            case GPCConfig.FROM_RIGHT_BOTTOM:
+                dir = 6;
+                break;
+        }
+        return dir;
+    }
+
+    /**
+     * 转化为中心区域铺砖计划对应的xml数据
+     *
+     * @param pointArrayList 中心瓷砖铺贴区域
+     * @return 返回xml格式数据封装
+     */
+    public String toXml(ArrayList<com.lejia.mobile.orderking.hk3d.classes.Point> pointArrayList) {
+        if (normalXInfo == null)
+            return null;
+        int rotate = (isSkewTile() ? -45 : 0);
+        int length = normalXInfo.X;
+        int width = normalXInfo.Y;
+        String v = "<TilePlan code=\"" + normalXInfo.materialCode + "\" type=\"0\" name=\"单砖连续直铺\" mosaicEditXml=\"null\"" +
+                "gap=\"" + (int) (brickGap * 10) + "\" gapColor=\"" + gapsColor + "\" locate=\"" + jdwDir() + "\" rotate=\"" + rotate + "\">";
+        try {
+            v += "\n <symbol key=\"WA\" value=\"" + normalXInfo.X + "\"/>";
+            v += "\n <symbol key=\"WA\" value=\"" + normalXInfo.Y + "\"/>";
+            v += "\n<phy>\n" +
+                    "<Tile code=\"A\" codeNum=\"" + normalXInfo.materialCode + "\" length=\"" + length + "\" width=\"" + width + "\" " +
+                    "url=\"" + normalXInfo.linkUrl + "\" family=\"\" parentCode=\"\"/>\n" +
+                    "</phy>";
+            v += "\n<logTile>\n" +
+                    "<LogicalTile code=\"A\" isMain=\"true\" rotate=\"" + rotate + "\" length=\"" + width + "\" width=\"" + width + "\" " +
+                    "dirx=\"0\" diry=\"0\" dirz=\"0\" notchStyle=\"0\"/>\n" +
+                    "</logTile>";
+            v += "\n <dir1 x=\"" + length + "\" y=\"0\" z=\"0\"/>\n" +
+                    "<dir2 x=\"0\" y=\"" + -width + "\" z=\"0\"/>";
+            v += "\n<dirExp1>\n" +
+                    "  <SymbolVector3D u=\"LA+G\" v=\"0\" w=\"0\"/>\n" +
+                    " </dirExp1>\n" +
+                    " <dirExp2>\n" +
+                    "   <SymbolVector3D u=\"0\" v=\"0-WA-G\" w=\"0\"/>\n" +
+                    " </dirExp2>";
+            if (pointArrayList != null && pointArrayList.size() > 0) {
+                v += "\n<tileRegion>";
+                for (com.lejia.mobile.orderking.hk3d.classes.Point point : pointArrayList) {
+                    v += "\n<TPoint x=\"" + (int) (point.x * 10) + "\" y=\"" + (int) (point.y * 10) + "\"/>";
+                }
+                v += "\n</tileRegion>";
+            }
+            v += "\n </TilePlan>";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return v;
     }
 }

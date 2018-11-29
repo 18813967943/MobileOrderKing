@@ -50,6 +50,10 @@ public class StyleData implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<styleData>\n" + style.toXml() + "\n</styleData>";
+    }
+
     @Override
     public String toString() {
         return "" + style;

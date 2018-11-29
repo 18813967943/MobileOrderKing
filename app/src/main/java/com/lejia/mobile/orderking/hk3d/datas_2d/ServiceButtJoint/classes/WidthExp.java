@@ -50,6 +50,10 @@ public class WidthExp implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<widthExp>\n" + symbolExp.toXml() + "\n</widthExp>";
+    }
+
     @Override
     public String toString() {
         return "" + symbolExp;

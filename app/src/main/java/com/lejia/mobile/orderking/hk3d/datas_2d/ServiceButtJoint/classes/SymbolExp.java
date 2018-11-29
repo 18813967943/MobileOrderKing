@@ -47,6 +47,10 @@ public class SymbolExp implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<SymbolExp sym=\"" + sym + "\"/>";
+    }
+
     @Override
     public String toString() {
         return "" + sym;

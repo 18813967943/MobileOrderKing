@@ -3,8 +3,10 @@ package com.lejia.mobile.orderking.hk3d.activity_partitation;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.dialogs.DoorModelLibraryDialog;
 import com.lejia.mobile.orderking.dialogs.MenuBar;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.bridge.SaveDatasToService;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
 /**
@@ -54,12 +56,15 @@ public class MoreManager {
                     break;
                 case 1:
                     // 打开
+                    new DoorModelLibraryDialog(mContext).show();
                     break;
                 case 2:
                     // 保存
+                    new SaveDatasToService(mContext, designer3DManager, houseDatasManager);
                     break;
                 case 3:
                     // 另存为
+
                     break;
                 case 4:
                     // 量尺

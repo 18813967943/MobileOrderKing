@@ -15,6 +15,8 @@ import com.lejia.mobile.orderking.adapters.RightIconsAdapter;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.classes.ResUrlNodeXml;
 import com.lejia.mobile.orderking.classes.ServiceNodesFetcher;
+import com.lejia.mobile.orderking.dialogs.TileDirectionDialog;
+import com.lejia.mobile.orderking.dialogs.TileGapsSettingDialog;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.ButtJTilesXml;
 import com.lejia.mobile.orderking.https.KosapRequest;
@@ -23,6 +25,7 @@ import com.lejia.mobile.orderking.httpsResult.classes.LJNodes;
 import com.lejia.mobile.orderking.utils.FetchLocal;
 import com.lejia.mobile.orderking.utils.FileUtils;
 import com.lejia.mobile.orderking.widgets.ScrollerGridView;
+import com.lejia.mobile.orderking.widgets.TileDirectionSelectorView;
 import com.lejia.mobile.orderking.widgets.TitlesView;
 
 import java.io.File;
@@ -433,7 +436,53 @@ public class TilesManager {
             }
             // 铺砖
             else if (flag == FLAG_TILES) {
+                tilesLevel1RightIconsAdapter.setSelectePosition(position);
+                final Ground ground = designer3DManager.getDesigner3DRender().getTouchSelectedManager().getSelectedGround();
+                if (ground != null) {
+                    switch (position) {
+                        case 0:
+                            // 区域
+                            break;
+                        case 1:
+                            // 砖缝设置
+                            TileGapsSettingDialog tileGapsSettingDialog = new TileGapsSettingDialog(mActivity, new TileGapsSettingDialog.
+                                    OnTileGapSettingListener() {
+                                @Override
+                                public void setGapSize(int size) {
+                                    ground.setGapSize(size);
+                                }
 
+                                @Override
+                                public void setGapColor(int color) {
+                                    ground.setGapColor(color);
+                                }
+
+                                @Override
+                                public void calBrickCounts() {
+                                }
+                            });
+                            tileGapsSettingDialog.autoShowOrHide();
+                            tileGapsSettingDialog.setGapsSize(ground.gapSize());
+                            tileGapsSettingDialog.setGapsColor(ground.gapColor());
+                            break;
+                        case 2:
+                            // 起铺方向
+                            TileDirectionDialog tileDirectionDialog = new TileDirectionDialog(mActivity, new TileDirectionSelectorView.
+                                    OnTileDirectionsSelectedListener() {
+                                @Override
+                                public void selected(int direction) {
+                                    ground.setTileDirection(direction);
+                                }
+                            });
+                            tileDirectionDialog.autoShowOrHide();
+                            tileDirectionDialog.setDirection(ground.getDirection());
+                            break;
+                        case 3:
+                            // 斜铺
+                            ground.autoSkewTile();
+                            break;
+                    }
+                }
             }
         }
     };

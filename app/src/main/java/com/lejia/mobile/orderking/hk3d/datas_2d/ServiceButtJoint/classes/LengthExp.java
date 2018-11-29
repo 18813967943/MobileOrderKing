@@ -50,6 +50,10 @@ public class LengthExp implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<lengthExp>\n" + symbolExp.toXml() + "\n</lengthExp>";
+    }
+
     @Override
     public String toString() {
         return "" + symbolExp;

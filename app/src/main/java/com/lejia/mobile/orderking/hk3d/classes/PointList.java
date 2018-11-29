@@ -1,6 +1,7 @@
 package com.lejia.mobile.orderking.hk3d.classes;
 
 import android.graphics.Path;
+import android.opengl.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -1109,6 +1110,35 @@ public class PointList implements Parcelable {
             }
         }
         return point;
+    }
+
+    /**
+     * 旋转围点
+     *
+     * @param pointsList
+     * @param angle
+     * @return
+     */
+    public static ArrayList<Point> rotatePointsList(ArrayList<Point> pointsList, float angle) {
+        if (pointsList == null || pointsList.size() == 0)
+            return null;
+        ArrayList<Point> rlist = new ArrayList<>();
+        try {
+            // 旋转矩阵
+            float[] rm = new float[16];
+            android.opengl.Matrix.setIdentityM(rm, 0);
+            android.opengl.Matrix.rotateM(rm, 0, -(angle % 180), 0.0f, 0.0f, 1.0f);
+            // 遍历旋转
+            for (Point point : pointsList) {
+                float[] pvs = new float[]{(float) point.x, (float) point.y, 0, 1};
+                float[] retm = new float[4];
+                Matrix.multiplyMV(retm, 0, rm, 0, pvs, 0);
+                rlist.add(new Point(retm[0], retm[1]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rlist;
     }
 
     @Override

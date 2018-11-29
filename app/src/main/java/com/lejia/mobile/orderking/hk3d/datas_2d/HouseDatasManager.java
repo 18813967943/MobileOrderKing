@@ -1176,7 +1176,8 @@ public class HouseDatasManager {
         housesList.clear();
         furnituresList.clear();
         furnitureArrayList.clear();
-        buildingWallsMaps.clear();
+        if (buildingWallsMaps != null)
+            buildingWallsMaps.clear();
         PolyM.clear3DViews();
         refreshRender();
         refreshRender3D();

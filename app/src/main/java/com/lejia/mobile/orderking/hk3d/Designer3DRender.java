@@ -1,10 +1,13 @@
 package com.lejia.mobile.orderking.hk3d;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES30;
+import android.opengl.GLException;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
@@ -16,9 +19,11 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.bridge.OnReadPixsListener;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -154,6 +159,12 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         //------------------------- refreshRender scene ------------------------------
         // normal refreshRender
         renderScene();
+        // 读取像素区域
+        if (requestReadPixs) {
+            requestReadPixs = false;
+            Bitmap bitmap = createBitmapFromGLSurface(0, 0, mDisplayWidth, mDisplayHeight);
+            onReadPixsListener.complelted(bitmap);
+        }
         // release datas
         if (release) {
             release = false;
@@ -509,6 +520,59 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
             }
         }
         return null;
+    }
+
+    private boolean requestReadPixs;
+    private OnReadPixsListener onReadPixsListener;
+
+    /**
+     * 在此控件中执行截取绘制内容
+     *
+     * @param onReadPixsListener
+     */
+    public void readPixs(@NonNull OnReadPixsListener onReadPixsListener) {
+        this.onReadPixsListener = onReadPixsListener;
+        requestReadPixs = true;
+        refreshRenderer();
+    }
+
+    /**
+     * 读取像素
+     *
+     * @param x
+     * @param y
+     * @param w
+     * @param h
+     * @return
+     */
+    public Bitmap createBitmapFromGLSurface(int x, int y, int w, int h) {
+        int bitmapBuffer[] = new int[w * h];
+        int bitmapSource[] = new int[w * h];
+        IntBuffer intBuffer = IntBuffer.wrap(bitmapBuffer);
+        intBuffer.position(0);
+        Bitmap ret = null;
+        try {
+            GLES30.glReadPixels(x, y, w, h, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, intBuffer);
+            int offset1, offset2;
+            for (int i = 0; i < h; i++) {
+                offset1 = i * w;
+                offset2 = (h - i - 1) * w;
+                for (int j = 0; j < w; j++) {
+                    int texturePixel = bitmapBuffer[offset1 + j];
+                    int blue = (texturePixel >> 16) & 0xff;
+                    int red = (texturePixel << 16) & 0x00ff0000;
+                    int pixel = (texturePixel & 0xff00ff00) | red | blue;
+                    bitmapSource[offset2 + j] = pixel;
+                }
+            }
+            ret = Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
+            GLES30.glDeleteTextures(1, intBuffer);
+            intBuffer = null;
+            System.gc();
+        } catch (GLException e) {
+            return null;
+        }
+        return ret;
     }
 
     /**

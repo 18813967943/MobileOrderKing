@@ -75,63 +75,50 @@ public class RoomNameBitmapFactory {
                 else {
                     return null;
                 }
-                // 创建画笔
-                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                paint.setDither(true);
-                paint.setAntiAlias(true);
-                paint.setTextSize(TextUtils.sp2px(OrderKingApplication.getInstant(), 16));
-                // 1、获取长宽
-                String drawValue = roomName + " " + area + "m²";
-                String blackValue = roomName + " ";
-                float width = 6 + paint.measureText(drawValue);
-                if (width > houseInnerBox.width()) { // 房间宽度过窄，使用小字体
-                    paint.setTextSize(TextUtils.sp2px(OrderKingApplication.getInstant(), 9));
-                    width = 6 + paint.measureText(drawValue);
-                }
-                float blackWidth = paint.measureText(blackValue);
-                Paint.FontMetrics fm = paint.getFontMetrics();
-                float height = 6 + fm.bottom - fm.top;
-                // 2、围点检测生成
-                ArrayList<Point> pointsList = PointList.getRotateVertexs(0, height, width, roomNameAtPoint);
-                Poly innerPoly = PolyE.toPolyDefault(pointList);
-                Poly checkPoly = PolyE.toPolyDefault(pointsList);
-                Poly interPoly = checkPoly.intersection(innerPoly);
-                if (interPoly != null && !interPoly.isEmpty()) {
-                    PointList retList = PolyE.toPointList(interPoly);
-                    // 有相交区域，与检测区域不同，变更房间位置信息
-                    if (!retList.equals(new PointList(pointsList))) {
-                        roomNameAtPoint = pointList.getInnerValidPoint(true);
-                        pointsList = PointList.getRotateVertexs(0, height, width, roomNameAtPoint);
-                    }
-                }
-                // 3、画笔创建画布
-                PointList namePointList = new PointList(pointsList);
-                RectD box = namePointList.getRectBox();
-                Bitmap bitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                bitmap.setHasAlpha(true);
-                /*// 绘制覆盖区域位图
-                if (overlapBitmap != null) {
-                    RectD innerBox = pointList.getRectBox();
-                    double transX = -innerBox.left;
-                    double transY = -innerBox.top;
-                    ArrayList<Point> transList = L3DMatrix.translate(pointsList, transX, transY, 0);
-                    PointList transPointList = new PointList(transList);
-                    RectD transBox = transPointList.getRectBox();
-                    Bitmap overlapAreaBitmap = Bitmap.createBitmap(overlapBitmap, (int) transBox.left,
-                            (int) transBox.top, (int) (transBox.width() + 1.0d), (int) transBox.height());
-                    canvas.drawBitmap(overlapAreaBitmap, 0, 0, null);
-                    overlapAreaBitmap.recycle();
-                }*/
-                // 绘制内容
-                float y = 3 + (float) ((box.height() + height / 2) / 2);
-                paint.setColor(0xFF000000);
-                canvas.drawText(roomName, 3, y, paint);
-                paint.setColor(0xFFFF0000);
-                canvas.drawText(area + "m²", 3 + blackWidth, y, paint);
-                // 创建数据对象
-                nameData = new NameData(roomName, "" + area, roomNameAtPoint, bitmap, namePointList);
             }
+            // 创建画笔
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setDither(true);
+            paint.setAntiAlias(true);
+            paint.setTextSize(TextUtils.sp2px(OrderKingApplication.getInstant(), 16));
+            // 1、获取长宽
+            String drawValue = roomName + " " + area + "m²";
+            String blackValue = roomName + " ";
+            float width = 6 + paint.measureText(drawValue);
+            if (width > houseInnerBox.width()) { // 房间宽度过窄，使用小字体
+                paint.setTextSize(TextUtils.sp2px(OrderKingApplication.getInstant(), 9));
+                width = 6 + paint.measureText(drawValue);
+            }
+            float blackWidth = paint.measureText(blackValue);
+            Paint.FontMetrics fm = paint.getFontMetrics();
+            float height = 6 + fm.bottom - fm.top;
+            // 2、围点检测生成
+            ArrayList<Point> pointsList = PointList.getRotateVertexs(0, height, width, roomNameAtPoint);
+            Poly innerPoly = PolyE.toPolyDefault(pointList);
+            Poly checkPoly = PolyE.toPolyDefault(pointsList);
+            Poly interPoly = checkPoly.intersection(innerPoly);
+            if (interPoly != null && !interPoly.isEmpty()) {
+                PointList retList = PolyE.toPointList(interPoly);
+                // 有相交区域，与检测区域不同，变更房间位置信息
+                if (!retList.equals(new PointList(pointsList))) {
+                    roomNameAtPoint = pointList.getInnerValidPoint(true);
+                    pointsList = PointList.getRotateVertexs(0, height, width, roomNameAtPoint);
+                }
+            }
+            // 3、画笔创建画布
+            PointList namePointList = new PointList(pointsList);
+            RectD box = namePointList.getRectBox();
+            Bitmap bitmap = Bitmap.createBitmap((int) box.width(), (int) box.height(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            bitmap.setHasAlpha(true);
+            // 绘制内容
+            float y = 3 + (float) ((box.height() + height / 2) / 2);
+            paint.setColor(0xFF000000);
+            canvas.drawText(roomName, 3, y, paint);
+            paint.setColor(0xFFFF0000);
+            canvas.drawText(area + "m²", 3 + blackWidth, y, paint);
+            // 创建数据对象
+            nameData = new NameData(roomName, "" + area, roomNameAtPoint, bitmap, namePointList);
         } catch (Exception e) {
             e.printStackTrace();
         }

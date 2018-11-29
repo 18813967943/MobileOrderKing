@@ -22,6 +22,7 @@ public class LogicalTile implements Parcelable {
     public float diry;
     public float dirz;
     public int notchStyle; // 倒角类型
+    public boolean randRotate; // 砖纹随机
 
     /**
      * 逻辑砖长度标记对象
@@ -149,6 +150,33 @@ public class LogicalTile implements Parcelable {
             return new LogicalTile[size];
         }
     };
+
+    public String toXml() {
+        boolean single = (lengthExp == null && widthExp == null && attachDirectionExp == null && styleData == null);
+        if (single) {
+            return "<LogicalTile code=\"" + code + "\" isMain=\"" + isMain + "\" " +
+                    "rotate=\"" + rotate + "\" length=\"" + length + "\" width=\"" + width + "\" dirx=\"" + dirx + "\" diry=\"" + diry + "\"" +
+                    "dirz=\"" + dirz + "\" notchStyle=\"" + notchStyle + "\"/>";
+        } else {
+            String v = "<LogicalTile code=\"" + code + "\" isMain=\"" + isMain + "\" " +
+                    "rotate=\"" + rotate + "\" length=\"" + length + "\" width=\"" + width + "\" dirx=\"" + dirx + "\" diry=\"" + diry + "\"" +
+                    "dirz=\"" + dirz + "\" notchStyle=\"" + notchStyle + "\">";
+            if (lengthExp != null) {
+                v += "\n" + lengthExp.toXml();
+            }
+            if (widthExp != null) {
+                v += "\n" + widthExp.toXml();
+            }
+            if (attachDirectionExp != null) {
+                v += "\n" + attachDirectionExp.toXml();
+            }
+            if (styleData != null) {
+                v += "\n" + styleData.toXml();
+            }
+            v += "\n</LogicalTile>";
+            return v;
+        }
+    }
 
     @Override
     public String toString() {

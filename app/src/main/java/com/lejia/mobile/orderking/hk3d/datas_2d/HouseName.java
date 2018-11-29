@@ -9,6 +9,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
 import com.lejia.mobile.orderking.hk3d.factory.RoomNameBitmapFactory;
+import com.lejia.mobile.orderking.utils.TextUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -78,6 +79,19 @@ public class HouseName extends RendererObject {
      */
     public NameData getNameData() {
         return nameData;
+    }
+
+    /**
+     * 设置房间名称
+     *
+     * @param name
+     */
+    public void setHouseName(String name) {
+        if (TextUtils.isTextEmpty(name))
+            return;
+        nameData = RoomNameBitmapFactory.createRoomNameBitmap(name, innerPointList, null);
+        needBindTextureId = true;
+        refreshRender();
     }
 
     @Override

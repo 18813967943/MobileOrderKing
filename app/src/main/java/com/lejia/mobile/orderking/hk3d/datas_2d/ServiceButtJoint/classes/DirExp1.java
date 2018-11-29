@@ -50,6 +50,10 @@ public class DirExp1 implements Parcelable {
         }
     };
 
+    public String toXml() {
+        return "<dirExp1>\n" + symbolVector3D.toXml() + "\n</dirExp1>";
+    }
+
     @Override
     public String toString() {
         return "DirExp1: " + symbolVector3D;

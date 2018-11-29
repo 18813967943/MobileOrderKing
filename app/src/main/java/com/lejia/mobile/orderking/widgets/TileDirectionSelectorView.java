@@ -106,6 +106,7 @@ public class TileDirectionSelectorView extends View {
             ArrayList<Point> pointsList = PointList.getRotateVertexs(0, areaWidth, areaHeight, point);
             GPCArea gpcArea = new GPCArea();
             gpcArea.pointsList = pointsList;
+            gpcArea.position = index;
             switch (index) {
                 case 0:
                     gpcArea.direction = GPCConfig.FROM_RIGHT_TOP;
@@ -162,13 +163,11 @@ public class TileDirectionSelectorView extends View {
      * 设置选中位置
      */
     public void setDirection(int direction) {
-        int index = 0;
         for (GPCArea gpcArea : directionSizeList) {
             if (gpcArea.direction == direction) {
-                this.direction = index;
+                this.direction = gpcArea.position;
                 break;
             }
-            index++;
         }
         invalidate();
     }
