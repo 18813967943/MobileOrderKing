@@ -5,10 +5,9 @@ import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
-import com.lejia.mobile.orderking.hk3d.datas_2d.FurnitureMatrixs;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.TopView;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public abstract class BaseCad extends RendererObject {
     // 吸附围点
     public Point point;
 
-    // 门窗类型
+    // 类型
     public FurTypes furTypes;
 
     /**
@@ -52,19 +51,14 @@ public abstract class BaseCad extends RendererObject {
     public ArrayList<CadLine> cadLinesList;
 
     /**
-     * 对应家具
-     */
-    public Furniture furniture;
-
-    /**
      * 镜像
      */
     public boolean mirror;
 
     /**
-     * 模型对应的矩阵数据对象
+     * 对应的数据集对象
      */
-    public FurnitureMatrixs furnitureMatrixs;
+    public TopView topView;
 
     public BaseCad(FurTypes furTypes) {
         this.furTypes = furTypes;
@@ -76,16 +70,6 @@ public abstract class BaseCad extends RendererObject {
         this.xlong = xlong;
         this.point = point;
         this.furTypes = furTypes;
-        initDatas();
-    }
-
-    public BaseCad(double angle, double thickness, double xlong, Point point, FurTypes furTypes, Furniture furniture) {
-        this.angle = angle;
-        this.thickness = thickness;
-        this.xlong = xlong;
-        this.point = point;
-        this.furTypes = furTypes;
-        this.furniture = furniture;
         initDatas();
     }
 
@@ -135,38 +119,6 @@ public abstract class BaseCad extends RendererObject {
         initDatas();
     }
 
-    // 移除矩阵
-    public void removeOldMatrixs() {
-        if (furnitureMatrixs != null) {
-            // 存储至渲染数据管理对象
-            HouseDatasManager houseDatasManager = getHouseDatasManager();
-            if (houseDatasManager != null) {
-                houseDatasManager.deleteFurniture(this, furnitureMatrixs);
-            }
-            furnitureMatrixs = null;
-        }
-    }
-
-    // 更新
-
-    // 刷新同模型的矩阵信息
-    public void refreshMatrixs() {
-        // 刷新家具矩阵信息
-        furnitureMatrixs = new FurnitureMatrixs(point, 0, 0, (float) angle
-                , 1.0f, 1.0f, 1.0f, (float) point.x, (float) point.y,
-                furniture.groundHeight * 0.1f, mirror);
-        // 存储至渲染数据管理对象
-        HouseDatasManager houseDatasManager = getHouseDatasManager();
-        if (houseDatasManager != null) {
-            houseDatasManager.putFurniture(this, furnitureMatrixs);
-        }
-    }
-
-    // 设置模型对应三维矩阵信息对象
-    public void setFurnitureMatrixs(FurnitureMatrixs furnitureMatrixs) {
-        this.furnitureMatrixs = furnitureMatrixs;
-    }
-
     // 获取门窗类型
     public FurTypes getFurTypes() {
         return furTypes;
@@ -194,38 +146,31 @@ public abstract class BaseCad extends RendererObject {
         initDatas();
     }
 
-    /**
-     * 获取当前对应的模型
-     */
-    public Furniture getFurniture() {
-        return furniture;
-    }
-
-    /**
-     * 设置模型数据
-     *
-     * @param furniture 家具模型
-     */
-    public void setFurniture(Furniture furniture) {
-        this.furniture = furniture;
-        if (this.furniture != null) {
-            thickness = this.furniture.width / 10;
-            xlong = this.furniture.xLong / 10;
-            initDatas();
-            // 刷新模型的矩阵信息
-            refreshMatrixs();
-        }
-    }
-
     // 判断是否是镜像
     public boolean isMirror() {
         return mirror;
+    }
+
+    // 获取顶视数据对象
+    public TopView getTopView() {
+        return topView;
+    }
+
+    // 设置顶视数据对象
+    public void setTopView(TopView topView) {
+        this.topView = topView;
+        bindTexture();
     }
 
     /**
      * 初始化加载数据
      */
     public abstract void initDatas();
+
+    /**
+     * 设置家具信息后刷新贴图
+     */
+    public abstract void bindTexture();
 
     /**
      * 基础渲染
@@ -243,9 +188,6 @@ public abstract class BaseCad extends RendererObject {
     public void mirror() {
         mirror = !mirror;
         initDatas();
-        // 刷新镜像信息
-        if (furnitureMatrixs != null)
-            furnitureMatrixs.setMirror(mirror);
     }
 
     /**

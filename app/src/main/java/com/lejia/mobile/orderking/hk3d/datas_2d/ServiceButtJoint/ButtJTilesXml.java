@@ -9,6 +9,8 @@ import android.util.Base64;
 import com.lejia.mobile.orderking.classes.ResUrlNodeXml;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.AttachDirectionExp;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.Dir1;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.Dir2;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.DirExp1;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.DirExp2;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.LengthExp;
@@ -75,6 +77,11 @@ public class ButtJTilesXml {
      * xml内部所有使用资源加载对象
      */
     private ResourceLoader resourceLoader;
+
+    /**
+     * 多层波打线层编号
+     */
+    private int layerCount;
 
     public ButtJTilesXml(Context context, ResUrlNodeXml.ResPath resPath, String cachePath, int mode, Ground ground) {
         this.mContext = context;
@@ -186,7 +193,7 @@ public class ButtJTilesXml {
             String rootName = element.getName().toLowerCase();
             // 单层波打线
             if (rootName.equals("tileplan")) {
-                TilePlan tilePlan = parseTilePlan(element);
+                TilePlan tilePlan = parseTilePlan(element, true);
                 waveMutliPlan.tilePlanArrayList.add(tilePlan);
             }
             // 多层波打线
@@ -200,7 +207,7 @@ public class ButtJTilesXml {
                 for (Element e : elementList) {
                     String ename = e.getName();
                     if (ename.toLowerCase().equals("tileplan")) {
-                        TilePlan tilePlan = parseTilePlan(e);
+                        TilePlan tilePlan = parseTilePlan(e, false);
                         waveMutliPlan.tilePlanArrayList.add(tilePlan);
                     }
                 }
@@ -246,13 +253,15 @@ public class ButtJTilesXml {
         resourceLoader.start();
     }
 
+
     /**
      * TODO TilePlan 基础数据解析
      *
      * @param tileplanElement tileplan元素接口
+     * @param singleWaveLine  是否单层波打线
      * @return 返回解析好的基础铺砖数据对象
      */
-    private TilePlan parseTilePlan(Element tileplanElement) {
+    private TilePlan parseTilePlan(Element tileplanElement, boolean singleWaveLine) {
         if (tileplanElement == null)
             return null;
         TilePlan tilePlan = new TilePlan();
@@ -362,6 +371,20 @@ public class ButtJTilesXml {
                         String u2 = dexpE2.attributeValue("u");
                         String v2 = dexpE2.attributeValue("v");
                         tilePlan.dirExp2.symbolVector3D.calculateValues(u2, v2, tilePlan.symbolMaps);
+                        break;
+                    // 起铺方向一
+                    case "dir1":
+                        tilePlan.dir1 = new Dir1();
+                        tilePlan.dir1.x = Float.parseFloat(element.attributeValue("x"));
+                        tilePlan.dir1.y = Float.parseFloat(element.attributeValue("y"));
+                        tilePlan.dir1.z = Float.parseFloat(element.attributeValue("z"));
+                        break;
+                    // 起铺方向二
+                    case "dir2":
+                        tilePlan.dir2 = new Dir2();
+                        tilePlan.dir2.x = Float.parseFloat(element.attributeValue("x"));
+                        tilePlan.dir2.y = Float.parseFloat(element.attributeValue("y"));
+                        tilePlan.dir2.z = Float.parseFloat(element.attributeValue("z"));
                         break;
                 }
             }

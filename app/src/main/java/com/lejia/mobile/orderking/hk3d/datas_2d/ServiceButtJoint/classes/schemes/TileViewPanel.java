@@ -21,6 +21,9 @@ public class TileViewPanel implements Parcelable {
     public RoomLayer roomLayer; // 房间围点细化数据对象
 
     public TileViewPanel() {
+        scale = 10;
+        canMoveTileLayer = true;
+        saveTiles = false;
     }
 
     protected TileViewPanel(Parcel in) {

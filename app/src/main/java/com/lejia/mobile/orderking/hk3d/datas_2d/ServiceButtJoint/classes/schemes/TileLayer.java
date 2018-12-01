@@ -18,6 +18,7 @@ public class TileLayer implements Parcelable{
     public WaveLine waveLine; // 波打线数据对象
 
     public TileLayer() {
+        main = true;
     }
 
     protected TileLayer(Parcel in) {

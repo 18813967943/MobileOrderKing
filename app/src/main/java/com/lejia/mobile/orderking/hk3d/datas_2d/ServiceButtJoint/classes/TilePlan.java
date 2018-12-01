@@ -27,6 +27,16 @@ public class TilePlan implements Parcelable {
     public float rotate; // 旋转角度
     public int gapColor; // 砖缝颜色
 
+    // 多层波打线数据
+    public String texture = "assets/plan/b1.jpg"; // 默认使用砖路径
+    public int openDir = -1;
+    public int waveLineOrientation;
+    public float waveWidth;
+    public int layerCount = 1; // 波打线所属层
+    public int gapTileRegion;
+    public int waveType; // 波打线类型(斜切或转角)
+    public boolean wavelinesCellsLayout; // 多层波打线铺贴标志
+
     /**
      * 铺砖计划中的运算数值标记集合
      */
@@ -51,6 +61,16 @@ public class TilePlan implements Parcelable {
      * 与整砖起铺偏置方向二
      */
     public DirExp2 dirExp2;
+
+    /**
+     * 铺砖起铺方向一
+     */
+    public Dir1 dir1;
+
+    /**
+     * 铺砖起铺方向二
+     */
+    public Dir2 dir2;
 
     /**
      * 组合物理砖与逻辑砖数据打包对象列表
@@ -204,8 +224,15 @@ public class TilePlan implements Parcelable {
      * @return xml数据
      */
     public String toXml(ArrayList<Point> pointArrayList) {
-        String v = "<TilePlan code=\"" + code + "\" type=\"" + type + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
+        String v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
                 "rotate=\"" + rotate + "\">";
+        // 多层波打线
+        if (wavelinesCellsLayout) {
+            v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
+                    "rotate=\"" + rotate + "\" openDir=\"" + openDir + "\" waveLineOrientation=\"" + waveLineOrientation +
+                    "\" waveWidth=\"" + waveWidth + "\" layerCount=\"" + layerCount + "\" gapTileRegion=\"" + gapTileRegion + "\" " +
+                    "waveType=\"" + waveType + "\">";
+        }
         if (symbolMaps != null && symbolMaps.size() > 0) {
             Iterator<Map.Entry<String, Integer>> iterator = symbolMaps.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -221,6 +248,12 @@ public class TilePlan implements Parcelable {
         if (logtile != null) {
             v += "\n" + logtile.toXml();
         }
+        if (dir1 != null) {
+            v += "\n" + dir1.toXml();
+        }
+        if (dir2 != null) {
+            v += "\n" + dir2.toXml();
+        }
         if (dirExp1 != null) {
             v += "\n" + dirExp1.toXml();
         }
@@ -230,9 +263,12 @@ public class TilePlan implements Parcelable {
         if (pointArrayList != null && pointArrayList.size() > 0) {
             v += "\n<tileRegion>";
             for (com.lejia.mobile.orderking.hk3d.classes.Point point : pointArrayList) {
-                v += "\n<TPoint x=\"" + (int) (point.x * 10) + "\" y=\"" + (int) (point.y * 10) + "\"/>";
+                // 加上30000是因为接单王的原点在(3000,3000)，并放大十倍进行铺砖引起
+                v += "\n<TPoint x=\"" + (int) (point.x * -10 + 30000) + "\" y=\"" + (int) (point.y * 10 + 30000) + "\"/>";
             }
             v += "\n</tileRegion>";
+        } else {
+            v += "\n<tileRegion />";
         }
         v += "\n</TilePlan>";
         return v;

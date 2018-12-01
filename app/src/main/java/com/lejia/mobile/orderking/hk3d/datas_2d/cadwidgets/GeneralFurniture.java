@@ -1,24 +1,15 @@
 package com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
-import android.os.AsyncTask;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
-import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Selector;
-import com.lejia.mobile.orderking.utils.BitmapUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -43,14 +34,8 @@ public class GeneralFurniture extends BaseCad {
         super(angle, thickness, xlong, point, furTypes);
     }
 
-    public GeneralFurniture(double angle, double thickness, double xlong, Point point, FurTypes furTypes, Furniture furniture) {
-        super(angle, thickness, xlong, point, furTypes, furniture);
-    }
-
     @Override
     public void initDatas() {
-        if (furniture == null)
-            return;
         // 根据吸附点、厚度变化刷新数据
         thicknessPointsList = PointList.getRotateVertexs(angle, thickness, xlong, point);
         thicknessPointsList = new PointList(thicknessPointsList).antiClockwise();
@@ -76,42 +61,11 @@ public class GeneralFurniture extends BaseCad {
         normalsBuffer.put(normals).position(0);
         // 选中对象
         selector = new Selector(new PointList(thicknessPointsList));
-        // 加载贴图，检测缓存
-        Texture texture = getTextureCache(furniture.materialCode);
-        if (texture != null) {
-            bitmap = texture.bitmap;
-            textureId = texture.textureId;
-        } else {
-            // 无缓存加载
-            isLoadingBitmap = true;
-            Glide.with(OrderKingApplication.getInstant()).asBitmap().load(furniture.topView).into(new SimpleTarget<Bitmap>() {
-                @SuppressLint("StaticFieldLeak")
-                @Override
-                public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
-                    // 异步线程执行
-                    new AsyncTask<Bitmap, Integer, Bitmap>() {
-                        @Override
-                        protected Bitmap doInBackground(Bitmap... bitmaps) {
-                            return BitmapUtils.toSize(bitmaps[0], furniture.xLong / 10, furniture.width / 10);
-                        }
+    }
 
-                        @Override
-                        protected void onPostExecute(Bitmap bitmap) {
-                            super.onPostExecute(bitmap);
-                            // 赋值位图
-                            GeneralFurniture.this.bitmap = bitmap;
-                            // 关闭加载
-                            isLoadingBitmap = false;
-                            // 开启加载贴图
-                            needBindTextureId = true;
-                            // 刷新请求
-                            refreshRender();
-                        }
-                    }.execute(bitmap);
-                }
-            });
-        }
-        refreshRender();
+    @Override
+    public void bindTexture() {
+        
     }
 
     @Override
@@ -124,7 +78,7 @@ public class GeneralFurniture extends BaseCad {
             // 加载材质贴图
             if (needBindTextureId) {
                 needBindTextureId = false;
-                textureId = createTextureIdAndCache(furniture.materialCode, bitmap, false);
+                textureId = createTextureIdAndCache(uuid, bitmap, false);
                 refreshRender();
             }
             // 渲染

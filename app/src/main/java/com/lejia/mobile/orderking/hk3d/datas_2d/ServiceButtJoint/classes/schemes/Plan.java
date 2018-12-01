@@ -76,7 +76,12 @@ public class Plan implements Parcelable {
         if (tilePlanArrayList != null && tilePlanArrayList.size() > 0) {
             for (int i = 0; i < tilePlanArrayList.size(); i++) {
                 TilePlan tilePlan = tilePlanArrayList.get(i);
-                ArrayList<Point> pointArrayList = tileplanPointsList.get(i);
+                ArrayList<Point> pointArrayList = null;
+                if (i >= tileplanPointsList.size() || i < 0) {
+                    pointArrayList = null;
+                } else {
+                    pointArrayList = tileplanPointsList.get(i);
+                }
                 v += "\n" + tilePlan.toXml(pointArrayList);
             }
         }

@@ -312,7 +312,7 @@ public class SchemeXmlParseToShowViews {
                                                         break;
                                                     case "plan":
                                                         Plan plan = new Plan();
-                                                        parseTilePlan(plan, tre);
+                                                        parseTilePlan(plan, tre, false);
                                                         tileRegion.plan = plan;
                                                         break;
                                                     case "ts":
@@ -327,7 +327,7 @@ public class SchemeXmlParseToShowViews {
                                             waveLine.planType = Integer.parseInt(laye.attributeValue("planType"));
                                             waveLine.openDir = Integer.parseInt(laye.attributeValue("openDir"));
                                             waveLine.parentGuid = Integer.parseInt(laye.attributeValue("parentGuid"));
-                                            parseTilePlan(waveLine, laye);
+                                            parseTilePlan(waveLine, laye, true);
                                             tileLayer.waveLine = waveLine;
                                             break;
                                     }
@@ -369,10 +369,11 @@ public class SchemeXmlParseToShowViews {
     /**
      * 解析TilePlan
      *
-     * @param obj     保存数据对象
-     * @param element xml节点
+     * @param obj       保存数据对象
+     * @param element   xml节点
+     * @param wavelines
      */
-    private void parseTilePlan(Object obj, Element element) {
+    private void parseTilePlan(Object obj, Element element, boolean wavelines) {
         if (obj == null || element == null)
             return;
         ArrayList<TilePlan> tilePlanArrayList = null;
@@ -401,6 +402,19 @@ public class SchemeXmlParseToShowViews {
                         tilePlan.rotate = Float.parseFloat(e.attributeValue("rotate"));
                         if (e.attribute("gapColor") != null)
                             tilePlan.gapColor = Integer.parseInt(e.attributeValue("gapColor"));
+                        // 波打线
+                        if (wavelines) {
+                            // 多层波打线
+                            if (e.attribute("layerCount") != null) {
+                                tilePlan.wavelinesCellsLayout = true;
+                                tilePlan.layerCount = Integer.parseInt(e.attributeValue("layerCount"));
+                                tilePlan.waveLineOrientation = Integer.parseInt(e.attributeValue("waveLineOrientation"));
+                                tilePlan.openDir = Integer.parseInt(e.attributeValue("openDir"));
+                                tilePlan.waveWidth = Float.parseFloat(e.attributeValue("waveWidth"));
+                                tilePlan.waveType = Integer.parseInt(e.attributeValue("waveType"));
+                                tilePlan.gapTileRegion = Integer.parseInt(e.attributeValue("gapTileRegion"));
+                            }
+                        }
                         // 添加默认砖缝数值
                         tilePlan.putSymbol("G", "" + ((int) tilePlan.gap));
                         // 遍历创建子元素
@@ -538,7 +552,7 @@ public class SchemeXmlParseToShowViews {
                 houseXmlCreatorArrayList.add(new HouseXmlCreator(mContext, house, floorData, houseDatasManager));
             }
             // 增加模型，暂不处理
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }

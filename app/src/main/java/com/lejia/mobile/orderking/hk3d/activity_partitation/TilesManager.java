@@ -19,6 +19,7 @@ import com.lejia.mobile.orderking.dialogs.TileDirectionDialog;
 import com.lejia.mobile.orderking.dialogs.TileGapsSettingDialog;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.ButtJTilesXml;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.FurnitureController;
 import com.lejia.mobile.orderking.https.KosapRequest;
 import com.lejia.mobile.orderking.https.OnKosapResponseListener;
 import com.lejia.mobile.orderking.httpsResult.classes.LJNodes;
@@ -179,6 +180,7 @@ public class TilesManager {
     private ArrayList<LJNodes> modelsBottomNodeList;
     private LJNodes currentLoadModelsNode;
     private boolean showMoreModels; // 模型空间类型切换标记
+    private int type = -1; // 模型大类类型,-1为室内室外家具;0为门;1为窗
 
     private ArrayList<ResUrlNodeXml.ResPath> resPathArrayList; // 资源路径数据列表
 
@@ -363,11 +365,11 @@ public class TilesManager {
     private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Ground ground = designer3DManager.getDesigner3DRender().getTouchSelectedManager().getSelectedGround();
+            ResUrlNodeXml.ResPath resPath = (ResUrlNodeXml.ResPath) resPathDatasAdapter.getItem(position);
             // 铺砖
             if (flag == FLAG_TILES) {
-                Ground ground = designer3DManager.getDesigner3DRender().getTouchSelectedManager().getSelectedGround();
                 if (ground != null) {
-                    ResUrlNodeXml.ResPath resPath = (ResUrlNodeXml.ResPath) resPathDatasAdapter.getItem(position);
                     // 普通砖
                     if (tileVrMode == ButtJTilesXml.NORMAL) {
                         ground.setNormalPaveRes(resPath);
@@ -377,6 +379,11 @@ public class TilesManager {
                         new ButtJTilesXml(mActivity, resPath, cachePath, tileVrMode, ground);
                     }
                 }
+            }
+            // 布置
+            else if (flag == FLAG_MODELS) {
+                FurnitureController furnitureController = designer3DManager.getDesigner3DRender().getFurnitureController();
+                furnitureController.add(type, resPath);
             }
         }
     };
@@ -428,6 +435,13 @@ public class TilesManager {
                 }
                 // 其他
                 else {
+                    // 设置家具大类类型
+                    if (position < 2) {
+                        type = position;
+                    } else {
+                        type = -1;
+                    }
+                    // 加载对应节点数据
                     currentLoadModelsNode = modelsBottomNodeList.get(position);
                     modelsRightIconsAdapter.setSelectePosition(-1);
                     modelsLevelOneAdapter.setSelectedPosition(position);
@@ -493,6 +507,7 @@ public class TilesManager {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // 家具
             if (flag == FLAG_MODELS) {
+                type = -1; // 设置家具大类类型
                 // 更多
                 if (position == 4) {
                     showMoreModels = !showMoreModels;

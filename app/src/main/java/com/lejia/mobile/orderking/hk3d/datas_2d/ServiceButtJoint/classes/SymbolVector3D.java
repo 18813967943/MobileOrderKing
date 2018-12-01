@@ -20,8 +20,8 @@ public class SymbolVector3D implements Parcelable {
     public float v; // 垂直方向偏移量
     public float w; // 权重值
 
-    private String su;
-    private String sv;
+    public String su;
+    public String sv;
 
     public SymbolVector3D() {
         super();

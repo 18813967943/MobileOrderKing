@@ -326,6 +326,18 @@ public class Ground extends RendererObject {
             normalPave.setBrickGap(size * 0.1f);
     }
 
+    public NormalPave getNormalPave() {
+        return normalPave;
+    }
+
+    public WaveLinesPave getWaveLinesPave() {
+        return waveLinesPave;
+    }
+
+    public WaveMutliPlan getWaveLinesPaveRes() {
+        return waveLinesPaveRes;
+    }
+
     /**
      * 刷新铺砖显示
      *

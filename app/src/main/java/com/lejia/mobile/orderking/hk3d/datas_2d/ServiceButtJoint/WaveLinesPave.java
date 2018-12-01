@@ -79,6 +79,11 @@ public class WaveLinesPave {
      */
     private ArrayList<Point> centerPointsList;
 
+    /**
+     * 每层波打线的起铺围点
+     */
+    private ArrayList<ArrayList<Point>> wavelinesCellsPointList = new ArrayList<>();
+
     public WaveLinesPave(PointList pointList, WaveMutliPlan waveMutliPlan, NormalPave normalPave, OnTilesResultListener onTilesResultListener) {
         this.pointList = pointList;
         this.waveMutliPlan = waveMutliPlan;
@@ -184,6 +189,7 @@ public class WaveLinesPave {
                         wlTileResult = null;
                     }
                     wlTileResult = new WLTileResult(pointList.getRectBox(), WaveLinesPave.this);
+                    wavelinesCellsPointList.clear();
                     // 优先加载资源位图，运算出最内层瓷砖铺贴围点列表
                     float gap = brickGap;
                     ArrayList<Point> innerRingList = pointList.copy();
@@ -207,6 +213,7 @@ public class WaveLinesPave {
                     Bitmap centerTileBitmap = getCenterBitmap();
                     ArrayList<Point> innerFixedList = new PointList(innerRingList).fixToLeftTopPointsList();
                     centerPointsList = new PointList(innerFixedList).copy();
+                    normalPave.setPointList(new PointList(centerPointsList));
                     GPCManager gpcManager = new GPCManager(new PointList(innerFixedList).toGeomPointList(), centerTileBitmap.getWidth(), centerTileBitmap.getHeight()
                             , gap, gap, direction, skewTile ? GPCConfig.TILT : GPCConfig.STRAIGHT);
                     String centerCode = normalPave.getNormalXInfo().materialCode;
@@ -221,6 +228,7 @@ public class WaveLinesPave {
                     // 倒序遍历铺贴波打线
                     ArrayList<Point> pointArrayList = innerRingList;
                     int size = tilePlanArrayList.size();
+                    boolean wavelinesCellsLayout = size > 1;
                     for (int i = size - 1; i > -1; i--) {
                         TilePlan tilePlan = tilePlanArrayList.get(i);
                         // 获取打包数据对象
@@ -229,10 +237,13 @@ public class WaveLinesPave {
                         float tileWidth = phyLogicalPackage.logicalTile.length * 0.1f;
                         float tileHeight = phyLogicalPackage.logicalTile.width * 0.1f;
                         // 获取波打线铺砖区域，自建砖缝区域
-                        if (i == 0) {
-                            pointArrayList = pointList.copy();
-                        } else {
+                        if (wavelinesCellsLayout) {
                             pointArrayList = new PointList(pointArrayList).offsetList(true, tileHeight + gap);
+                            wavelinesCellsPointList.add(new PointList(pointArrayList).copy());
+                        } else {
+                            pointArrayList = pointList.copy();
+                            ArrayList<Point> waveLineList = new PointList(pointArrayList).offsetList(false, tileHeight + gap);
+                            wavelinesCellsPointList.add(new PointList(new PointList(waveLineList).copy()).fixToLeftTopPointsList());
                         }
                         createWaveLineOuterGaps(pointArrayList, phyLogicalPackage.tile.codeNum, tileHeight, gap);
                         // 波打线数据对象
@@ -354,6 +365,11 @@ public class WaveLinesPave {
     // 获取中心区域铺砖围点
     public ArrayList<Point> getCenterPointsList() {
         return centerPointsList;
+    }
+
+    // 获取每层波打线对应的围点列表
+    public ArrayList<ArrayList<Point>> getWavelinesCellsPointList() {
+        return wavelinesCellsPointList;
     }
 
     /**

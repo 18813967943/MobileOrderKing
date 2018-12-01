@@ -62,10 +62,6 @@ public class SingleDoor extends BaseCad {
         super(angle, thickness, xlong, point, furTypes);
     }
 
-    public SingleDoor(double angle, double thickness, double xlong, Point point, FurTypes furTypes, Furniture furniture) {
-        super(angle, thickness, xlong, point, furTypes, furniture);
-    }
-
     @Override
     public void initDatas() {
         try {

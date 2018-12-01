@@ -86,7 +86,12 @@ public class WaveLine implements Parcelable {
         if (tilePlanArrayList != null && tilePlanArrayList.size() > 0) {
             for (int i = 0; i < tilePlanArrayList.size(); i++) {
                 TilePlan tilePlan = tilePlanArrayList.get(i);
-                ArrayList<Point> pointsList = tilePlanPointArrayList.get(i);
+                ArrayList<Point> pointsList = null;
+                if (i >= tilePlanPointArrayList.size()) {
+                    pointsList = null;
+                } else {
+                    pointsList = tilePlanPointArrayList.get(Math.abs(i + 1 - tilePlanPointArrayList.size()));
+                }
                 v += "\n" + tilePlan.toXml(pointsList);
             }
         }

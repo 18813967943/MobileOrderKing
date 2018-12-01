@@ -30,10 +30,6 @@ public class SimpleWindow extends BaseCad {
         super(angle, thickness, xlong, point, furTypes);
     }
 
-    public SimpleWindow(double angle, double thickness, double xlong, Point point, FurTypes furTypes, Furniture furniture) {
-        super(angle, thickness, xlong, point, furTypes, furniture);
-    }
-
     @Override
     public void initDatas() {
         // 根据吸附点、厚度变化刷新数据

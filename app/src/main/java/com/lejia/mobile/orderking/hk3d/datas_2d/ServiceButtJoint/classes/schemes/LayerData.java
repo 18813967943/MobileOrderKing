@@ -20,6 +20,13 @@ public class LayerData implements Parcelable {
     public boolean rectLightLayerVisible;
 
     public LayerData() {
+        groundLayerVisible = true;
+        wallLayerVisible = true;
+        furnitureLayerVisible = true;
+        ceilingLayerVisible = true;
+        dimensionLayerVisible = true;
+        virtualLightLayerVisible = false;
+        rectLightLayerVisible = true;
     }
 
     protected LayerData(Parcel in) {

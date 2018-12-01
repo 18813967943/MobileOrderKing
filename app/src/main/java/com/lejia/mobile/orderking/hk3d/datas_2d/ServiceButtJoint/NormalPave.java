@@ -259,6 +259,14 @@ public class NormalPave {
         return originBitmap;
     }
 
+    public void setPointList(PointList pointList) {
+        this.pointList = pointList;
+    }
+
+    public PointList getPointList() {
+        return pointList;
+    }
+
     /**
      * TODO 进行切割铺贴
      */
@@ -357,7 +365,7 @@ public class NormalPave {
     /**
      * 起铺方向转换为接单王的起铺方向
      */
-    private int jdwDir() {
+    public int jdwDir() {
         int dir = 4;
         switch (direction) {
             case GPCConfig.FROM_RIGHT_TOP:

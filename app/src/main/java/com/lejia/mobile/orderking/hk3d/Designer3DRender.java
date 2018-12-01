@@ -20,6 +20,7 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.bridge.OnReadPixsListener;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.FurnitureController;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
 
@@ -47,6 +48,11 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
      * 数据管理对象
      */
     private HouseDatasManager houseDatasManager;
+
+    /**
+     * 家具管理对象
+     */
+    private FurnitureController furnitureController;
 
     // 用于求出交点的虚拟地面
     private DummyGround dummyGround;
@@ -106,12 +112,18 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         this.houseDatasManager = new HouseDatasManager(mContext);
         this.dummyGround = new DummyGround(mContext);
         this.touchSelectedManager = new TouchSelectedManager(mContext, new ArrayList<RendererObject>());
+        this.furnitureController = new FurnitureController(mContext, this.houseDatasManager);
         this.onRenderStatesListener = onRenderStatesListener;
     }
 
     // 获取所有数据管理对象
     public HouseDatasManager getHouseDatasManager() {
         return houseDatasManager;
+    }
+
+    // 新旧版对接家具管理对象
+    public FurnitureController getFurnitureController() {
+        return furnitureController;
     }
 
     // 获取触摸选中管理对象
@@ -522,6 +534,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         return null;
     }
 
+    // 截屏操作
     private boolean requestReadPixs;
     private OnReadPixsListener onReadPixsListener;
 
