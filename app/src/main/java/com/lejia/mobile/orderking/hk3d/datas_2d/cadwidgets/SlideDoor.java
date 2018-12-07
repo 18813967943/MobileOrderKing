@@ -19,13 +19,13 @@ import java.util.ArrayList;
  * @time 2018/8/22 17:00
  * TODO: 简窗
  */
-public class SimpleWindow extends BaseCad {
+public class SlideDoor extends BaseCad {
 
-    public SimpleWindow(FurTypes furTypes) {
+    public SlideDoor(FurTypes furTypes) {
         super(furTypes);
     }
 
-    public SimpleWindow(double angle, double thickness, double xlong, Point point, FurTypes furTypes) {
+    public SlideDoor(double angle, double thickness, double xlong, Point point, FurTypes furTypes) {
         super(angle, thickness, xlong, point, furTypes);
     }
 
@@ -48,12 +48,14 @@ public class SimpleWindow extends BaseCad {
         selector = new Selector(new PointList(thicknessPointsList));
         // 根据围点求出两条线段
         ArrayList<Point> lepsVerticalList = PointList.getRotateLEPS(angle + 90.0d, thickness / 3, point);
+        ArrayList<Point> thickVerticalList = PointList.getRotateLEPS(angle + 90.0d, thickness, point);
         ArrayList<Point> line1List = PointList.getRotateLEPS(angle, xlong, lepsVerticalList.get(0));
         ArrayList<Point> line2List = PointList.getRotateLEPS(angle, xlong, lepsVerticalList.get(1));
         // 根据以上围点，初始化渲染缓存数据
         cadLinesList = new ArrayList<>();
         cadLinesList.add(new CadLine(line1List));
         cadLinesList.add(new CadLine(line2List));
+        cadLinesList.add(new CadLine(thickVerticalList));
     }
 
     @Override

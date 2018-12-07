@@ -36,6 +36,7 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.Plan;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.RoomLayer;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.RoomRegion;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.RoundPointData;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.SceneID;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.Shape;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.TPoint;
@@ -263,6 +264,16 @@ public class SaveDatasToService {
                             tileLayer.waveLine = waveLine;
                         }
                         floorData.tileViewPanel.tileLayers.add(tileLayer);
+                        // 房间内部围点
+                        ArrayList<Point> housePointsList = house.innerPointList.fixToLeftTopPointsList();
+                        if (housePointsList != null && housePointsList.size() > 0) {
+                            for (Point point : housePointsList) {
+                                RoundPointData roundPointData = new RoundPointData();
+                                roundPointData.x = (int) (point.x * -10 + 30000);
+                                roundPointData.y = (int) (point.y * 10 + 30000);
+                                floorData.roundPointDataList.add(roundPointData);
+                            }
+                        }
                         // 加入地面信息
                         floorPlan.floorDataArrayList.add(floorData);
                     }
@@ -311,7 +322,6 @@ public class SaveDatasToService {
         params.put("name", name);
         params.put("xml", floorPlan.toXml());
         params.put("previewBuffer", BitmapUtils.bitmapToBase64(previewBmp));
-        // SaveFile   SaveFileForDatas
         KosapRequest request = new KosapRequest(mContext, "SaveFileForDatas", params, new OnKosapResponseListener() {
             @Override
             public void response(String result, boolean error) {

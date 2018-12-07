@@ -112,8 +112,11 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         this.houseDatasManager = new HouseDatasManager(mContext);
         this.dummyGround = new DummyGround(mContext);
         this.touchSelectedManager = new TouchSelectedManager(mContext, new ArrayList<RendererObject>());
-        this.furnitureController = new FurnitureController(mContext, this.houseDatasManager);
         this.onRenderStatesListener = onRenderStatesListener;
+    }
+
+    protected void initControll() {
+        this.furnitureController = new FurnitureController(mContext, this.houseDatasManager, this);
     }
 
     // 获取所有数据管理对象
@@ -248,13 +251,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
         // draw all views
         if (houseDatasManager != null) {
             try {
-                boolean is3D = !RendererState.isNot3D();
-                // 绘制房间数据
-                if (!is3D) {
-                    GLES30.glDisable(GLES30.GL_DEPTH_TEST);
-                } else {
-                    GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-                }
+                GLES30.glDisable(GLES30.GL_DEPTH_TEST);
                 boolean isNot2D = RendererState.isNot2D();
                 ArrayList<House> housesList = houseDatasManager.getHousesList();
                 if (housesList != null && housesList.size() > 0) {
@@ -265,25 +262,20 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     }
                 }
                 // 绘制家具数据
-                if (!is3D) {
-                    GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-                }
-                if (!isNot2D) {
-                    ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
-                    if (baseCadsList != null && baseCadsList.size() > 0) {
-                        for (int i = baseCadsList.size() - 1; i > -1; i--) {
-                            BaseCad baseCad = baseCadsList.get(i);
-                            baseCad.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                    , ViewingShader.scene_colorAttribute, false);
-                        }
+                ArrayList<BaseCad> baseCadsList = furnitureController.getBaseCadsList();
+                if (baseCadsList != null && baseCadsList.size() > 0) {
+                    for (int i = 0; i < baseCadsList.size(); i++) {
+                        BaseCad baseCad = baseCadsList.get(i);
+                        baseCad.render(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
                     }
-                    // 绘制房间名称
-                    if (housesList != null && housesList.size() > 0) {
-                        for (int i = housesList.size() - 1; i > -1; i--) {
-                            House house = housesList.get(i);
-                            house.renderName(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
-                                    , ViewingShader.scene_colorAttribute, false);
-                        }
+                }
+                // 绘制房间名称
+                if (housesList != null && housesList.size() > 0) {
+                    for (int i = housesList.size() - 1; i > -1; i--) {
+                        House house = housesList.get(i);
+                        house.renderName(ViewingShader.scene_positionAttribute, ViewingShader.scene_normalAttribute
+                                , ViewingShader.scene_colorAttribute, false);
                     }
                 }
             } catch (Exception e) {
@@ -466,7 +458,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     rendererObjectsList.addAll(house.getCurrentTotalRendererObjectList());
                 }
             }
-            ArrayList<BaseCad> baseCadsList = houseDatasManager.getFurnituresList();
+            ArrayList<BaseCad> baseCadsList = furnitureController.getBaseCadsList();
             if (baseCadsList != null && baseCadsList.size() > 0) { // 家具
                 rendererObjectsList.addAll(baseCadsList);
             }
@@ -631,6 +623,7 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     }
                 }
             }
+            furnitureController.release();
             houseDatasManager.laterClearWhen3DViewsClearFinished();
             if (touchSelectedManager != null)
                 touchSelectedManager.clear();

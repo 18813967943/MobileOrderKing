@@ -107,11 +107,7 @@ public class FloorData implements Parcelable {
     };
 
     public String toXml() {
-        String v = "<FloorData RoomName=\"" + roomName + "\" CenterX=\"" + centerX + "\" CenterY=\"" + centerY + "\" CenterZ=\"" + centerZ + "\" Area=\"" + area + "\" MaterialType=\"" + materialType + "\"" +
-                " MaterialCode=\"" + materialCode + "\" URL=\"" + url + "\" FloorID=\"" + floorID + "\" RoomHeight=\"" + roomHeight + "\" " +
-                "BuildAngularLines=\"" + buildAngularLines + "\" BuildCeilingLines=\"" + buildCeilingLines + "\" AngularLineType=\"" + angularLineType + "\" CeilingLinesMatCode=\"" + ceilingLinesMatCode + "\" " +
-                "CeilingLinesMatUrl=\"" + ceilingLinesMatUrl + "\" AngularLinesMatCode=\"" + angularLinesMatCode + "\" " +
-                "AngularLinesMatUrl=\"" + angularLinesMatUrl + "\" IsSpecialMode=\"" + isSpecialMode + "\" MaterialMode=\"" + materialMode + "\">";
+        String v = "<FloorData RoomName=\"" + roomName + "\" CenterX=\"" + centerX + "\" CenterY=\"" + centerY + "\" CenterZ=\"" + centerZ + "\" Area=\"" + area + "\" MaterialType=\"" + materialType + "\"" + " MaterialCode=\"" + materialCode + "\" URL=\"" + url + "\" FloorID=\"" + floorID + "\" RoomHeight=\"" + roomHeight + "\" " + "BuildAngularLines=\"" + buildAngularLines + "\" BuildCeilingLines=\"" + buildCeilingLines + "\" AngularLineType=\"" + angularLineType + "\" CeilingLinesMatCode=\"" + ceilingLinesMatCode + "\" " + "CeilingLinesMatUrl=\"" + ceilingLinesMatUrl + "\" AngularLinesMatCode=\"" + angularLinesMatCode + "\" " + "AngularLinesMatUrl=\"" + angularLinesMatUrl + "\" IsSpecialMode=\"" + isSpecialMode + "\" MaterialMode=\"" + materialMode + "\">";
         if (tileViewPanel != null) {
             v += "\n" + tileViewPanel.toXml();
         }

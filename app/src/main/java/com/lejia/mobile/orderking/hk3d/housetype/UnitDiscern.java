@@ -234,7 +234,7 @@ public class UnitDiscern {
                             double xlength = Point.percision((line.getLength() / 27d) * 992d, 0);
                             Point center = scalePoint(line.getCenter(), scaleSize);
                             // 创建门
-                            SingleDoor singleDoor = new SingleDoor(line.getAngle(), 24, xlength / 10, center, FurTypes.SINGLE_DOOR, doorsFurniture);
+                            SingleDoor singleDoor = new SingleDoor(line.getAngle(), 24, xlength / 10, center, FurTypes.SINGLE_DOOR);
                             doorsFurniture.put(new FurnitureMatrixs(center, 0, 0, (float) line.getAngle(),
                                     240f / doorsFurniture.width * 1.0f, 1.0f, 1.0f,
                                     (float) center.x, (float) center.y, 0.0f, false));
@@ -277,7 +277,7 @@ public class UnitDiscern {
                             // 窗的长度、吸附点
                             Point center = scalePoint(line.getCenter(), scaleSize);
                             SimpleWindow simpleWindow = new SimpleWindow(line.getAngle(), 24, windowFurniture.xLong / 10, center,
-                                    FurTypes.SINGLE_DOOR, windowFurniture);
+                                    FurTypes.SINGLE_DOOR);
                             windowFurniture.put(new FurnitureMatrixs(center, 0, 0, (float) line.getAngle(),
                                     240f / windowFurniture.width * 1.0f, 1.0f, 1.0f,
                                     (float) center.x, (float) center.y, 0.0f, false));
@@ -461,12 +461,12 @@ public class UnitDiscern {
             // 增加门窗
             if (singleDoorArrayList != null) {
                 for (SingleDoor singleDoor : singleDoorArrayList) {
-                    houseDatasManager.addFurniture(singleDoor);
+                    // houseDatasManager.addFurniture(singleDoor);
                 }
             }
             if (simpleWindowArrayList != null) {
                 for (SimpleWindow simpleWindow : simpleWindowArrayList) {
-                    houseDatasManager.addFurniture(simpleWindow);
+                    // houseDatasManager.addFurniture(simpleWindow);
                 }
             }
         } catch (Exception e) {

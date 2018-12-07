@@ -116,7 +116,8 @@ public class FloorPlan implements Parcelable {
         }
         // 其他暂不对接
         v += "\n</root>";
-        return v;
+        String ret = v.trim().replaceAll("null", "");
+        return ret;
     }
 
     @Override

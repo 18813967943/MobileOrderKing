@@ -3,6 +3,7 @@ package com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.bridge;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Environment;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.hk3d.Designer3DRender;
@@ -34,14 +35,18 @@ import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.TileViewPanel;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.WallData;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.classes.schemes.WaveLine;
+import com.lejia.mobile.orderking.utils.FileUtils;
 
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Author by HEKE
@@ -55,6 +60,9 @@ public class SchemeXmlParseToShowViews {
     private HouseDatasManager houseDatasManager;
     private Designer3DRender designer3DRender;
 
+    // 临时解析文件路径
+    private String tempCachePath;
+
     /**
      * 解析总数据对象
      */
@@ -65,6 +73,8 @@ public class SchemeXmlParseToShowViews {
         this.mContext = orderKingApplication;
         this.designer3DRender = orderKingApplication.getDesigner3DSurfaceView().getDesigner3DRender();
         this.houseDatasManager = designer3DRender.getHouseDatasManager();
+        tempCachePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Yi3D/xmlparse/cache.xml";
+        FileUtils.createFile(tempCachePath);
         parse(xml);
     }
 
@@ -81,148 +91,141 @@ public class SchemeXmlParseToShowViews {
             @Override
             protected String doInBackground(String... xmls) {
                 try {
-                    SAXReader saxReader = new SAXReader();
-                    ByteArrayInputStream bais = new ByteArrayInputStream(xmls[0].getBytes());
-                    Document document = saxReader.read(bais);
-                    Element element = document.getRootElement();
-                    String nodeNeme = element.getName().toLowerCase();
-                    switch (nodeNeme) {
-                        case "floordata":
-                            readFloorDatas(element);
-                            break;
-                        case "root":
-                            List<Element> elementList = element.elements();
-                            for (Element e : elementList) {
-                                String ename = e.getName().toLowerCase();
-                                switch (ename) {
-                                    case "version":
-                                        floorPlan.version = e.attributeValue("code");
-                                        break;
-                                    case "sceneid":
-                                        floorPlan.sceneID = new SceneID();
-                                        floorPlan.sceneID.id = e.attributeValue("id");
-                                        floorPlan.sceneID.numID = e.attributeValue("numID");
-                                        break;
-                                    case "author":
-                                        floorPlan.authorCode = e.attributeValue("code");
-                                        break;
-                                    case "preview":
-                                        floorPlan.previewUrl = e.attributeValue("url");
-                                        break;
-                                    case "ceilingheight":
-                                        floorPlan.ceilingHeight = Integer.parseInt(e.attributeValue("value"));
-                                        break;
-                                    case "layerdata":
-                                        floorPlan.layerData = new LayerData();
-                                        floorPlan.layerData.groundLayerVisible = e.attributeValue("GroundLayerVisible").equals("true");
-                                        floorPlan.layerData.wallLayerVisible = e.attributeValue("WallLayerVisible").equals("true");
-                                        floorPlan.layerData.furnitureLayerVisible = e.attributeValue("FurnitureLayerVisible").equals("true");
-                                        floorPlan.layerData.ceilingLayerVisible = e.attributeValue("CeilingLayerVisible").equals("true");
-                                        floorPlan.layerData.dimensionLayerVisible = e.attributeValue("DimensionLayerVisible").equals("true");
-                                        floorPlan.layerData.virtualLightLayerVisible = e.attributeValue("VirtualLightLayerVisible").equals("true");
-                                        floorPlan.layerData.rectLightLayerVisible = e.attributeValue("RectLightLayerVisible").equals("true");
-                                        break;
-                                    case "wall":
-                                        floorPlan.wallNum = Integer.parseInt(e.attributeValue("num"));
-                                        break;
-                                    case "walldata":
-                                        WallData wallData = new WallData();
-                                        wallData.id = e.attributeValue("ID");
-                                        wallData.startX = Float.parseFloat(e.attributeValue("StartX"));
-                                        wallData.startY = Float.parseFloat(e.attributeValue("StartY"));
-                                        wallData.startZ = Float.parseFloat(e.attributeValue("StartZ"));
-                                        wallData.endX = Float.parseFloat(e.attributeValue("EndX"));
-                                        wallData.endY = Float.parseFloat(e.attributeValue("EndY"));
-                                        wallData.endZ = Float.parseFloat(e.attributeValue("EndZ"));
-                                        wallData.thickness = Float.parseFloat(e.attributeValue("Thickness"));
-                                        wallData.offSide = Float.parseFloat(e.attributeValue("OffSide"));
-                                        floorPlan.wallDataArrayList.add(wallData);
-                                        break;
-                                    case "floor":
-                                        floorPlan.floorNum = Integer.parseInt(e.attributeValue("num"));
-                                        break;
-                                    case "floordata":
-                                        readFloorDatas(e);
-                                        break;
-                                    case "furniture":
-                                        floorPlan.furnitureNum = Integer.parseInt(e.attributeValue("num"));
-                                        break;
-                                    case "furnituredata":
-                                        FurnitureData furnitureData = new FurnitureData();
-                                        furnitureData.name = e.attributeValue("Name");
-                                        furnitureData.code = e.attributeValue("Code");
-                                        furnitureData.ERPCode = e.attributeValue("ERPCode");
-                                        furnitureData.ID = e.attributeValue("ID");
-                                        furnitureData.catalog = e.attributeValue("Catalog");
-                                        furnitureData.URL = e.attributeValue("URL");
-                                        furnitureData.PositionX = Float.parseFloat(e.attributeValue("PositionX"));
-                                        furnitureData.PositionY = Float.parseFloat(e.attributeValue("PositionY"));
-                                        furnitureData.PositionZ = Float.parseFloat(e.attributeValue("PositionZ"));
-                                        furnitureData.OffGround = Float.parseFloat(e.attributeValue("OffGround"));
-                                        furnitureData.Rotation = Float.parseFloat(e.attributeValue("Rotation"));
-                                        furnitureData.Length = Float.parseFloat(e.attributeValue("Length"));
-                                        furnitureData.Width = Float.parseFloat(e.attributeValue("Width"));
-                                        furnitureData.Height = Float.parseFloat(e.attributeValue("Height"));
-                                        furnitureData.LinkWallID = e.attributeValue("LinkWallID");
-                                        furnitureData.LinkWall2ID = e.attributeValue("LinkWall2ID");
-                                        furnitureData.Mirror = Integer.parseInt(e.attributeValue("Mirror"));
-                                        furnitureData.CeilingLayerHeight = Integer.parseInt(e.attributeValue("CeilingLayerHeight"));
-                                        furnitureData.CeilingLightDeep = Integer.parseInt(e.attributeValue("CeilingLightDeep"));
-                                        furnitureData.CeilingTipHeight = Integer.parseInt(e.attributeValue("CeilingTipHeight"));
-                                        furnitureData.CeilingLightColor = Integer.parseInt(e.attributeValue("CeilingLightColor"));
-                                        furnitureData.CeilingLightWattage = Integer.parseInt(e.attributeValue("CeilingLightWattage"));
-                                        furnitureData.LinkedFloorID = e.attributeValue("LinkedFloorID");
-                                        furnitureData.PickCornerPointX = Integer.parseInt(e.attributeValue("PickCornerPointX"));
-                                        furnitureData.PickCornerPointY = Integer.parseInt(e.attributeValue("PickCornerPointY"));
-                                        furnitureData.PickCornerPointZ = Integer.parseInt(e.attributeValue("PickCornerPointZ"));
-                                        furnitureData.PickDir1X = Integer.parseInt(e.attributeValue("PickDir1X"));
-                                        furnitureData.PickDir1Y = Integer.parseInt(e.attributeValue("PickDir1Y"));
-                                        furnitureData.PickDir1Z = Integer.parseInt(e.attributeValue("PickDir1Z"));
-                                        furnitureData.PickDir2X = Integer.parseInt(e.attributeValue("PickDir2X"));
-                                        furnitureData.PickDir2Y = Integer.parseInt(e.attributeValue("PickDir2Y"));
-                                        furnitureData.PickDir2Z = Integer.parseInt(e.attributeValue("PickDir2Z"));
-                                        furnitureData.WindowName = e.attributeValue("WindowName");
-                                        furnitureData.WindowLine0X = Integer.parseInt(e.attributeValue("WindowLine0X"));
-                                        furnitureData.WindowLine0Y = Integer.parseInt(e.attributeValue("WindowLine0Y"));
-                                        furnitureData.WindowLine0Z = Integer.parseInt(e.attributeValue("WindowLine0Z"));
-                                        furnitureData.WindowLine1X = Integer.parseInt(e.attributeValue("WindowLine1X"));
-                                        furnitureData.WindowLine1Y = Integer.parseInt(e.attributeValue("WindowLine1Y"));
-                                        furnitureData.WindowLine1Z = Integer.parseInt(e.attributeValue("WindowLine1Z"));
-                                        furnitureData.WindowLine2X = Integer.parseInt(e.attributeValue("WindowLine2X"));
-                                        furnitureData.WindowLine2Y = Integer.parseInt(e.attributeValue("WindowLine2Y"));
-                                        furnitureData.WindowLine2Z = Integer.parseInt(e.attributeValue("WindowLine2Z"));
-                                        furnitureData.WindowOffGround = Integer.parseInt(e.attributeValue("WindowOffGround"));
-                                        furnitureData.WindowHeight = Integer.parseInt(e.attributeValue("WindowHeight"));
-                                        furnitureData.WindowFloatDistance = Integer.parseInt(e.attributeValue("WindowFloatDistance"));
-                                        furnitureData.WindowFloatSide = Integer.parseInt(e.attributeValue("WindowFloatSide"));
-                                        furnitureData.WindowWallThickness = Integer.parseInt(e.attributeValue("WindowWallThickness"));
-                                        furnitureData.BeamThickness = Integer.parseInt(e.attributeValue("BeamThickness"));
-                                        furnitureData.BeamRotation = Integer.parseInt(e.attributeValue("BeamRotation"));
-                                        furnitureData.HadCurveRailingPoints = Integer.parseInt(e.attributeValue("HadCurveRailingPoints"));
-                                        furnitureData.BuildCurtainLength = Integer.parseInt(e.attributeValue("BuildCurtainLength"));
-                                        furnitureData.BuildCurtainPositionX = Integer.parseInt(e.attributeValue("BuildCurtainPositionX"));
-                                        furnitureData.BuildCurtainPositionY = Integer.parseInt(e.attributeValue("BuildCurtainPositionY"));
-                                        furnitureData.BuildCurtainPositionZ = Integer.parseInt(e.attributeValue("BuildCurtainPositionZ"));
-                                        furnitureData.BuildCurtainOffGround = Integer.parseInt(e.attributeValue("BuildCurtainOffGround"));
-                                        furnitureData.VirtualLightColor = Integer.parseInt(e.attributeValue("VirtualLightColor"));
-                                        furnitureData.VirtualLightWattage = Integer.parseInt(e.attributeValue("VirtualLightWattage"));
-                                        furnitureData.OffDistance = Integer.parseInt(e.attributeValue("OffDistance"));
-                                        furnitureData.LinkedThresholdMaterialURL = e.attributeValue("LinkedThresholdMaterialURL");
-                                        furnitureData.LightRatio = Integer.parseInt(e.attributeValue("LightRatio"));
-                                        furnitureData.LightColor = Integer.parseInt(e.attributeValue("LightColor"));
-                                        furnitureData.LightDoubleSide = e.attributeValue("LightDoubleSide");
-                                        furnitureData.comonID = e.attributeValue("comonID");
-                                        furnitureData.IsPolyMode = e.attributeValue("IsPolyMode");
-                                        furnitureData.moduleCode = e.attributeValue("ModuleCode");
-                                        furnitureData.curtainModuleCode = e.attributeValue("CurtainModuleCode");
-                                        furnitureData.curtainMainClothCode = e.attributeValue("CurtainMainClothCode");
-                                        floorPlan.furnitureDataArrayList.add(furnitureData);
-                                        break;
-                                }
+                    DocumentBuilderFactory mDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder mDocumentBuilder = mDocumentBuilderFactory.newDocumentBuilder();
+                    Document mDocument = mDocumentBuilder.parse(new ByteArrayInputStream(xmls[0].getBytes()));
+                    Element mElement = mDocument.getDocumentElement();
+                    ArrayList<Element> elementsList = getList(mElement);
+                    if (elementsList != null) {
+                        for (Element e : elementsList) {
+                            String nodeName = e.getNodeName().toLowerCase();
+                            switch (nodeName) {
+                                case "version":
+                                    floorPlan.version = e.getAttribute("code");
+                                    break;
+                                case "sceneid":
+                                    floorPlan.sceneID = new SceneID();
+                                    floorPlan.sceneID.id = e.getAttribute("id");
+                                    floorPlan.sceneID.numID = e.getAttribute("numID");
+                                    break;
+                                case "author":
+                                    floorPlan.authorCode = e.getAttribute("code");
+                                    break;
+                                case "preview":
+                                    floorPlan.previewUrl = e.getAttribute("url");
+                                    break;
+                                case "ceilingheight":
+                                    floorPlan.ceilingHeight = Integer.parseInt(e.getAttribute("value"));
+                                    break;
+                                case "layerdata":
+                                    floorPlan.layerData = new LayerData();
+                                    floorPlan.layerData.groundLayerVisible = e.getAttribute("GroundLayerVisible").equals("true");
+                                    floorPlan.layerData.wallLayerVisible = e.getAttribute("WallLayerVisible").equals("true");
+                                    floorPlan.layerData.furnitureLayerVisible = e.getAttribute("FurnitureLayerVisible").equals("true");
+                                    floorPlan.layerData.ceilingLayerVisible = e.getAttribute("CeilingLayerVisible").equals("true");
+                                    floorPlan.layerData.dimensionLayerVisible = e.getAttribute("DimensionLayerVisible").equals("true");
+                                    floorPlan.layerData.virtualLightLayerVisible = e.getAttribute("VirtualLightLayerVisible").equals("true");
+                                    floorPlan.layerData.rectLightLayerVisible = e.getAttribute("RectLightLayerVisible").equals("true");
+                                    break;
+                                case "wall":
+                                    floorPlan.wallNum = Integer.parseInt(e.getAttribute("num"));
+                                    break;
+                                case "walldata":
+                                    WallData wallData = new WallData();
+                                    wallData.id = e.getAttribute("ID");
+                                    wallData.startX = Float.parseFloat(e.getAttribute("StartX"));
+                                    wallData.startY = Float.parseFloat(e.getAttribute("StartY"));
+                                    wallData.startZ = Float.parseFloat(e.getAttribute("StartZ"));
+                                    wallData.endX = Float.parseFloat(e.getAttribute("EndX"));
+                                    wallData.endY = Float.parseFloat(e.getAttribute("EndY"));
+                                    wallData.endZ = Float.parseFloat(e.getAttribute("EndZ"));
+                                    wallData.thickness = Float.parseFloat(e.getAttribute("Thickness"));
+                                    wallData.offSide = Float.parseFloat(e.getAttribute("OffSide"));
+                                    floorPlan.wallDataArrayList.add(wallData);
+                                    break;
+                                case "floor":
+                                    floorPlan.floorNum = Integer.parseInt(e.getAttribute("num"));
+                                    break;
+                                case "floordata":
+                                    readFloorDatas(e);
+                                    break;
+                                case "furniture":
+                                    floorPlan.furnitureNum = Integer.parseInt(e.getAttribute("num"));
+                                    break;
+                                case "furnituredata":
+                                    FurnitureData furnitureData = new FurnitureData();
+                                    furnitureData.name = e.getAttribute("Name");
+                                    furnitureData.code = e.getAttribute("Code");
+                                    furnitureData.ERPCode = e.getAttribute("ERPCode");
+                                    furnitureData.ID = e.getAttribute("ID");
+                                    furnitureData.catalog = e.getAttribute("Catalog");
+                                    furnitureData.URL = e.getAttribute("URL");
+                                    furnitureData.PositionX = Float.parseFloat(e.getAttribute("PositionX"));
+                                    furnitureData.PositionY = Float.parseFloat(e.getAttribute("PositionY"));
+                                    furnitureData.PositionZ = Float.parseFloat(e.getAttribute("PositionZ"));
+                                    furnitureData.OffGround = Float.parseFloat(e.getAttribute("OffGround"));
+                                    furnitureData.Rotation = Float.parseFloat(e.getAttribute("Rotation"));
+                                    furnitureData.Length = Float.parseFloat(e.getAttribute("Length"));
+                                    furnitureData.Width = Float.parseFloat(e.getAttribute("Width"));
+                                    furnitureData.Height = Float.parseFloat(e.getAttribute("Height"));
+                                    furnitureData.LinkWallID = e.getAttribute("LinkWallID");
+                                    furnitureData.LinkWall2ID = e.getAttribute("LinkWall2ID");
+                                    furnitureData.Mirror = Integer.parseInt(e.getAttribute("Mirror"));
+                                    furnitureData.CeilingLayerHeight = Integer.parseInt(e.getAttribute("CeilingLayerHeight"));
+                                    furnitureData.CeilingLightDeep = Integer.parseInt(e.getAttribute("CeilingLightDeep"));
+                                    furnitureData.CeilingTipHeight = Integer.parseInt(e.getAttribute("CeilingTipHeight"));
+                                    furnitureData.CeilingLightColor = Integer.parseInt(e.getAttribute("CeilingLightColor"));
+                                    furnitureData.CeilingLightWattage = Integer.parseInt(e.getAttribute("CeilingLightWattage"));
+                                    furnitureData.LinkedFloorID = e.getAttribute("LinkedFloorID");
+                                    furnitureData.PickCornerPointX = Integer.parseInt(e.getAttribute("PickCornerPointX"));
+                                    furnitureData.PickCornerPointY = Integer.parseInt(e.getAttribute("PickCornerPointY"));
+                                    furnitureData.PickCornerPointZ = Integer.parseInt(e.getAttribute("PickCornerPointZ"));
+                                    furnitureData.PickDir1X = Integer.parseInt(e.getAttribute("PickDir1X"));
+                                    furnitureData.PickDir1Y = Integer.parseInt(e.getAttribute("PickDir1Y"));
+                                    furnitureData.PickDir1Z = Integer.parseInt(e.getAttribute("PickDir1Z"));
+                                    furnitureData.PickDir2X = Integer.parseInt(e.getAttribute("PickDir2X"));
+                                    furnitureData.PickDir2Y = Integer.parseInt(e.getAttribute("PickDir2Y"));
+                                    furnitureData.PickDir2Z = Integer.parseInt(e.getAttribute("PickDir2Z"));
+                                    furnitureData.WindowName = e.getAttribute("WindowName");
+                                    furnitureData.WindowLine0X = Integer.parseInt(e.getAttribute("WindowLine0X"));
+                                    furnitureData.WindowLine0Y = Integer.parseInt(e.getAttribute("WindowLine0Y"));
+                                    furnitureData.WindowLine0Z = Integer.parseInt(e.getAttribute("WindowLine0Z"));
+                                    furnitureData.WindowLine1X = Integer.parseInt(e.getAttribute("WindowLine1X"));
+                                    furnitureData.WindowLine1Y = Integer.parseInt(e.getAttribute("WindowLine1Y"));
+                                    furnitureData.WindowLine1Z = Integer.parseInt(e.getAttribute("WindowLine1Z"));
+                                    furnitureData.WindowLine2X = Integer.parseInt(e.getAttribute("WindowLine2X"));
+                                    furnitureData.WindowLine2Y = Integer.parseInt(e.getAttribute("WindowLine2Y"));
+                                    furnitureData.WindowLine2Z = Integer.parseInt(e.getAttribute("WindowLine2Z"));
+                                    furnitureData.WindowOffGround = Integer.parseInt(e.getAttribute("WindowOffGround"));
+                                    furnitureData.WindowHeight = Integer.parseInt(e.getAttribute("WindowHeight"));
+                                    furnitureData.WindowFloatDistance = Integer.parseInt(e.getAttribute("WindowFloatDistance"));
+                                    furnitureData.WindowFloatSide = Integer.parseInt(e.getAttribute("WindowFloatSide"));
+                                    furnitureData.WindowWallThickness = Integer.parseInt(e.getAttribute("WindowWallThickness"));
+                                    furnitureData.BeamThickness = Integer.parseInt(e.getAttribute("BeamThickness"));
+                                    furnitureData.BeamRotation = Integer.parseInt(e.getAttribute("BeamRotation"));
+                                    furnitureData.HadCurveRailingPoints = Integer.parseInt(e.getAttribute("HadCurveRailingPoints"));
+                                    furnitureData.BuildCurtainLength = Integer.parseInt(e.getAttribute("BuildCurtainLength"));
+                                    furnitureData.BuildCurtainPositionX = Integer.parseInt(e.getAttribute("BuildCurtainPositionX"));
+                                    furnitureData.BuildCurtainPositionY = Integer.parseInt(e.getAttribute("BuildCurtainPositionY"));
+                                    furnitureData.BuildCurtainPositionZ = Integer.parseInt(e.getAttribute("BuildCurtainPositionZ"));
+                                    furnitureData.BuildCurtainOffGround = Integer.parseInt(e.getAttribute("BuildCurtainOffGround"));
+                                    furnitureData.VirtualLightColor = Integer.parseInt(e.getAttribute("VirtualLightColor"));
+                                    furnitureData.VirtualLightWattage = Integer.parseInt(e.getAttribute("VirtualLightWattage"));
+                                    furnitureData.OffDistance = Integer.parseInt(e.getAttribute("OffDistance"));
+                                    furnitureData.LinkedThresholdMaterialURL = e.getAttribute("LinkedThresholdMaterialURL");
+                                    furnitureData.LightRatio = Integer.parseInt(e.getAttribute("LightRatio"));
+                                    furnitureData.LightColor = Integer.parseInt(e.getAttribute("LightColor"));
+                                    furnitureData.LightDoubleSide = e.getAttribute("LightDoubleSide");
+                                    furnitureData.comonID = e.getAttribute("comonID");
+                                    furnitureData.IsPolyMode = e.getAttribute("IsPolyMode");
+                                    furnitureData.moduleCode = e.getAttribute("ModuleCode");
+                                    furnitureData.curtainModuleCode = e.getAttribute("CurtainModuleCode");
+                                    furnitureData.curtainMainClothCode = e.getAttribute("CurtainMainClothCode");
+                                    floorPlan.furnitureDataArrayList.add(furnitureData);
+                                    break;
                             }
-                            break;
+                        }
                     }
-                    bais.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -239,6 +242,30 @@ public class SchemeXmlParseToShowViews {
     }
 
     /**
+     * 获取元素列表
+     *
+     * @param e
+     * @return
+     */
+    private ArrayList<Element> getList(Element e) {
+        if (e == null)
+            return null;
+        ArrayList<Element> elementList = new ArrayList<>();
+        NodeList nodeList = e.getChildNodes();
+        if (nodeList != null) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                if (nodeList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element element = (Element) nodeList.item(i);
+                    elementList.add(element);
+                }
+            }
+        }
+        if (elementList.size() == 0)
+            return null;
+        return elementList;
+    }
+
+    /**
      * 读取房间地面信息
      *
      * @param e 地面信息元素节点
@@ -247,65 +274,65 @@ public class SchemeXmlParseToShowViews {
         if (e == null || floorPlan == null)
             return;
         FloorData floorData = new FloorData();
-        floorData.roomName = e.attributeValue("RoomName");
-        floorData.centerX = Float.parseFloat(e.attributeValue("CenterX"));
-        floorData.centerY = Float.parseFloat(e.attributeValue("CenterY"));
-        floorData.centerZ = Float.parseFloat(e.attributeValue("CenterZ"));
-        floorData.area = Float.parseFloat(e.attributeValue("Area"));
-        floorData.materialType = Integer.parseInt(e.attributeValue("MaterialType"));
-        floorData.materialCode = e.attributeValue("MaterialCode");
-        floorData.url = e.attributeValue("URL");
-        floorData.floorID = e.attributeValue("FloorID");
-        floorData.roomHeight = Integer.parseInt(e.attributeValue("RoomHeight"));
-        floorData.buildAngularLines = e.attributeValue("BuildAngularLines").equals("true");
-        floorData.buildCeilingLines = e.attributeValue("BuildCeilingLines").equals("true");
-        floorData.angularLineType = Integer.parseInt(e.attributeValue("AngularLineType"));
-        floorData.ceilingLinesMatCode = e.attributeValue("CeilingLinesMatCode");
-        floorData.ceilingLinesMatUrl = e.attributeValue("CeilingLinesMatUrl");
-        floorData.angularLinesMatCode = e.attributeValue("AngularLinesMatCode");
-        floorData.angularLinesMatUrl = e.attributeValue("AngularLinesMatUrl");
-        floorData.isSpecialMode = e.attributeValue("IsSpecialMode").equals("true");
-        floorData.materialMode = Integer.parseInt(e.attributeValue("MaterialMode"));
+        floorData.roomName = e.getAttribute("RoomName");
+        floorData.centerX = Float.parseFloat(e.getAttribute("CenterX"));
+        floorData.centerY = Float.parseFloat(e.getAttribute("CenterY"));
+        floorData.centerZ = Float.parseFloat(e.getAttribute("CenterZ"));
+        floorData.area = Float.parseFloat(e.getAttribute("Area"));
+        floorData.materialType = Integer.parseInt(e.getAttribute("MaterialType"));
+        floorData.materialCode = e.getAttribute("MaterialCode");
+        floorData.url = e.getAttribute("URL");
+        floorData.floorID = e.getAttribute("FloorID");
+        floorData.roomHeight = Integer.parseInt(e.getAttribute("RoomHeight"));
+        floorData.buildAngularLines = e.getAttribute("BuildAngularLines").equals("true");
+        floorData.buildCeilingLines = e.getAttribute("BuildCeilingLines").equals("true");
+        floorData.angularLineType = Integer.parseInt(e.getAttribute("AngularLineType"));
+        floorData.ceilingLinesMatCode = e.getAttribute("CeilingLinesMatCode");
+        floorData.ceilingLinesMatUrl = e.getAttribute("CeilingLinesMatUrl");
+        floorData.angularLinesMatCode = e.getAttribute("AngularLinesMatCode");
+        floorData.angularLinesMatUrl = e.getAttribute("AngularLinesMatUrl");
+        floorData.isSpecialMode = e.getAttribute("IsSpecialMode").equals("true");
+        floorData.materialMode = Integer.parseInt(e.getAttribute("MaterialMode"));
         // 其他数据对象
-        List<Element> elementList = e.elements();
+        ArrayList<Element> elementList = getList(e);
         for (Element element : elementList) {
-            String ename = element.getName().toLowerCase();
+            String ename = element.getNodeName().toLowerCase();
             switch (ename) {
                 case "tileviewpanel":
                     TileViewPanel tileViewPanel = new TileViewPanel(); // 铺砖面板数据对象
-                    List<Element> tileElementsList = element.elements();
+                    ArrayList<Element> tileElementsList = getList(element);
                     for (Element te : tileElementsList) {
-                        String tename = te.getName().toLowerCase();
+                        String tename = te.getNodeName().toLowerCase();
                         switch (tename) {
                             case "tilelayers":
                                 tileViewPanel.tileLayers = new TileLayers();
-                                Element layerElement = te.elements().get(0);
+                                Element layerElement = getList(te).get(0);
                                 TileLayer tileLayer = new TileLayer();
-                                tileLayer.main = layerElement.attributeValue("main").equals("true");
-                                tileLayer.isMainArea = layerElement.attributeValue("isMainArea").equals("true");
-                                tileLayer.hasOffset = layerElement.attributeValue("hasOffset").equals("true");
-                                List<Element> layerElementList = layerElement.elements();
+                                tileLayer.main = layerElement.getAttribute("main").equals("true");
+                                tileLayer.isMainArea = layerElement.getAttribute("isMainArea").equals("true");
+                                tileLayer.hasOffset = layerElement.getAttribute("hasOffset").equals("true");
+                                ArrayList<Element> layerElementList = getList(layerElement);
                                 for (Element laye : layerElementList) {
-                                    String layname = laye.getName().toLowerCase();
+                                    String layname = laye.getNodeName().toLowerCase();
                                     switch (layname) {
                                         case "tileregion":
                                             TileRegion tileRegion = new TileRegion();
-                                            tileRegion.isAddArea = laye.attributeValue("isAddArea").equals("true");
-                                            tileRegion.isWallTile = laye.attributeValue("isWallTile").equals("true");
-                                            tileRegion.isEmportTile = laye.attributeValue("isEmportTile").equals("true");
-                                            tileRegion.area = Long.parseLong(laye.attributeValue("area"));
-                                            tileRegion.opType = Integer.parseInt(laye.attributeValue("opType"));
-                                            List<Element> treList = laye.elements();
+                                            tileRegion.isAddArea = laye.getAttribute("isAddArea").equals("true");
+                                            tileRegion.isWallTile = laye.getAttribute("isWallTile").equals("true");
+                                            tileRegion.isEmportTile = laye.getAttribute("isEmportTile").equals("true");
+                                            tileRegion.area = Long.parseLong(laye.getAttribute("area"));
+                                            tileRegion.opType = Integer.parseInt(laye.getAttribute("opType"));
+                                            ArrayList<Element> treList = getList(laye);
                                             for (Element tre : treList) {
-                                                String trename = tre.getName().toLowerCase();
+                                                String trename = tre.getNodeName().toLowerCase();
                                                 switch (trename) {
                                                     case "shape":
                                                         Shape shape = new Shape();
-                                                        List<Element> shapeEList = tre.elements();
+                                                        ArrayList<Element> shapeEList = getList(tre);
                                                         for (Element se : shapeEList) {
                                                             Point point = new Point();
-                                                            point.x = Double.parseDouble(se.attributeValue("x"));
-                                                            point.y = Double.parseDouble(se.attributeValue("y"));
+                                                            point.x = Double.parseDouble(se.getAttribute("x"));
+                                                            point.y = Double.parseDouble(se.getAttribute("y"));
                                                             shape.add(point);
                                                         }
                                                         tileRegion.shape = shape;
@@ -324,9 +351,9 @@ public class SchemeXmlParseToShowViews {
                                             break;
                                         case "waveline":
                                             WaveLine waveLine = new WaveLine();
-                                            waveLine.planType = Integer.parseInt(laye.attributeValue("planType"));
-                                            waveLine.openDir = Integer.parseInt(laye.attributeValue("openDir"));
-                                            waveLine.parentGuid = Integer.parseInt(laye.attributeValue("parentGuid"));
+                                            waveLine.planType = Integer.parseInt(laye.getAttribute("planType"));
+                                            waveLine.openDir = Integer.parseInt(laye.getAttribute("openDir"));
+                                            waveLine.parentGuid = Integer.parseInt(laye.getAttribute("parentGuid"));
                                             parseTilePlan(waveLine, laye, true);
                                             tileLayer.waveLine = waveLine;
                                             break;
@@ -337,16 +364,16 @@ public class SchemeXmlParseToShowViews {
                             case "roomlayer":
                                 tileViewPanel.roomLayer = new RoomLayer();
                                 tileViewPanel.roomLayer.roomRegion = new RoomRegion();
-                                List<Element> tpEList = te.elements().get(0).elements();
+                                ArrayList<Element> tpEList = getList(getList(te).get(0));
                                 for (Element tpe : tpEList) {
                                     TPoint tPoint = new TPoint();
-                                    tPoint.type = Integer.parseInt(tpe.attributeValue("type"));
-                                    tPoint.xpt1 = Float.parseFloat(tpe.attributeValue("xpt1"));
-                                    tPoint.ypt1 = Float.parseFloat(tpe.attributeValue("ypt1"));
-                                    tPoint.xpt2 = Float.parseFloat(tpe.attributeValue("xpt2"));
-                                    tPoint.ypt2 = Float.parseFloat(tpe.attributeValue("ypt2"));
-                                    tPoint.xpt3 = Float.parseFloat(tpe.attributeValue("xpt3"));
-                                    tPoint.ypt3 = Float.parseFloat(tpe.attributeValue("ypt3"));
+                                    tPoint.type = Integer.parseInt(tpe.getAttribute("type"));
+                                    tPoint.xpt1 = Float.parseFloat(tpe.getAttribute("xpt1"));
+                                    tPoint.ypt1 = Float.parseFloat(tpe.getAttribute("ypt1"));
+                                    tPoint.xpt2 = Float.parseFloat(tpe.getAttribute("xpt2"));
+                                    tPoint.ypt2 = Float.parseFloat(tpe.getAttribute("ypt2"));
+                                    tPoint.xpt3 = Float.parseFloat(tpe.getAttribute("xpt3"));
+                                    tPoint.ypt3 = Float.parseFloat(tpe.getAttribute("ypt3"));
                                     tileViewPanel.roomLayer.roomRegion.tPointsList.add(tPoint);
                                 }
                                 break;
@@ -356,8 +383,8 @@ public class SchemeXmlParseToShowViews {
                     break;
                 case "roundpointdata":
                     RoundPointData roundPointData = new RoundPointData();
-                    roundPointData.x = Integer.parseInt(element.attributeValue("X"));
-                    roundPointData.y = Integer.parseInt(element.attributeValue("Y"));
+                    roundPointData.x = Integer.parseInt(element.getAttribute("X"));
+                    roundPointData.y = Integer.parseInt(element.getAttribute("Y"));
                     floorData.roundPointDataList.add(roundPointData);
                     break;
             }
@@ -387,103 +414,105 @@ public class SchemeXmlParseToShowViews {
             tilePlanArrayList = waveLine.tilePlanArrayList;
             tileplanPointsList = waveLine.tilePlanPointArrayList;
         }
-        List<Element> elementList = element.elements();
+        ArrayList<Element> elementList = getList(element);
         if (elementList != null && elementList.size() > 0) {
             for (Element e : elementList) {
-                String name = e.getName().toLowerCase();
+                String name = e.getNodeName().toLowerCase();
                 switch (name) {
                     case "tileplan":
                         TilePlan tilePlan = new TilePlan();
-                        tilePlan.code = e.attributeValue("code");
-                        tilePlan.type = e.attributeValue("type");
-                        tilePlan.name = e.attributeValue("name");
-                        tilePlan.gap = Float.parseFloat(e.attributeValue("gap"));
-                        tilePlan.locate = Integer.parseInt(e.attributeValue("locate"));
-                        tilePlan.rotate = Float.parseFloat(e.attributeValue("rotate"));
-                        if (e.attribute("gapColor") != null)
-                            tilePlan.gapColor = Integer.parseInt(e.attributeValue("gapColor"));
+                        tilePlan.code = e.getAttribute("code");
+                        tilePlan.type = e.getAttribute("type");
+                        tilePlan.name = e.getAttribute("name");
+                        tilePlan.gap = Float.parseFloat(e.getAttribute("gap"));
+                        tilePlan.locate = Integer.parseInt(e.getAttribute("locate"));
+                        tilePlan.rotate = Float.parseFloat(e.getAttribute("rotate"));
+                        if (e.hasAttribute("gapColor"))
+                            tilePlan.gapColor = Integer.parseInt(e.getAttribute("gapColor"));
                         // 波打线
                         if (wavelines) {
                             // 多层波打线
-                            if (e.attribute("layerCount") != null) {
+                            if (e.hasAttribute("layerCount")) {
                                 tilePlan.wavelinesCellsLayout = true;
-                                tilePlan.layerCount = Integer.parseInt(e.attributeValue("layerCount"));
-                                tilePlan.waveLineOrientation = Integer.parseInt(e.attributeValue("waveLineOrientation"));
-                                tilePlan.openDir = Integer.parseInt(e.attributeValue("openDir"));
-                                tilePlan.waveWidth = Float.parseFloat(e.attributeValue("waveWidth"));
-                                tilePlan.waveType = Integer.parseInt(e.attributeValue("waveType"));
-                                tilePlan.gapTileRegion = Integer.parseInt(e.attributeValue("gapTileRegion"));
+                                tilePlan.layerCount = Integer.parseInt(e.getAttribute("layerCount"));
+                                tilePlan.waveLineOrientation = Integer.parseInt(e.getAttribute("waveLineOrientation"));
+                                tilePlan.openDir = Integer.parseInt(e.getAttribute("openDir"));
+                                tilePlan.waveWidth = Float.parseFloat(e.getAttribute("waveWidth"));
+                                tilePlan.waveType = Integer.parseInt(e.getAttribute("waveType"));
+                                tilePlan.gapTileRegion = Integer.parseInt(e.getAttribute("gapTileRegion"));
                             }
                         }
                         // 添加默认砖缝数值
                         tilePlan.putSymbol("G", "" + ((int) tilePlan.gap));
                         // 遍历创建子元素
-                        List<Element> tpList = e.elements();
+                        ArrayList<Element> tpList = getList(e);
                         if (tpList != null && tpList.size() > 0) {
                             for (Element tpe : tpList) {
-                                String tpename = tpe.getName().toLowerCase();
+                                String tpename = tpe.getNodeName().toLowerCase();
                                 switch (tpename) {
                                     case "symbol":
-                                        String key = tpe.attributeValue("key");
-                                        String value = tpe.attributeValue("value");
+                                        String key = tpe.getAttribute("key");
+                                        String value = tpe.getAttribute("value");
                                         tilePlan.putSymbol(key, value);
                                         break;
                                     case "phy":
-                                        List<Element> phyList = tpe.elements();
+                                        ArrayList<Element> phyList = getList(tpe);
                                         for (Element phye : phyList) {
                                             Tile tile = new Tile();
-                                            tile.code = phye.attributeValue("code");
-                                            tile.codeNum = phye.attributeValue("codeNum");
-                                            tile.length = Float.parseFloat(phye.attributeValue("length"));
-                                            tile.width = Float.parseFloat(phye.attributeValue("width"));
-                                            tile.url = phye.attributeValue("url");
+                                            tile.code = phye.getAttribute("code");
+                                            tile.codeNum = phye.getAttribute("codeNum");
+                                            tile.length = Float.parseFloat(phye.getAttribute("length"));
+                                            tile.width = Float.parseFloat(phye.getAttribute("width"));
+                                            tile.url = phye.getAttribute("url");
                                             tilePlan.phy.add(tile);
                                         }
                                         break;
                                     case "logtile":
-                                        List<Element> logList = tpe.elements();
+                                        ArrayList<Element> logList = getList(tpe);
                                         for (Element loge : logList) {
                                             LogicalTile logicalTile = new LogicalTile();
-                                            logicalTile.code = loge.attributeValue("code");
-                                            logicalTile.isMain = loge.attributeValue("isMain").equals("true");
-                                            logicalTile.rotate = Float.parseFloat(loge.attributeValue("rotate"));
-                                            logicalTile.length = Float.parseFloat(loge.attributeValue("length"));
-                                            logicalTile.width = Float.parseFloat(loge.attributeValue("width"));
-                                            logicalTile.dirx = Float.parseFloat(loge.attributeValue("dirx"));
-                                            logicalTile.diry = Float.parseFloat(loge.attributeValue("diry"));
-                                            logicalTile.dirz = Float.parseFloat(loge.attributeValue("dirz"));
-                                            logicalTile.notchStyle = Integer.parseInt(loge.attributeValue("notchStyle"));
-                                            if (loge.attribute("randRotate") != null) {
-                                                logicalTile.randRotate = loge.attributeValue("randRotate").equals("true");
+                                            logicalTile.code = loge.getAttribute("code");
+                                            logicalTile.isMain = loge.getAttribute("isMain").equals("true");
+                                            logicalTile.rotate = Float.parseFloat(loge.getAttribute("rotate"));
+                                            logicalTile.length = Float.parseFloat(loge.getAttribute("length"));
+                                            logicalTile.width = Float.parseFloat(loge.getAttribute("width"));
+                                            logicalTile.dirx = Float.parseFloat(loge.getAttribute("dirx"));
+                                            logicalTile.diry = Float.parseFloat(loge.getAttribute("diry"));
+                                            logicalTile.dirz = Float.parseFloat(loge.getAttribute("dirz"));
+                                            logicalTile.notchStyle = Integer.parseInt(loge.getAttribute("notchStyle"));
+                                            if (loge.hasAttribute("randRotate")) {
+                                                logicalTile.randRotate = loge.getAttribute("randRotate").equals("true");
                                             }
                                             tilePlan.logtile.add(logicalTile);
                                         }
                                         break;
                                     case "tileregion":
-                                        List<Element> trList = tpe.elements();
-                                        ArrayList<Point> pointsList = new ArrayList<>();
-                                        for (Element trne : trList) {
-                                            Point point = new Point();
-                                            point.x = Double.parseDouble(trne.attributeValue("x"));
-                                            point.y = Double.parseDouble(trne.attributeValue("y"));
-                                            pointsList.add(point);
+                                        ArrayList<Element> trList = getList(tpe);
+                                        if (trList != null) {
+                                            ArrayList<Point> pointsList = new ArrayList<>();
+                                            for (Element trne : trList) {
+                                                Point point = new Point();
+                                                point.x = Double.parseDouble(trne.getAttribute("x"));
+                                                point.y = Double.parseDouble(trne.getAttribute("y"));
+                                                pointsList.add(point);
+                                            }
+                                            tileplanPointsList.add(pointsList);
                                         }
-                                        tileplanPointsList.add(pointsList);
                                         break;
                                     case "direxp1":
                                         tilePlan.dirExp1 = new DirExp1();
                                         tilePlan.dirExp1.symbolVector3D = new SymbolVector3D();
-                                        Element symbol3d = tpe.element("SymbolVector3D");
-                                        String u = symbol3d.attributeValue("u");
-                                        String v = symbol3d.attributeValue("v");
+                                        Element symbol3d = getList(tpe).get(0);
+                                        String u = symbol3d.getAttribute("u");
+                                        String v = symbol3d.getAttribute("v");
                                         tilePlan.dirExp1.symbolVector3D.calculateValues(u, v, tilePlan.symbolMaps);
                                         break;
                                     case "direxp2":
                                         tilePlan.dirExp2 = new DirExp2();
                                         tilePlan.dirExp2.symbolVector3D = new SymbolVector3D();
-                                        Element symbol3d2 = tpe.element("SymbolVector3D");
-                                        String u2 = symbol3d2.attributeValue("u");
-                                        String v2 = symbol3d2.attributeValue("v");
+                                        Element symbol3d2 = getList(tpe).get(0);
+                                        String u2 = symbol3d2.getAttribute("u");
+                                        String v2 = symbol3d2.getAttribute("v");
                                         tilePlan.dirExp2.symbolVector3D.calculateValues(u2, v2, tilePlan.symbolMaps);
                                         break;
                                 }

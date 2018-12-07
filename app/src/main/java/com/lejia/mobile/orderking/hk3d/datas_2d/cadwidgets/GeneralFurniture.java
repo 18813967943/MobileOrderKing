@@ -8,6 +8,7 @@ import com.lejia.mobile.orderking.hk3d.ViewingShader;
 import com.lejia.mobile.orderking.hk3d.classes.LJ3DPoint;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
+import com.lejia.mobile.orderking.hk3d.classes.Texture;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Selector;
 
@@ -36,6 +37,9 @@ public class GeneralFurniture extends BaseCad {
 
     @Override
     public void initDatas() {
+        if (topView == null)
+            return;
+        uuid = topView.xInfo.materialCode;
         // 根据吸附点、厚度变化刷新数据
         thicknessPointsList = PointList.getRotateVertexs(angle, thickness, xlong, point);
         thicknessPointsList = new PointList(thicknessPointsList).antiClockwise();
@@ -65,7 +69,15 @@ public class GeneralFurniture extends BaseCad {
 
     @Override
     public void bindTexture() {
-        
+        Texture texture = getTextureCache(uuid);
+        if (texture != null) {
+            textureId = texture.textureId;
+            bitmap = texture.bitmap;
+        } else {
+            bitmap = topView.topviewBitmap;
+            needBindTextureId = true;
+            refreshRender();
+        }
     }
 
     @Override

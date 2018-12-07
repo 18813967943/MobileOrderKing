@@ -293,6 +293,35 @@ public class BitmapUtils {
     }
 
     /**
+     * 指定图片宽高加载网络瓷砖对应的贴图材质位图
+     *
+     * @param xInfo
+     * @param length
+     * @param width
+     * @return
+     */
+    public static Bitmap createTopViewBitmapByXInfo(XInfo xInfo, float length, float width) {
+        if (xInfo == null)
+            return null;
+        Bitmap bitmap = null;
+        try {
+            byte[] buffer = xInfo.topViewBuffer;
+            if (buffer == null || buffer.length == 0)
+                return null;
+            Bitmap nowBmp = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
+            float scaleWidth = length * 0.1f / nowBmp.getWidth();
+            float scaleHeight = width * 0.1f / nowBmp.getHeight();
+            Matrix scale = new Matrix();
+            scale.setScale(scaleWidth, scaleHeight);
+            bitmap = Bitmap.createBitmap(nowBmp, 0, 0, nowBmp.getWidth(), nowBmp.getHeight(), scale, true);
+            nowBmp.recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
      * 加载网络瓷砖对应的贴图材质位图
      *
      * @param xInfo

@@ -53,6 +53,7 @@ public class MoreManager {
                 case 0:
                     // 新建
                     houseDatasManager.clear();
+                    tilesManager.hide();
                     break;
                 case 1:
                     // 打开

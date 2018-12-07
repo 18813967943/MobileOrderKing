@@ -54,10 +54,10 @@ public class Shape implements Parcelable {
     }
 
     public String toXml() {
-        String v = "<shape>\n";
+        String v = "<shape>";
         if (pointsList != null && pointsList.size() > 0) {
             for (Point point : pointsList) {
-                v += "\n <point x=\"" + (int) (point.x * -10 + 30000) + "\" y=\"" + (int) (point.y * 10 + 30000) + "\"/>"; // x/y加30000，接单王坐标系原点(3000,3000)并放大10倍进行运算
+                v += "\n<point x=\"" + (int) (point.x * -10 + 30000) + "\" y=\"" + (int) (point.y * 10 + 30000) + "\"/>"; // x/y加30000，接单王坐标系原点(3000,3000)并放大10倍进行运算
             }
         }
         v += "\n</shape>";

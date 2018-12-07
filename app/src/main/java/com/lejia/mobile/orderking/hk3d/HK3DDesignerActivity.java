@@ -95,7 +95,6 @@ public class HK3DDesignerActivity extends Activity {
     /**
      * 家具触摸管理对象
      */
-    private FurnitureTouchManager furnitureTouchManager;
     private boolean interruptTouch;
 
     /**
@@ -107,6 +106,11 @@ public class HK3DDesignerActivity extends Activity {
      * 三维触摸管理
      */
     private On3DTouchManager on3DTouchManager;
+
+    /**
+     * 点击家具等操作
+     */
+    private FurnitureTouchManager furnitureTouchManager;
 
     /**
      * 图像识别操作窗口
@@ -225,11 +229,11 @@ public class HK3DDesignerActivity extends Activity {
             return super.dispatchTouchEvent(ev);
         }
         // 优先检测模型点击操作事件
-        if (furnitureTouchManager == null) {
-            furnitureTouchManager = new FurnitureTouchManager(this, tilesManager, designer3DManager);
-        }
         // 三维平面模型触摸操作
         if (RendererState.isNot25D() && RendererState.isNot3D()) {
+            if (furnitureTouchManager == null) {
+                furnitureTouchManager = new FurnitureTouchManager(this, tilesManager, designer3DManager);
+            }
             interruptTouch = furnitureTouchManager.canDrawCheck(ev);
         } else {
             interruptTouch = false;

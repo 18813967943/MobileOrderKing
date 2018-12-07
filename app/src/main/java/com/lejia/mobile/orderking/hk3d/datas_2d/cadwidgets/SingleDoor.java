@@ -8,7 +8,6 @@ import com.lejia.mobile.orderking.hk3d.classes.Line;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.Trianglulate;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Selector;
 
 import java.nio.ByteBuffer;
@@ -50,8 +49,6 @@ public class SingleDoor extends BaseCad {
         vertexsBuffer.put(vertexs).position(0);
         colorsBuffer = ByteBuffer.allocateDirect(4 * colors.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
         colorsBuffer.put(colors).position(0);
-        // 刷新
-        refreshRender();
     }
 
     public SingleDoor(FurTypes furTypes) {
@@ -65,6 +62,8 @@ public class SingleDoor extends BaseCad {
     @Override
     public void initDatas() {
         try {
+            if (topView == null)
+                return;
             // 厚度围点
             thicknessPointsList = PointList.getRotateVertexs(angle, thickness, xlong, point);
             thicknessPointsList = new PointList(thicknessPointsList).antiClockwise();
@@ -72,7 +71,8 @@ public class SingleDoor extends BaseCad {
             // 选中对象
             selector = new Selector(new PointList(thicknessPointsList));
             // 取第一个点作为扇区起始点
-            Point begain = thicknessPointsList.get(thicknessPointsList.size() - 1);
+            int bi = thicknessPointsList.size() - 1;
+            Point begain = thicknessPointsList.get(bi);
             // 获取与自身长边的点
             Point next = thicknessPointsList.get(0);
             Point before = thicknessPointsList.get(thicknessPointsList.size() - 2);
@@ -80,6 +80,12 @@ public class SingleDoor extends BaseCad {
             double distN = begain.dist(next);
             double distB = begain.dist(before);
             longsidePoint = distN >= distB ? next : before;
+            // 镜像
+            if (mirror) {
+                Point bc = begain.copy();
+                begain = longsidePoint.copy();
+                longsidePoint = bc;
+            }
             // 获取有效方向的点
             Line line = new Line(begain.copy(), longsidePoint.copy());
             double dist = line.getLength();
@@ -149,6 +155,11 @@ public class SingleDoor extends BaseCad {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void bindTexture() {
+        refreshRender();
     }
 
     // 获取扇形点

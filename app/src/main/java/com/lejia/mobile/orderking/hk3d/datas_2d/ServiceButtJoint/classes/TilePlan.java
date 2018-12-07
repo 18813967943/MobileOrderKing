@@ -224,14 +224,10 @@ public class TilePlan implements Parcelable {
      * @return xml数据
      */
     public String toXml(ArrayList<Point> pointArrayList) {
-        String v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
-                "rotate=\"" + rotate + "\">";
+        String v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " + "rotate=\"" + rotate + "\">";
         // 多层波打线
         if (wavelinesCellsLayout) {
-            v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " +
-                    "rotate=\"" + rotate + "\" openDir=\"" + openDir + "\" waveLineOrientation=\"" + waveLineOrientation +
-                    "\" waveWidth=\"" + waveWidth + "\" layerCount=\"" + layerCount + "\" gapTileRegion=\"" + gapTileRegion + "\" " +
-                    "waveType=\"" + waveType + "\">";
+            v = "<TilePlan  code=\"" + code + "\" type=\"" + type + "\" texture=\"" + texture + "\" name=\"" + name + "\" gap=\"" + gap + "\" locate=\"" + locate + "\" " + "rotate=\"" + rotate + "\" openDir=\"" + openDir + "\" waveLineOrientation=\"" + waveLineOrientation + "\" waveWidth=\"" + waveWidth + "\" layerCount=\"" + layerCount + "\" gapTileRegion=\"" + gapTileRegion + "\" " + "waveType=\"" + waveType + "\">";
         }
         if (symbolMaps != null && symbolMaps.size() > 0) {
             Iterator<Map.Entry<String, Integer>> iterator = symbolMaps.entrySet().iterator();
@@ -268,7 +264,7 @@ public class TilePlan implements Parcelable {
             }
             v += "\n</tileRegion>";
         } else {
-            v += "\n<tileRegion />";
+            v += "\n<tileRegion/>";
         }
         v += "\n</TilePlan>";
         return v;

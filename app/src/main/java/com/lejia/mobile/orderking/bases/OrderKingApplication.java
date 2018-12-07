@@ -164,6 +164,7 @@ public class OrderKingApplication extends Application {
         if (designer3DSurfaceView == null)
             return;
         designer3DSurfaceView.getDesigner3DRender().requestRelease();
+        shadowsGLSurfaceView.getRenderer().setReleaseRequest(true);
     }
 
     /**

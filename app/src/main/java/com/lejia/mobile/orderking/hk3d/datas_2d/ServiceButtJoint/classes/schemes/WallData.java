@@ -67,8 +67,7 @@ public class WallData implements Parcelable {
     };
 
     public String toXml() {
-        return "<WallData ID=\"" + id + "\" StartX=\"" + startX + "\" StartY=\"" + startY + "\" StartZ=\"" + startZ + "\" " +
-                "EndX=\"" + endX + "\" EndY=\"" + endY + "\" EndZ=\"" + endZ + "\" Thickness=\"" + thickness + "\" OffSide=\"" + offSide + "\"/>";
+        return "<WallData ID=\"" + id + "\" StartX=\"" + startX + "\" StartY=\"" + startY + "\" StartZ=\"" + startZ + "\" " + "EndX=\"" + endX + "\" EndY=\"" + endY + "\" EndZ=\"" + endZ + "\" Thickness=\"" + thickness + "\" OffSide=\"" + offSide + "\"/>";
     }
 
     @Override

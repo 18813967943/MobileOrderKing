@@ -68,8 +68,7 @@ public class LayerData implements Parcelable {
     };
 
     public String toXml() {
-        return "<LayerData GroundLayerVisible=\"" + groundLayerVisible + "\" WallLayerVisible=\"" + wallLayerVisible + "\" FurnitureLayerVisible=\"" + furnitureLayerVisible + "\"" +
-                " CeilingLayerVisible=\"" + ceilingLayerVisible + "\" DimensionLayerVisible=\"" + dimensionLayerVisible + "\" VirtualLightLayerVisible=\"" + virtualLightLayerVisible + "\" RectLightLayerVisible=\"" + rectLightLayerVisible + "\"/>";
+        return "<LayerData GroundLayerVisible=\"" + groundLayerVisible + "\" WallLayerVisible=\"" + wallLayerVisible + "\" FurnitureLayerVisible=\"" + furnitureLayerVisible + "\"" + " CeilingLayerVisible=\"" + ceilingLayerVisible + "\" DimensionLayerVisible=\"" + dimensionLayerVisible + "\" VirtualLightLayerVisible=\"" + virtualLightLayerVisible + "\" RectLightLayerVisible=\"" + rectLightLayerVisible + "\"/>";
     }
 
     @Override

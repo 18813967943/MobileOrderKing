@@ -12,10 +12,12 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.lejia.mobile.orderking.R;
+import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.classes.ResUrlNodeXml;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.TilesManager;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
-import com.lejia.mobile.orderking.hk3d.datas_2d.Furniture;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.FurnitureController;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
 import com.lejia.mobile.orderking.utils.TextUtils;
 
@@ -50,11 +52,13 @@ public class FurnitureEditorDialog extends Dialog {
     private BaseCad selector;
 
     private HouseDatasManager houseDatasManager;
+    private FurnitureController furnitureController;
     private TilesManager tilesManager;
 
     public FurnitureEditorDialog(@NonNull Context context, HouseDatasManager houseDatasManager, TilesManager tilesManager) {
         super(context, R.style.transparentDiag);
         this.houseDatasManager = houseDatasManager;
+        this.furnitureController = ((OrderKingApplication) context.getApplicationContext()).getDesigner3DSurfaceView().getDesigner3DRender().getFurnitureController();
         this.tilesManager = tilesManager;
     }
 
@@ -82,15 +86,22 @@ public class FurnitureEditorDialog extends Dialog {
             return;
         switch (view.getId()) {
             case R.id.copy:
-                houseDatasManager.copy(selector);
+                furnitureController.copy(selector);
                 break;
             case R.id.mirror:
-                houseDatasManager.mirror(selector);
+                furnitureController.mirror(selector);
                 break;
             case R.id.replace:
+                tilesManager.replaceModels(new TilesManager.OnReplaceRequestListener() {
+                    @Override
+                    public void replace(int type, ResUrlNodeXml.ResPath resPath, boolean cancel) {
+                        if (!cancel)
+                            furnitureController.replace(selector, type, resPath);
+                    }
+                });
                 break;
             case R.id.delete:
-                houseDatasManager.delete(selector);
+                furnitureController.delete(selector);
                 break;
             case R.id.singleProduct:
                 Toast.makeText(getContext(), "敬请期待，暂未开放!", Toast.LENGTH_SHORT).show();

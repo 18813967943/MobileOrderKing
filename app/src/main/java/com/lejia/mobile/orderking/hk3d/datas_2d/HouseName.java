@@ -32,34 +32,38 @@ public class HouseName extends RendererObject {
     private boolean needBindTextureId;
 
     private void loadDatas() {
-        createNameTextureWithGroundBitmap();
-        uuid = UUID.randomUUID().toString();
-        nameData.pointList.setPointsList(nameData.pointList.antiClockwise());
-        lj3DPointsList = nameData.pointList.to3dList();
-        RectD box = nameData.pointList.getRectBox();
-        indices = new Trianglulate().getTristrip(nameData.pointList.toArray());
-        int size = indices.length;
-        vertexs = new float[3 * size];
-        texcoord = new float[2 * size];
-        normals = new float[3 * size];
-        for (int i = 0; i < size; i++) {
-            LJ3DPoint point = lj3DPointsList.get(indices[i]);
-            int index = 3 * i;
-            vertexs[index] = (float) point.x;
-            vertexs[index + 1] = (float) point.y;
-            vertexs[index + 2] = (float) point.z;
-            int uvIndex = 2 * i;
-            texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
-            texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(point.y - box.bottom) / box.height());
+        try {
+            createNameTextureWithGroundBitmap();
+            uuid = UUID.randomUUID().toString();
+            nameData.pointList.setPointsList(nameData.pointList.antiClockwise());
+            lj3DPointsList = nameData.pointList.to3dList();
+            RectD box = nameData.pointList.getRectBox();
+            indices = new Trianglulate().getTristrip(nameData.pointList.toArray());
+            int size = indices.length;
+            vertexs = new float[3 * size];
+            texcoord = new float[2 * size];
+            normals = new float[3 * size];
+            for (int i = 0; i < size; i++) {
+                LJ3DPoint point = lj3DPointsList.get(indices[i]);
+                int index = 3 * i;
+                vertexs[index] = (float) point.x;
+                vertexs[index + 1] = (float) point.y;
+                vertexs[index + 2] = (float) point.z;
+                int uvIndex = 2 * i;
+                texcoord[uvIndex] = 1.0f - (float) (Math.abs(point.x - box.left) / box.width());
+                texcoord[uvIndex + 1] = 1.0f - (float) (Math.abs(point.y - box.bottom) / box.height());
+            }
+            vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            vertexsBuffer.put(vertexs).position(0);
+            texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            texcoordBuffer.put(texcoord).position(0);
+            indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
+            indicesBuffer.put(indices).position(0);
+            needBindTextureId = true;
+            refreshRender();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        vertexsBuffer = ByteBuffer.allocateDirect(4 * vertexs.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        vertexsBuffer.put(vertexs).position(0);
-        texcoordBuffer = ByteBuffer.allocateDirect(4 * texcoord.length).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        texcoordBuffer.put(texcoord).position(0);
-        indicesBuffer = ByteBuffer.allocateDirect(2 * indices.length).order(ByteOrder.nativeOrder()).asShortBuffer();
-        indicesBuffer.put(indices).position(0);
-        needBindTextureId = true;
-        refreshRender();
     }
 
     public HouseName(PointList innerPointList) {

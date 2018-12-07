@@ -19,6 +19,8 @@ public class TopView {
     public ResUrlNodeXml.ResPath resPath; // 资源路径对象
     public XInfo xInfo; // 模型数据信息对象
     public Bitmap topviewBitmap; // 顶视图位图
+    public ADI adi; // 附属信息
+    public boolean mirror; // 是否镜像
 
     public TopView() {
     }
@@ -27,7 +29,21 @@ public class TopView {
         this.type = type;
         this.resPath = resPath;
         this.xInfo = xInfo;
-        this.topviewBitmap = BitmapUtils.createBitmapByXInfo(this.xInfo, xInfo.X / 10, xInfo.Y / 10);
+        this.topviewBitmap = BitmapUtils.createTopViewBitmapByXInfo(this.xInfo, xInfo.X, xInfo.Y);
+    }
+
+    /**
+     * 复制
+     */
+    public TopView copy() {
+        TopView topView = new TopView();
+        topView.type = type;
+        topView.xInfo = xInfo.copy();
+        topView.adi = adi.copy();
+        topView.topviewBitmap = topviewBitmap;
+        topView.resPath = resPath;
+        topView.mirror = mirror;
+        return topView;
     }
 
     /**
@@ -40,6 +56,22 @@ public class TopView {
         if (TextUtils.isTextEmpty(code) || xInfo == null)
             return false;
         return code.equals(xInfo.materialCode);
+    }
+
+    /**
+     * 释放数据
+     */
+    public void release() {
+        if (xInfo != null) {
+            xInfo.topViewBuffer = null;
+            xInfo.previewBuffer = null;
+            xInfo = null;
+        }
+        if (topviewBitmap != null && !topviewBitmap.isRecycled()) {
+            topviewBitmap.recycle();
+            topviewBitmap = null;
+        }
+        adi = null;
     }
 
 }

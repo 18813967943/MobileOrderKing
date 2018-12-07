@@ -16,6 +16,7 @@ import com.lejia.mobile.orderking.hk3d.classes.Point;
 import com.lejia.mobile.orderking.hk3d.classes.PolyM;
 import com.lejia.mobile.orderking.hk3d.datas_2d.House;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.InterObserver;
 import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingGround;
 import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingWall;
 import com.lejia.mobile.orderking.hk3d.datas_3d.common.FPSCounter;
@@ -43,7 +44,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     /**
      * The vertex and fragment shader to refreshRender depth map
      */
-    private RenderProgram mDepthMapProgram;
+    public RenderProgram mDepthMapProgram;
 
     private int mActiveProgram;
 
@@ -96,13 +97,13 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     /**
      * Current shadow map sizes
      */
-    private int mShadowMapWidth;
-    private int mShadowMapHeight;
+    public int mShadowMapWidth;
+    public int mShadowMapHeight;
 
-    private boolean mHasDepthTextureExtension = false;
+    public boolean mHasDepthTextureExtension = false;
 
-    int[] fboId;
-    int[] depthTextureId;
+    public int[] fboId;
+    public int[] depthTextureId;
     public int[] renderTextureId;
 
     // Uniform locations for scene refreshRender program
@@ -168,6 +169,12 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
 
     // 加载阴影FBO缓存区域标志
     private boolean hadGenerateShadowFBO;
+
+    /**
+     * 模型数据管理对象
+     */
+    private InterObserver interObserver;
+    private boolean releaseRequest;
 
     public ShadowsRenderer(Context context) {
         this.mContext = context;
@@ -353,15 +360,9 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                 //upX, upY, upZ
                 0, 1, 0);
         //------------------------- refreshRender depth map --------------------------
-
-        // Cull front faces for shadow generation to avoid self shadowing
-        //GLES20.glCullFace(GLES20.GL_FRONT);
         renderShadowMap();
 
         //------------------------- refreshRender scene ------------------------------
-
-        // Cull back faces for normal refreshRender
-        //GLES20.glCullFace(GLES20.GL_BACK);
         renderScene();
 
         // Print openGL errors to console
@@ -369,6 +370,12 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         if (debugInfo != GLES20.GL_NO_ERROR) {
             String msg = "OpenGL error: " + debugInfo;
             Log.w(TAG, msg);
+        }
+
+        // release
+        if (releaseRequest) {
+            releaseRequest = false;
+            release();
         }
     }
 
@@ -394,7 +401,6 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         // Start using the shader
         GLES20.glUseProgram(mDepthMapProgram.getProgram());
         float[] tempResultMatrix = new float[16];
-        // Calculate matrices for standing objects
         // View matrix * Model matrix value is stored
         Matrix.multiplyMM(mLightMvpMatrix_staticShapes, 0, mLightViewMatrix, 0, mModelMatrix, 0);
         // Model * view * projection matrix stored and copied for use at rendering from camera point of view
@@ -404,6 +410,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(shadow_mvpMatrixUniform, 1, false, mLightMvpMatrix_staticShapes, 0);
         try {
             // Render all stationary shapes on scene
+            mPlane.render(shadow_positionAttribute, 0, 0, true);
             // 仅绘制外墙面阴影
             ArrayList<BuildingWall> insideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.OUTSIDE);
             if (insideBuildingWallsList != null && insideBuildingWallsList.size() > 0) {
@@ -428,7 +435,11 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                     }
                 }
             }
-            mPlane.render(shadow_positionAttribute, 0, 0, true);
+            // 绘制模型
+            if (interObserver == null) {
+                interObserver = ((OrderKingApplication) mContext.getApplicationContext()).getDesigner3DSurfaceView().getInterObserver();
+            }
+            interObserver.render(shadow_positionAttribute, 0, 0, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -534,6 +545,9 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
                 }
             }
             mPlane.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
+            // 绘制模型
+            if (interObserver != null)
+                interObserver.render(scene_positionAttribute, scene_normalAttribute, scene_colorAttribute, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -573,6 +587,7 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         refreshRender();
     }
 
+
     /**
      * 刷新显示
      */
@@ -580,6 +595,21 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         OrderKingApplication orderKingApplication = (OrderKingApplication) mContext.getApplicationContext();
         ShadowsGLSurfaceView shadowsGLSurfaceView = orderKingApplication.getShadowsGLSurfaceView();
         shadowsGLSurfaceView.requestRender();
+    }
+
+    // 释放请求
+    public void setReleaseRequest(boolean releaseRequest) {
+        this.releaseRequest = releaseRequest;
+        refreshRender();
+    }
+
+    /**
+     * 释放数据
+     */
+    private void release() {
+        if (interObserver != null) {
+            interObserver.release();
+        }
     }
 
 }

@@ -85,7 +85,7 @@ public class Logtile implements Parcelable {
     };
 
     public String toXml() {
-        String v = "<logTile>\n";
+        String v = "<logTile>";
         if (logicalTileArrayList != null && logicalTileArrayList.size() > 0) {
             for (LogicalTile logicalTile : logicalTileArrayList) {
                 v += ("\n" + logicalTile.toXml());

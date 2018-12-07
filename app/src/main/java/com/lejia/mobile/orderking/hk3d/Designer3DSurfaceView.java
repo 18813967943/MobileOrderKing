@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.InterObserver;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -23,6 +24,11 @@ public class Designer3DSurfaceView extends GLSurfaceView {
     private OnRenderStatesListener onRenderStatesListener;
     private Designer3DRender designer3DRender; // 渲染管理对象
 
+    /**
+     * 数据观察对象
+     */
+    private InterObserver interObserver;
+
     // 初始化配置
     private void init() {
         try {
@@ -37,10 +43,13 @@ public class Designer3DSurfaceView extends GLSurfaceView {
             setEGLConfigChooser(new MyEGLConfigChooser());
             setZOrderMediaOverlay(true);
             getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            interObserver = new InterObserver(getContext());
             designer3DRender = new Designer3DRender(getContext(), onRenderStatesListener);
+            interObserver.setDesigner3DRender(designer3DRender);
             setRenderer(designer3DRender);
             setRenderMode(RENDERMODE_WHEN_DIRTY);
             ((OrderKingApplication) getContext().getApplicationContext()).setDesigner3DSurfaceView(this);
+            designer3DRender.initControll();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,6 +102,13 @@ public class Designer3DSurfaceView extends GLSurfaceView {
      */
     public Designer3DRender getDesigner3DRender() {
         return designer3DRender;
+    }
+
+    /**
+     * 获取数据观察者对象
+     */
+    public InterObserver getInterObserver() {
+        return interObserver;
     }
 
     /**

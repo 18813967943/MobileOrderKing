@@ -19,7 +19,6 @@ import com.lejia.mobile.orderking.dialogs.TileDirectionDialog;
 import com.lejia.mobile.orderking.dialogs.TileGapsSettingDialog;
 import com.lejia.mobile.orderking.hk3d.datas_2d.Ground;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.ButtJTilesXml;
-import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.FurnitureController;
 import com.lejia.mobile.orderking.https.KosapRequest;
 import com.lejia.mobile.orderking.https.OnKosapResponseListener;
 import com.lejia.mobile.orderking.httpsResult.classes.LJNodes;
@@ -127,6 +126,7 @@ public class TilesManager {
                 case 3:
                     // 布置
                     menuLayout.setVisibility(View.VISIBLE);
+                    fromReplaceModel = false;
                     showModels();
                     break;
             }
@@ -147,10 +147,51 @@ public class TilesManager {
                 case 3:
                     // 布置
                     menuLayout.setVisibility(View.GONE);
+                    if (fromReplaceModel) {
+                        fromReplaceModel = false;
+                        if (onReplaceRequestListener != null) {
+                            onReplaceRequestListener.replace(type, null, true);
+                        }
+                    }
                     break;
             }
         }
     };
+
+    /**
+     * 隐藏显示
+     */
+    public void hide() {
+        menuLayout.setVisibility(View.GONE);
+        fromReplaceModel = false;
+        onReplaceRequestListener = null;
+    }
+
+    // 替换接口
+    private OnReplaceRequestListener onReplaceRequestListener;
+    private boolean fromReplaceModel;
+
+    /**
+     * 替换模型
+     *
+     * @param onReplaceRequestListener
+     */
+    public void replaceModels(OnReplaceRequestListener onReplaceRequestListener) {
+        this.fromReplaceModel = true;
+        this.onReplaceRequestListener = onReplaceRequestListener;
+        this.menuLayout.setVisibility(View.VISIBLE);
+        showModels();
+    }
+
+    /**
+     * Author by HEKE
+     *
+     * @time 2018/12/4 15:09
+     * TODO: 替换请求回调接口
+     */
+    public interface OnReplaceRequestListener {
+        void replace(int type, ResUrlNodeXml.ResPath resPath, boolean cancel);
+    }
 
     /********************************************************
      *  铺砖、布置家具资源窗口
@@ -199,6 +240,7 @@ public class TilesManager {
     public void showTiles() {
         if (flag == FLAG_TILES)
             return;
+        fromReplaceModel = false;
         flag = FLAG_TILES;
         tilesDetailsResIds = new int[]{R.mipmap.yangshi_copy, R.mipmap.huanzhuan, R.mipmap.waveline,
                 R.mipmap.fangan, R.mipmap.wode};
@@ -382,8 +424,14 @@ public class TilesManager {
             }
             // 布置
             else if (flag == FLAG_MODELS) {
-                FurnitureController furnitureController = designer3DManager.getDesigner3DRender().getFurnitureController();
-                furnitureController.add(type, resPath);
+                if (fromReplaceModel) {
+                    if (onReplaceRequestListener != null) {
+                        onReplaceRequestListener.replace(type, resPath, false);
+                    }
+                    hide();
+                } else {
+                    designer3DManager.getDesigner3DRender().getFurnitureController().add(type, resPath);
+                }
             }
         }
     };

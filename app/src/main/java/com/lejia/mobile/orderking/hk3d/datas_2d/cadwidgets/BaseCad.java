@@ -92,6 +92,8 @@ public abstract class BaseCad extends RendererObject {
     // 设置吸附点
     public void setPoint(Point point) {
         this.point = point;
+        if (topView != null)
+            topView.adi.point = this.point;
         initDatas();
     }
 
@@ -101,6 +103,7 @@ public abstract class BaseCad extends RendererObject {
             point.x += tx;
             point.y += ty;
             initDatas();
+            refreshRender();
         }
     }
 
@@ -116,6 +119,10 @@ public abstract class BaseCad extends RendererObject {
             angle = dragResult.adsorbLine.getAngle();
         }
         this.point = dragResult.point;
+        if (topView != null) {
+            topView.adi.point = this.point;
+            topView.adi.angle = (float) angle;
+        }
         initDatas();
     }
 
@@ -132,6 +139,8 @@ public abstract class BaseCad extends RendererObject {
     // 设置角度
     public void setAngle(double angle) {
         this.angle = angle;
+        if (topView != null)
+            topView.adi.angle = (float) angle;
         initDatas();
     }
 
@@ -158,7 +167,16 @@ public abstract class BaseCad extends RendererObject {
 
     // 设置顶视数据对象
     public void setTopView(TopView topView) {
-        this.topView = topView;
+        this.topView = topView.copy();
+        this.xlong = this.topView.xInfo.X / 10;
+        if (this.topView.adi.thickness != -1) {
+            this.thickness = this.topView.adi.thickness;
+        } else {
+            this.thickness = this.topView.xInfo.Y / 10;
+        }
+        this.angle = this.topView.adi.angle;
+        this.point = this.topView.adi.point;
+        initDatas();
         bindTexture();
     }
 
@@ -187,6 +205,8 @@ public abstract class BaseCad extends RendererObject {
      */
     public void mirror() {
         mirror = !mirror;
+        if (topView != null)
+            topView.mirror = mirror;
         initDatas();
     }
 
