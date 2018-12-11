@@ -7,6 +7,7 @@ import com.lejia.mobile.orderking.hk3d.classes.PointList;
 import com.lejia.mobile.orderking.hk3d.classes.RectD;
 import com.lejia.mobile.orderking.hk3d.datas_2d.HouseDatasManager;
 import com.lejia.mobile.orderking.hk3d.datas_2d.RendererObject;
+import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.L3DOffGroundChecker;
 import com.lejia.mobile.orderking.hk3d.datas_2d.ServiceButtJoint.models.TopView;
 
 import java.nio.FloatBuffer;
@@ -176,6 +177,9 @@ public abstract class BaseCad extends RendererObject {
         }
         this.angle = this.topView.adi.angle;
         this.point = this.topView.adi.point;
+        // 检测模型类型的离地高设置
+        new L3DOffGroundChecker(this);
+        // 加载数据及显示
         initDatas();
         bindTexture();
     }
