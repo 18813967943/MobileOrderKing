@@ -836,7 +836,7 @@ public class HouseDatasManager {
                                     if (adsorb != null)
                                         return new DragAdsorbRet(house, line, intentation, adsorb);
                                 } else { // 家具吸附，根据线段角度
-                                    Point adsorb = intentation.getAdsorbPoint(check.x, check.y, 100);
+                                    Point adsorb = intentation.getAdsorbPoint(check.x, check.y, 80);
                                     if (adsorb != null)
                                         return new DragAdsorbRet(house, line, intentation, adsorb);
                                 }
@@ -906,23 +906,30 @@ public class HouseDatasManager {
     public Point getEnterHouse3DInnerPosition() {
         if (housesList == null || housesList.size() == 0)
             return new Point(0, 0);
-        // 查询客餐厅
-        House enterHouse = null;
-        for (House house : housesList) {
-            if (house.isWallClosed) {
-                if (house.houseName.getNameData().name.contains("客餐厅")) {
-                    enterHouse = house;
-                    break;
+        try {
+            // 查询客餐厅
+            House enterHouse = null;
+            for (House house : housesList) {
+                if (house.isWallClosed) {
+                    if (house.houseName.getNameData().name.contains("客餐厅")) {
+                        enterHouse = house;
+                        break;
+                    }
                 }
             }
+            if (enterHouse == null)
+                enterHouse = housesList.get(0);
+            if (enterHouse.isWallClosed) {
+                return enterHouse.innerPointList.getInnerValidPoint(false);
+            } else {
+                if (enterHouse.innerPointList != null) {
+                    return enterHouse.innerPointList.get(0);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if (enterHouse == null)
-            enterHouse = housesList.get(0);
-        if (enterHouse.isWallClosed) {
-            return enterHouse.innerPointList.getInnerValidPoint(false);
-        } else {
-            return enterHouse.innerPointList.get(0);
-        }
+        return new Point(0, 0);
     }
 
     // 刷新画布

@@ -214,6 +214,7 @@ public class BuildingWallsCreator extends Thread {
                                         }
                                     }
                                 }
+
                             }
                             // 中断操作
                             if (broken) {

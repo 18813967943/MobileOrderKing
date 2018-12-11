@@ -852,6 +852,9 @@ public class PointList implements Parcelable {
                 }
             }
             // 组合围点
+            if (lasterIntersectedPoint == null) {
+                return null;
+            }
             offsetPointsList.add(lasterIntersectedPoint.copy());
             for (int i = 0; i < newPointsList.size(); i++) {
                 offsetPointsList.add(newPointsList.get(i).copy());

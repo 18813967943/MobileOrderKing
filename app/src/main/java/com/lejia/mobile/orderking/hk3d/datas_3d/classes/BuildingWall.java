@@ -34,10 +34,16 @@ public class BuildingWall extends Render3DObject {
     public boolean invalid; // 无效的
     public Bitmap textureBitmap; // 贴图材质
 
+    /**
+     * 开孔后的切割面
+     */
+    public ArrayList<BuildingFragmentWall> buildingFragmentWallArrayList;
+
     public BuildingWall(Cell cell, int type, ArrayList<Point> originPointsList) {
         this.cell = cell;
         this.type = type;
         this.originPointsList = originPointsList;
+        this.buildingFragmentWallArrayList = new ArrayList<>();
         initDatas();
     }
 
@@ -49,8 +55,8 @@ public class BuildingWall extends Render3DObject {
         originPointList.setPointsList(originPointList.antiClockwise());
         scalingPointsList = Scaling.scalePointList(originPointList.getPointsList());
         PointList pointList = new PointList(scalingPointsList);
-        float cellBegainY = (int) Scaling.scaleSimpleValue(cell.cellBegainHeight);
-        float cellEndY = (int) Scaling.scaleSimpleValue(cellBegainY + cell.cellHeight);
+        float cellBegainY = Scaling.scaleSimpleValue(cell.cellBegainHeight);
+        float cellEndY = Scaling.scaleSimpleValue(cellBegainY + cell.cellHeight);
         lj3DPointsList = new ArrayList<>();
         Point b = pointList.get(0);
         Point e = pointList.get(1);
@@ -143,45 +149,77 @@ public class BuildingWall extends Render3DObject {
         }
     }
 
+    /**
+     * 设置切割墙面
+     *
+     * @param buildingFragmentWallArrayList
+     */
+    public void setBuildingFragmentWallArrayList(ArrayList<BuildingFragmentWall> buildingFragmentWallArrayList) {
+        if (buildingFragmentWallArrayList == null || buildingFragmentWallArrayList.size() == 0)
+            return;
+        this.buildingFragmentWallArrayList.clear();
+        this.buildingFragmentWallArrayList.addAll(buildingFragmentWallArrayList);
+    }
+
+    /**
+     * 回复切割面
+     */
+    public void resetFraments() {
+        buildingFragmentWallArrayList.clear();
+    }
+
     @Override
     public void render(int positionAttribute, int normalAttribute, int colorAttribute, boolean onlyPosition) {
-        // Pass position information to shader
-        vertexsBuffer.position(0);
-        GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false,
-                0, vertexsBuffer);
-        GLES30.glEnableVertexAttribArray(positionAttribute);
-        if (!onlyPosition) {
-            // Pass normal information to shader
-            normalsBuffer.position(0);
-            GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false,
-                    0, normalsBuffer);
-            GLES30.glEnableVertexAttribArray(normalAttribute);
-            if (textureId != -1) {
-                // texcoord
-                texcoordBuffer.position(0);
-                GLES30.glVertexAttribPointer(mRenderer.scene_texcoordAttribute, 2, GLES30.GL_FLOAT, false,
-                        0, texcoordBuffer);
-                GLES30.glEnableVertexAttribArray(mRenderer.scene_texcoordAttribute);
-                // map
-                GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
-                GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
-                GLES30.glUniform1i(mRenderer.scene_SbaseMapUniform, 0);
-                GLES30.glUniform1f(mRenderer.scene_useSkinTexcoord_flag, 1.0f);
-                if (RendererState.isNot3D()) {
-                    GLES30.glUniform1f(mRenderer.scene_uSpecular, 0.5f);
-                } else {
-                    GLES30.glUniform1f(mRenderer.scene_uSpecular, 0.65f);
-                }
-            } else {
-                // 加载材质
+        // 绘制切割墙面
+        if (buildingFragmentWallArrayList != null && buildingFragmentWallArrayList.size() > 0) {
+            if (textureId == -1) {
                 loadDefaultTexture();
+            } else {
+                for (BuildingFragmentWall buildingFragmentWall : buildingFragmentWallArrayList) {
+                    buildingFragmentWall.render(positionAttribute, normalAttribute, colorAttribute, onlyPosition, textureId, normalsBuffer);
+                }
             }
         }
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
+        // 绘制自身墙面
+        else {
+            // Pass position information to shader
+            vertexsBuffer.position(0);
+            GLES30.glVertexAttribPointer(positionAttribute, 3, GLES30.GL_FLOAT, false,
+                    0, vertexsBuffer);
+            GLES30.glEnableVertexAttribArray(positionAttribute);
+            if (!onlyPosition) {
+                // Pass normal information to shader
+                normalsBuffer.position(0);
+                GLES30.glVertexAttribPointer(normalAttribute, 3, GLES30.GL_FLOAT, false,
+                        0, normalsBuffer);
+                GLES30.glEnableVertexAttribArray(normalAttribute);
+                if (textureId != -1) {
+                    // texcoord
+                    texcoordBuffer.position(0);
+                    GLES30.glVertexAttribPointer(mRenderer.scene_texcoordAttribute, 2, GLES30.GL_FLOAT, false,
+                            0, texcoordBuffer);
+                    GLES30.glEnableVertexAttribArray(mRenderer.scene_texcoordAttribute);
+                    // map
+                    GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+                    GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+                    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
+                    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+                    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_REPEAT);
+                    GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
+                    GLES30.glUniform1i(mRenderer.scene_SbaseMapUniform, 0);
+                    GLES30.glUniform1f(mRenderer.scene_useSkinTexcoord_flag, 1.0f);
+                    if (RendererState.isNot3D()) {
+                        GLES30.glUniform1f(mRenderer.scene_uSpecular, 0.5f);
+                    } else {
+                        GLES30.glUniform1f(mRenderer.scene_uSpecular, 0.65f);
+                    }
+                } else {
+                    // 加载材质
+                    loadDefaultTexture();
+                }
+            }
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, indices.length);
+        }
     }
 
     // 判断是否无效墙体

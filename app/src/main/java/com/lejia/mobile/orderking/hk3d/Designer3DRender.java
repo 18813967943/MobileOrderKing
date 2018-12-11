@@ -623,13 +623,14 @@ public class Designer3DRender implements GLSurfaceView.Renderer {
                     }
                 }
             }
-            furnitureController.release();
             houseDatasManager.laterClearWhen3DViewsClearFinished();
             if (touchSelectedManager != null)
                 touchSelectedManager.clear();
         }
+        furnitureController.release();
         resetScale();
         resetTranslate();
+        refreshRenderer();
     }
 
 }

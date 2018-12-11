@@ -111,7 +111,7 @@ public class FurnitureController {
                 if (ground != null) {
                     House house = ground.getHouse();
                     adi.point = house.centerPointList.getInnerValidPoint(false);
-                    adi.angle = 0;
+                    adi.angle = 180;
                 } else {
                     House house = null;
                     for (House h : houseList) {
@@ -125,7 +125,7 @@ public class FurnitureController {
                     else {
                         adi.point = new Point(0, 0);
                     }
-                    adi.angle = 0;
+                    adi.angle = 180;
                 }
             }
         } catch (Exception e) {
@@ -289,8 +289,8 @@ public class FurnitureController {
                 baseCad.release();
                 baseCad.topView.release();
             }
-            baseCadsList.clear();
         }
+        baseCadsList.clear();
     }
 
 }

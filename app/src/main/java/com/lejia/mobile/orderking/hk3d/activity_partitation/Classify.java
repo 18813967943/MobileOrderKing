@@ -6,6 +6,7 @@ package com.lejia.mobile.orderking.hk3d.activity_partitation;
  * @time 2018/7/27 17:12
  * TODO: 数字分类
  */
+@Deprecated
 public class Classify {
 
     /********************************************

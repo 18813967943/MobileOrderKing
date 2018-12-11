@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
+import com.lejia.mobile.orderking.hk3d.Designer3DRender;
 import com.lejia.mobile.orderking.hk3d.Designer3DSurfaceView;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.classes.Line;
@@ -283,6 +284,9 @@ public abstract class House {
     public void createRenderer() {
         try {
             wallsList.clear();
+            if (innerPointList == null) {
+                return;
+            }
             int size = innerPointList.size();
             int hashCode = hashCode();
             int index = 0;
@@ -464,6 +468,27 @@ public abstract class House {
             return centerPointList.toNotClosedLineList().get(0).getCenter();
         else
             return centerPointList.toNotClosedLineList().get(1).getCenter();
+    }
+
+    /**
+     * 移除无效房间
+     *
+     * @param house
+     */
+    public void removeInvalidHouse(House house) {
+        if (house == null)
+            return;
+        Designer3DSurfaceView designer3DSurfaceView = ((OrderKingApplication) mContext.getApplicationContext()).getDesigner3DSurfaceView();
+        if (designer3DSurfaceView == null)
+            return;
+        Designer3DRender designer3DRender = designer3DSurfaceView.getDesigner3DRender();
+        if (designer3DRender == null)
+            return;
+        HouseDatasManager houseDatasManager = designer3DRender.getHouseDatasManager();
+        if (houseDatasManager == null)
+            return;
+        houseDatasManager.remove(house);
+        refreshRenderer();
     }
 
     /**

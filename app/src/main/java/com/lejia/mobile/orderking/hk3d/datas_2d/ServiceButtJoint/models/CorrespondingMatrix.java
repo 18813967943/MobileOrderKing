@@ -29,20 +29,22 @@ public class CorrespondingMatrix {
      * @param shadow
      */
     public void renderSetMatrixs(ShadowsRenderer shadowsRenderer, boolean shadow) {
-        if (shadowsRenderer == null || topView == null)
+        if (shadowsRenderer == null || topView == null || topView.adi == null)
             return;
         // 矩阵
         float[] correspondingMatrix = new float[16];
         Matrix.setIdentityM(correspondingMatrix, 0);
+        // 平移
         float transX = Scaling.scaleSimpleValue((float) (topView.adi.point.x));
         float transY = Scaling.scaleSimpleValue((float) (topView.adi.point.y));
-        Matrix.translateM(correspondingMatrix, 0, transX,
-                Scaling.scaleSimpleValue(topView.xInfo.offGround * 0.1f), transY);
+        Matrix.translateM(correspondingMatrix, 0, transX, Scaling.scaleSimpleValue(topView.xInfo.offGround * 0.1f), transY);
+        // 缩放
         if (topView.mirror) {
             Matrix.scaleM(correspondingMatrix, 0, -1.0f, 1.0f, 1.0f);
         } else {
             Matrix.scaleM(correspondingMatrix, 0, 1.0f, 1.0f, 1.0f);
         }
+        // 旋转
         Matrix.rotateM(correspondingMatrix, 0, -topView.adi.angle, 0.0f, 1.0f, 0.0f);
         float[] tempResultMatrix = new float[16];
         // 阴影

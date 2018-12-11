@@ -561,6 +561,26 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
+     * 获取所有内外墙面
+     */
+    public ArrayList<BuildingWall> getTotalBePirecedWallsList() {
+        ArrayList<BuildingWall> buildingWallArrayList = new ArrayList<>();
+        ArrayList<BuildingWall> insideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.INSIDE);
+        if (insideBuildingWallsList != null && insideBuildingWallsList.size() > 0) {
+            buildingWallArrayList.addAll(insideBuildingWallsList);
+        }
+        ArrayList<BuildingWall> closeHouseOutsideBuildingWallsList = PolyM.getCloseHousesOutsideBuildingWallsList();
+        if (closeHouseOutsideBuildingWallsList != null && closeHouseOutsideBuildingWallsList.size() > 0) {
+            buildingWallArrayList.addAll(closeHouseOutsideBuildingWallsList);
+        }
+        ArrayList<BuildingWall> outsideBuildingWallsList = houseDatasManager.getBuildingWallsMapsWithType(BuildingWall.Type.OUTSIDE);
+        if (outsideBuildingWallsList != null && outsideBuildingWallsList.size() > 0) {
+            buildingWallArrayList.addAll(outsideBuildingWallsList);
+        }
+        return buildingWallArrayList;
+    }
+
+    /**
      * 轴侧展示
      */
     public void axisSide() {
@@ -586,7 +606,6 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         lookZ = 3000;
         refreshRender();
     }
-
 
     /**
      * 刷新显示

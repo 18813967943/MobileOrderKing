@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.lejia.mobile.orderking.hk3d.Designer3DRender;
 import com.lejia.mobile.orderking.hk3d.datas_2d.cadwidgets.BaseCad;
+import com.lejia.mobile.orderking.hk3d.datas_3d.classes.BuildingWall;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,10 +32,14 @@ public class InterObserver {
      */
     private ModelsLibrary modelsLibrary;
 
+    // 三维内外墙面对象列表,用于门窗开洞操作
+    private ArrayList<BuildingWall> buildingWallArrayList;
+
     public InterObserver(Context context) {
         this.mContext = context;
         this.modelsCorrespondingMatrixMap = new HashMap<>();
         this.modelsLibrary = new ModelsLibrary();
+        this.buildingWallArrayList = new ArrayList<>();
     }
 
     public void setDesigner3DRender(Designer3DRender designer3DRender) {
@@ -52,6 +57,7 @@ public class InterObserver {
             if (baseCadArrayList == null || baseCadArrayList.size() == 0) {
                 return;
             }
+            ArrayList<BaseCad> innerwallsList = new ArrayList<>();
             for (BaseCad baseCad : baseCadArrayList) {
                 String hashCode = "" + baseCad.hashCode();
                 TopView topView = baseCad.topView;
@@ -73,7 +79,13 @@ public class InterObserver {
                         correspondingMatrixArrayList.add(new CorrespondingMatrix(hashCode, topView));
                     }
                 }
+                // 墙体内模型
+                if (topView.type != -1) {
+                    innerwallsList.add(baseCad);
+                }
             }
+            // 异步执行墙体开洞操作
+            new AsyncBrokenHolesTask(mContext, innerwallsList);
         } catch (Exception e) {
             e.printStackTrace();
         }
