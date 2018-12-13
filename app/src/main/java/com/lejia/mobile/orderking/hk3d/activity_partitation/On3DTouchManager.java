@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import com.lejia.mobile.orderking.hk3d.RendererState;
 import com.lejia.mobile.orderking.hk3d.TouchSelectedManager;
 import com.lejia.mobile.orderking.hk3d.classes.Point;
+import com.lejia.mobile.orderking.hk3d.datas_3d.ShadowsRenderer;
 
 /**
  * Author by HEKE
@@ -19,12 +20,14 @@ public class On3DTouchManager {
     private TilesManager tilesManager;
     private Designer3DManager designer3DManager;
     private TouchSelectedManager touchSelectedManager;
+    private ShadowsRenderer shadowsRenderer;
 
     public On3DTouchManager(Context context, TilesManager tilesManager, Designer3DManager designer3DManager) {
         this.mContext = context;
         this.tilesManager = tilesManager;
         this.designer3DManager = designer3DManager;
         this.touchSelectedManager = this.designer3DManager.getDesigner3DRender().getTouchSelectedManager();
+        this.shadowsRenderer = designer3DManager.getShadowsGLSurfaceView().getRenderer();
     }
 
     // 按下点
@@ -97,13 +100,16 @@ public class On3DTouchManager {
                             boolean axis = !RendererState.isNot25D();
                             if (axis) {
                                 if (Math.abs(x) > Math.abs(y)) {
+                                    shadowsRenderer.trans(-x, 0);
                                 } else {
+                                    shadowsRenderer.trans(0, -y);
                                 }
                             }
-                            // 进入房间
+                            // 进入房间左右旋转
                             boolean gotoHouse = !RendererState.isNot3D();
                             if (gotoHouse) {
                                 if (Math.abs(x) > Math.abs(y)) {
+                                    shadowsRenderer.turn(x < 0, 0.08f);
                                 }
                             }
                             down.setXY(move.x, move.y);
@@ -121,14 +127,24 @@ public class On3DTouchManager {
                         break;
                     case MotionEvent.ACTION_MOVE:
                         moveDist = getTwoFinggerDistance(event);
+                        boolean inHouse = !RendererState.isNot3D();
                         // 有效变化距离
                         if (Math.abs(moveDist - downDist) > 24) {
                             double poor = moveDist - downDist;
-                            // 缩小
                             if (poor < 0) {
-                            }
-                            // 放大
-                            else if (poor > 0) {
+                                // 后退
+                                if (inHouse) {
+                                    shadowsRenderer.move(false, 0.00005f);
+                                } else {
+                                    shadowsRenderer.axsideMove(false, (float) poor);
+                                }
+                            } else if (poor > 0) {
+                                // 前进
+                                if (inHouse) {
+                                    shadowsRenderer.move(true, 0.00005f);
+                                } else {
+                                    shadowsRenderer.axsideMove(true, (float) poor);
+                                }
                             }
                             downDist = moveDist; // 重置操作
                         }

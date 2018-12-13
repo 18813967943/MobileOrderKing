@@ -146,7 +146,9 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
     /**
      * 平移设置
      */
+    public float transX;
     public float transY;
+    public float transZ;
 
     /**
      * 摄像机位置
@@ -384,10 +386,10 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
      */
     private void setModelMatrix() {
         Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.translateM(mModelMatrix, 0, transX, transY, transZ);
         Matrix.scaleM(mModelMatrix, 0, -1.0f, 1.0f, 1.0f);
         Matrix.rotateM(mModelMatrix, 0, -180, 0.0f, 1.0f, 0.0f);
         Matrix.rotateM(mModelMatrix, 0, rotateY, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mModelMatrix, 0, 0, transY, 0);
     }
 
     private void renderShadowMap() {
@@ -588,7 +590,11 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         eyesX = 0;
         eyesY = 4;
         eyesZ = -12;
+        transX = 0;
         transY = -5;
+        transZ = 0;
+        lookX = 0;
+        lookY = 0;
         lookZ = 0;
         refreshRender();
     }
@@ -602,8 +608,91 @@ public class ShadowsRenderer implements GLSurfaceView.Renderer {
         eyesX = Scaling.scaleSimpleValue((float) point.x);
         eyesY = 0.8f;
         eyesZ = -Scaling.scaleSimpleValue((float) point.y);
+        transX = 0;
         transY = -0.4f;
+        transZ = 0;
+        lookX = 0;
+        lookY = 0;
         lookZ = 3000;
+        refreshRender();
+    }
+
+    /**
+     * 移动
+     *
+     * @param flag
+     * @param speed
+     */
+    public void move(boolean flag, float speed) {
+        float v[] = {lookX - eyesX, lookY - eyesY, lookZ - eyesZ};
+        if (flag) {
+            eyesX += v[0] * speed;
+            eyesZ += v[2] * speed;
+            lookX += v[0] * speed;
+            lookZ += v[2] * speed;
+        } else {
+            eyesX -= v[0] * speed;
+            eyesZ -= v[2] * speed;
+            lookX -= v[0] * speed;
+            lookZ -= v[2] * speed;
+        }
+        refreshRender();
+    }
+
+    /**
+     * 转向
+     *
+     * @param flag
+     * @param speed
+     */
+    public void turn(boolean flag, float speed) {
+        float v[] = {lookX - eyesX, lookY - eyesY, lookZ - eyesZ};
+        float radians = speed * 0.5f;
+        if (flag) {
+            lookX = (float) (eyesX + ((Math.cos(radians) * v[0]) - (Math.sin(radians) * v[2])));
+            lookZ = (float) (eyesZ + ((Math.sin(radians) * v[0]) + (Math.cos(radians) * v[2])));
+        } else {
+            lookX = (float) (eyesX + ((Math.cos(-radians) * v[0]) - (Math.sin(-radians) * v[2])));
+            lookZ = (float) (eyesZ + ((Math.sin(-radians) * v[0]) + (Math.cos(-radians) * v[2])));
+        }
+        refreshRender();
+    }
+
+    /**
+     * 平移
+     *
+     * @param tx
+     * @param tz
+     */
+    public void trans(float tx, float tz) {
+        transX += Scaling.scaleSimpleValue(tx);
+        transY += Scaling.scaleSimpleValue(tz);
+        refreshRender();
+    }
+
+    /**
+     * 旋转Y轴
+     *
+     * @param turnLeft
+     */
+    public void rotateY(boolean turnLeft) {
+        if (turnLeft) {
+            rotateY -= 45f;
+        } else {
+            rotateY += 45f;
+        }
+        rotateY = rotateY % 360;
+        refreshRender();
+    }
+
+    /**
+     * 摄像头远近设置
+     *
+     * @param nearly
+     * @param v
+     */
+    public void axsideMove(boolean nearly, float v) {
+        transZ += Scaling.scaleSimpleValue(v);
         refreshRender();
     }
 

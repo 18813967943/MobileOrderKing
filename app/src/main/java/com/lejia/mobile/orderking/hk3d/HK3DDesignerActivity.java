@@ -18,6 +18,7 @@ import com.lejia.mobile.orderking.activitys.PermissionsActivity;
 import com.lejia.mobile.orderking.bases.OrderKingApplication;
 import com.lejia.mobile.orderking.classes.ServiceNodesFetcher;
 import com.lejia.mobile.orderking.dialogs.CameraDrawSelectDialog;
+import com.lejia.mobile.orderking.hk3d.activity_partitation.CancelReductionManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.Designer3DManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.FurnitureTouchManager;
 import com.lejia.mobile.orderking.hk3d.activity_partitation.MoreManager;
@@ -117,6 +118,11 @@ public class HK3DDesignerActivity extends Activity {
      */
     private CameraDrawSelectDialog cameraDrawSelectDialog;
 
+    /**
+     * 撤销还原按钮处理
+     */
+    private CancelReductionManager cancelReductionManager;
+
     private void initViews() {
         if (serviceNodesFetcher == null) {
             serviceNodesFetcher = new ServiceNodesFetcher(this, new ServiceNodesFetcher.OnServiceNodesFetchedListener() {
@@ -177,8 +183,14 @@ public class HK3DDesignerActivity extends Activity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.getback:
+                if (cancelReductionManager == null)
+                    cancelReductionManager = new CancelReductionManager(designer3DManager);
+                cancelReductionManager.cancel();
                 break;
             case R.id.forward:
+                if (cancelReductionManager == null)
+                    cancelReductionManager = new CancelReductionManager(designer3DManager);
+                cancelReductionManager.reduction();
                 break;
             case R.id.jingzhun:
                 boolean isAccurate = !RendererState.isIsAccurate();

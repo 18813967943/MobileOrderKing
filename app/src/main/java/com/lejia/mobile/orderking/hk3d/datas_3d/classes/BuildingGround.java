@@ -114,7 +114,7 @@ public class BuildingGround extends Render3DObject {
                 GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_REPEAT);
                 GLES30.glUniform1i(mRenderer.scene_SbaseMapUniform, 0);
                 GLES30.glUniform1f(mRenderer.scene_useSkinTexcoord_flag, 1.0f);
-                GLES30.glUniform1f(mRenderer.scene_uSpecular, -0.35f);
+                GLES30.glUniform1f(mRenderer.scene_uSpecular, -0.45f);
             } else {
                 loadTexture();
             }
